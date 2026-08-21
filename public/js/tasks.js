@@ -48,6 +48,7 @@ taskModal.addEventListener("click", (event) => {
 // ============================================================
 
 const reviewModal = document.getElementById("reviewModal");
+
 const closeReviewModalBtn =
     document.getElementById("closeReviewModal");
 
@@ -110,7 +111,9 @@ function openReviewModal(task) {
         task.deliverable_expected_output || "-";
 
     // --------------------------------------------------------
-    // LOAD EXISTING REVIEW DATA IF AVAILABLE
+    // LOAD EXISTING REVIEW DATA
+    // IMPORTANT:
+    // Review remarks are stored in tasks.remarks
     // --------------------------------------------------------
 
     document.getElementById("reviewedVerifiedBy").value =
@@ -125,7 +128,7 @@ function openReviewModal(task) {
             : "";
 
     document.getElementById("reviewRemarks").value =
-        task.review_remarks || "";
+        task.remarks || "";
 
     // --------------------------------------------------------
     // OPEN MODAL
@@ -228,34 +231,10 @@ async function loadTasks() {
             }
 
             // ------------------------------------------------
-            // REVIEW RESULT
-            // ------------------------------------------------
-
-            let reviewStatus = "Pending Review";
-            let reviewClass = "status-pending";
-
-            if (task.review_result === "Approved") {
-
-                reviewStatus = "Approved";
-                reviewClass = "status-completed";
-
-            } else if (task.review_result === "For Revision") {
-
-                reviewStatus = "For Revision";
-                reviewClass = "status-active";
-
-            } else if (task.review_result === "Rejected") {
-
-                reviewStatus = "Rejected";
-                reviewClass = "status-pending";
-            }
-
-            // ------------------------------------------------
             // TABLE ROW
             // ------------------------------------------------
 
             row.innerHTML = `
-
                 <td>
                     ${task.task_activity || "-"}
                 </td>
@@ -364,6 +343,7 @@ async function loadTasks() {
                                 result.error ||
                                 "Failed to delete task."
                             );
+
                         }
 
                         alert(
@@ -383,7 +363,9 @@ async function loadTasks() {
                             "Error: " +
                             error.message
                         );
+
                     }
+
                 }
             );
 
@@ -398,12 +380,13 @@ async function loadTasks() {
                 "click",
                 () => {
 
-                    // You can connect your edit modal here.
                     alert(
                         "Edit task functionality can be added here."
                     );
+
                 }
             );
+
         });
 
     } catch (error) {
@@ -417,6 +400,7 @@ async function loadTasks() {
             "Error loading tasks: " +
             error.message
         );
+
     }
 }
 
@@ -435,6 +419,10 @@ taskForm.addEventListener(
 
         // ====================================================
         // ONLY TASK CREATION INFORMATION
+        // ====================================================
+        // IMPORTANT:
+        // NO remarks here.
+        // Remarks belong to the reviewer.
         // ====================================================
 
         const taskData = {
@@ -507,13 +495,14 @@ taskForm.addEventListener(
             percent_complete:
                 document.getElementById(
                     "percentComplete"
-                ).value || 0,
+                ).value || 0
 
-            remarks:
-                document.getElementById(
-                    "remarks"
-                ).value.trim()
         };
+
+        console.log(
+            "Creating task:",
+            taskData
+        );
 
         // ====================================================
         // SEND TASK TO SERVER
@@ -540,26 +529,36 @@ taskForm.addEventListener(
             const result =
                 await response.json();
 
+            console.log(
+                "Create task response:",
+                result
+            );
+
             if (!response.ok) {
 
                 throw new Error(
                     result.error ||
                     "Failed to create task."
                 );
+
             }
 
             alert(
                 "Task created successfully!"
             );
 
+            // Reset form
             taskForm.reset();
 
+            // Reset percentage
             document.getElementById(
                 "percentComplete"
             ).value = 0;
 
+            // Close modal
             closeModal();
 
+            // Reload task table
             loadTasks();
 
         } catch (error) {
@@ -573,7 +572,9 @@ taskForm.addEventListener(
                 "Error: " +
                 error.message
             );
+
         }
+
     }
 );
 
@@ -599,6 +600,9 @@ reviewForm.addEventListener(
         // ====================================================
         // REVIEW DATA ONLY
         // ====================================================
+        // IMPORTANT:
+        // Database column is "remarks".
+        // ====================================================
 
         const reviewData = {
 
@@ -617,11 +621,17 @@ reviewForm.addEventListener(
                     "reviewDate"
                 ).value || null,
 
-            review_remarks:
+            remarks:
                 document.getElementById(
                     "reviewRemarks"
                 ).value.trim()
+
         };
+
+        console.log(
+            "Submitting review:",
+            reviewData
+        );
 
         // ====================================================
         // VALIDATION
@@ -679,12 +689,18 @@ reviewForm.addEventListener(
             const result =
                 await response.json();
 
+            console.log(
+                "Review response:",
+                result
+            );
+
             if (!response.ok) {
 
                 throw new Error(
                     result.error ||
                     "Failed to submit review."
                 );
+
             }
 
             alert(
@@ -708,7 +724,9 @@ reviewForm.addEventListener(
                 "Error: " +
                 error.message
             );
+
         }
+
     }
 );
 
