@@ -1159,16 +1159,4 @@ app.delete("/api/tasks/:taskId", async (req, res) => {
         });
     }
 });
-app.listen(PORT, () => {
-    console.log(
-        "=============================================="
-    );
-
-    console.log(
-        `STS Project Tracking System running at http://localhost:${PORT}`
-    );
-
-    console.log(
-        "=============================================="
-    );
-});
+module.exports = app;
