@@ -25,14 +25,43 @@ body {
 
 
 /* ============================================================
+   SIDEBAR
+   ALWAYS STAYS ABOVE SCROLLING CONTENT
+   ============================================================ */
+
+.sidebar {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 270px;
+    height: 100vh;
+
+    z-index: 9999;
+
+    background: #1f2a3a;
+
+    overflow-y: auto;
+}
+
+
+/* ============================================================
    MAIN CONTENT
    ============================================================ */
 
 .main {
-    width: 100%;
+    width: calc(100% - 270px);
+
     min-height: 100vh;
 
+    margin-left: 270px;
+
     padding: 34px 34px;
+
+    position: relative;
+
+    z-index: 1;
 
     box-sizing: border-box;
 }
@@ -79,9 +108,11 @@ body {
 
 .header .btn-primary {
     background: #2864e8;
+
     color: #ffffff;
 
     border: none;
+
     border-radius: 9px;
 
     padding: 11px 19px;
@@ -110,7 +141,8 @@ body {
 
     display: grid;
 
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
 
     gap: 14px;
 
@@ -136,7 +168,9 @@ body {
     padding: 14px 18px;
 
     display: flex;
+
     flex-direction: column;
+
     justify-content: center;
 
     overflow: hidden;
@@ -167,6 +201,7 @@ body {
     position: absolute;
 
     left: 0;
+
     top: 0;
     bottom: 0;
 
@@ -253,6 +288,10 @@ body {
         0 1px 3px rgba(23, 43, 77, 0.04);
 
     overflow: hidden;
+
+    position: relative;
+
+    z-index: 1;
 }
 
 
@@ -266,7 +305,9 @@ body {
     padding: 0 0 10px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 }
 
@@ -293,6 +334,10 @@ body {
 
     overflow-x: auto;
     overflow-y: hidden;
+
+    position: relative;
+
+    z-index: 1;
 }
 
 
@@ -324,11 +369,13 @@ body {
     padding: 15px 14px;
 
     text-align: left;
+
     vertical-align: middle;
 
     color: #60738d;
 
     font-size: 14px;
+
     font-weight: 700;
 
     border-bottom: 1px solid #dfe4eb;
@@ -436,6 +483,7 @@ body {
     display: inline-flex;
 
     align-items: center;
+
     justify-content: center;
 
     padding: 6px 12px;
@@ -443,6 +491,7 @@ body {
     border-radius: 20px;
 
     font-size: 13px;
+
     font-weight: 600;
 
     line-height: 1;
@@ -455,6 +504,7 @@ body {
 
 .status-active {
     background: #d9f7e8;
+
     color: #147a43;
 }
 
@@ -463,6 +513,7 @@ body {
 
 .status-completed {
     background: #d9f7e8;
+
     color: #147a43;
 }
 
@@ -471,6 +522,7 @@ body {
 
 .status-pending {
     background: #fff1d6;
+
     color: #946200;
 }
 
@@ -483,6 +535,7 @@ body {
     white-space: nowrap;
 
     padding-left: 9px;
+
     padding-right: 9px;
 }
 
@@ -493,6 +546,7 @@ body {
     display: inline-flex;
 
     align-items: center;
+
     justify-content: center;
 
     padding: 8px 14px;
@@ -504,6 +558,7 @@ body {
     font-family: inherit;
 
     font-size: 14px;
+
     font-weight: 600;
 
     cursor: pointer;
@@ -528,6 +583,7 @@ body {
 
 .table-container .btn-primary {
     background: #2864e8;
+
     color: #ffffff;
 }
 
@@ -540,6 +596,7 @@ body {
 
 .table-container .btn-secondary {
     background: #e9edf3;
+
     color: #253858;
 }
 
@@ -552,6 +609,7 @@ body {
 
 .table-container .btn-danger {
     background: #e52b2b;
+
     color: #ffffff;
 }
 
@@ -574,7 +632,7 @@ body {
 
 
 /* ============================================================
-   MODAL
+   MODALS
    ============================================================ */
 
 .modal {
@@ -585,16 +643,18 @@ body {
     inset: 0;
 
     width: 100%;
+
     height: 100%;
 
     background: rgba(9, 30, 66, 0.48);
 
     align-items: center;
+
     justify-content: center;
 
     padding: 20px;
 
-    z-index: 1000;
+    z-index: 10000;
 }
 
 .modal.show {
@@ -634,6 +694,7 @@ body {
     display: flex;
 
     align-items: flex-start;
+
     justify-content: space-between;
 
     gap: 20px;
@@ -647,6 +708,7 @@ body {
     color: #172b4d;
 
     font-size: 24px;
+
     font-weight: 700;
 }
 
@@ -660,11 +722,12 @@ body {
 
 
 /* ============================================================
-   MODAL CLOSE BUTTON
+   MODAL CLOSE
    ============================================================ */
 
 .modal-close {
     width: 36px;
+
     height: 36px;
 
     border: none;
@@ -684,6 +747,7 @@ body {
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 }
 
@@ -693,7 +757,7 @@ body {
 
 
 /* ============================================================
-   TASK FORM SECTIONS
+   FORM SECTIONS
    ============================================================ */
 
 .task-section {
@@ -714,6 +778,7 @@ body {
     color: #172b4d;
 
     font-size: 16px;
+
     font-weight: 700;
 }
 
@@ -740,6 +805,7 @@ body {
     color: #253858;
 
     font-size: 15px;
+
     font-weight: 600;
 
     cursor: pointer;
@@ -811,6 +877,7 @@ body {
     color: #253858;
 
     font-size: 14px;
+
     font-weight: 600;
 }
 
@@ -914,6 +981,7 @@ body {
     font-family: inherit;
 
     font-size: 14px;
+
     font-weight: 600;
 
     cursor: pointer;
@@ -924,6 +992,7 @@ body {
 
 .form-actions .btn-primary {
     background: #2864e8;
+
     color: #ffffff;
 }
 
@@ -936,6 +1005,7 @@ body {
 
 .form-actions .btn-secondary {
     background: #e9edf3;
+
     color: #253858;
 }
 
@@ -974,6 +1044,10 @@ body {
 @media (max-width: 1100px) {
 
     .main {
+        width: calc(100% - 270px);
+
+        margin-left: 270px;
+
         padding: 30px 25px;
     }
 
@@ -1006,7 +1080,15 @@ body {
 @media (max-width: 800px) {
 
     .main {
+        width: calc(100% - 220px);
+
+        margin-left: 220px;
+
         padding: 26px 20px;
+    }
+
+    .sidebar {
+        width: 220px;
     }
 
     .header {
@@ -1040,7 +1122,20 @@ body {
 
 @media (max-width: 600px) {
 
+    .sidebar {
+        width: 100%;
+        height: auto;
+
+        position: relative;
+
+        z-index: 9999;
+    }
+
     .main {
+        width: 100%;
+
+        margin-left: 0;
+
         padding: 22px 15px;
     }
 
