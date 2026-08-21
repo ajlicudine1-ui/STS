@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>STS - Project Tasks</title>
+
+    <!-- Shared CSS -->
+    <link
+        rel="stylesheet"
+        href="/css/global.css">
+
+    <!-- Task Page CSS -->
+    <link
+        rel="stylesheet"
+        href="/css/tasks.css">
+
+</head>
+
+<body>
+
+    <!-- =====================================================
+         SHARED SIDEBAR
+         ===================================================== -->
+
+    <div id="sidebar-container"></div>
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main class="main">
+
+
+        <!-- =================================================
+             PAGE HEADER
+             Task-specific content stays HERE
+             ================================================= -->
+
+        <div class="header">
+
+            <div>
+
+                <h1 id="projectTitle">
+                    Project Tasks
+                </h1>
+
+                <p id="projectSubtitle">
+                    Manage project activities and progress.
+                </p>
+
+            </div>
+
+
+            <button
+                class="btn btn-primary"
+                id="newTaskBtn">
+
+                + New Task
+
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             TASK STATISTICS
+             ================================================= -->
+
+        <section class="stats">
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Total Tasks
+                </div>
+
+                <div
+                    class="card-value"
+                    id="taskTotal">
+
+                    0
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Not Started
+                </div>
+
+                <div
+                    class="card-value"
+                    id="taskNotStarted">
+
+                    0
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    In Progress
+                </div>
+
+                <div
+                    class="card-value"
+                    id="taskInProgress">
+
+                    0
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Completed
+                </div>
+
+                <div
+                    class="card-value"
+                    id="taskCompleted">
+
+                    0
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =================================================
+             TASK TABLE
+             ================================================= -->
+
+        <section class="content-card">
+
+
+            <div class="content-header">
+
+                <h2>
+                    Tasks
+                </h2>
+
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Task / Activity
+                            </th>
+
+                            <th>
+                                Procedure Stage
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Priority
+                            </th>
+
+                            <th>
+                                Responsible Person
+                            </th>
+
+                            <th>
+                                Due Date
+                            </th>
+
+                            <th>
+                                % Complete
+                            </th>
+
+                            <th>
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="tasksTable">
+
+                        <tr>
+
+                            <td colspan="8">
+                                No tasks found.
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         NEW TASK MODAL
+         ===================================================== -->
+
+    <div
+        class="modal"
+        id="taskModal">
+
+        <div class="modal-content task-modal">
+
+
+            <!-- MODAL HEADER -->
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        New Task
+                    </h2>
+
+                    <p>
+                        Add a task to this project.
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="modal-close"
+                    id="closeTaskModal">
+
+                    &times;
+
+                </button>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 CREATE TASK FORM
+                 ================================================= -->
+
+            <form id="taskForm">
+
+
+                <!-- BASIC TASK INFORMATION -->
+
+                <div class="task-section">
+
+                    <div class="section-title">
+                        Basic Task Information
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="taskActivity">
+                            Task / Activity *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="taskActivity"
+                            required
+                            placeholder="Enter task or activity">
+
+                    </div>
+
+
+                    <div class="form-row">
+
+
+                        <div class="form-group">
+
+                            <label for="procedureStage">
+                                Procedure Stage
+                            </label>
+
+                            <select id="procedureStage">
+
+                                <option value="">
+                                    Select Stage
+                                </option>
+
+                                <option value="Planning">
+                                    Planning
+                                </option>
+
+                                <option value="Requirements">
+                                    Requirements
+                                </option>
+
+                                <option value="Design">
+                                    Design
+                                </option>
+
+                                <option value="Development">
+                                    Development
+                                </option>
+
+                                <option value="Testing">
+                                    Testing
+                                </option>
+
+                                <option value="Implementation">
+                                    Implementation
+                                </option>
+
+                                <option value="Maintenance">
+                                    Maintenance
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="taskStatus">
+                                Status
+                            </label>
+
+                            <select id="taskStatus">
+
+                                <option value="Not Started">
+                                    Not Started
+                                </option>
+
+                                <option value="In Progress">
+                                    In Progress
+                                </option>
+
+                                <option value="Completed">
+                                    Completed
+                                </option>
+
+                                <option value="On Hold">
+                                    On Hold
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ASSIGNMENT & SCHEDULE -->
+
+                <details class="task-details">
+
+                    <summary>
+                        Assignment & Schedule
+                    </summary>
+
+
+                    <div class="details-content">
+
+
+                        <div class="form-row">
+
+
+                            <div class="form-group">
+
+                                <label for="taskPriority">
+                                    Priority
+                                </label>
+
+                                <select id="taskPriority">
+
+                                    <option value="">
+                                        Select Priority
+                                    </option>
+
+                                    <option value="Low">
+                                        Low
+                                    </option>
+
+                                    <option value="Medium">
+                                        Medium
+                                    </option>
+
+                                    <option value="High">
+                                        High
+                                    </option>
+
+                                    <option value="Critical">
+                                        Critical
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="scheduleStatus">
+                                    Schedule Status
+                                </label>
+
+                                <select id="scheduleStatus">
+
+                                    <option value="">
+                                        Select Schedule
+                                    </option>
+
+                                    <option value="On Schedule">
+                                        On Schedule
+                                    </option>
+
+                                    <option value="Delayed">
+                                        Delayed
+                                    </option>
+
+                                    <option value="Ahead of Schedule">
+                                        Ahead of Schedule
+                                    </option>
+
+                                    <option value="At Risk">
+                                        At Risk
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-row">
+
+
+                            <div class="form-group">
+
+                                <label for="responsiblePerson">
+                                    Responsible Person
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="responsiblePerson"
+                                    placeholder="Enter responsible person">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="taskRole">
+                                    Role
+                                </label>
+
+                                <select id="taskRole">
+
+                                    <option value="">
+                                        Select Role
+                                    </option>
+
+                                    <option value="Project Owner">
+                                        Project Owner
+                                    </option>
+
+                                    <option value="Project Manager">
+                                        Project Manager
+                                    </option>
+
+                                    <option value="Developer">
+                                        Developer
+                                    </option>
+
+                                    <option value="Designer">
+                                        Designer
+                                    </option>
+
+                                    <option value="Tester">
+                                        Tester
+                                    </option>
+
+                                    <option value="Reviewer">
+                                        Reviewer
+                                    </option>
+
+                                    <option value="End User">
+                                        End User
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="stakeholderEndUser">
+                                Stakeholder / End-user
+                            </label>
+
+                            <input
+                                type="text"
+                                id="stakeholderEndUser"
+                                placeholder="Enter stakeholder">
+
+                        </div>
+
+                    </div>
+
+                </details>
+
+
+
+                <!-- DATES & PROGRESS -->
+
+                <details class="task-details">
+
+                    <summary>
+                        Dates & Progress
+                    </summary>
+
+
+                    <div class="details-content">
+
+
+                        <div class="form-row">
+
+
+                            <div class="form-group">
+
+                                <label for="startDate">
+                                    Start Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="startDate">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="dueDate">
+                                    Due Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="dueDate">
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="completionDate">
+                                Completion Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="completionDate">
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="percentComplete">
+                                % Complete
+                            </label>
+
+                            <input
+                                type="number"
+                                id="percentComplete"
+                                min="0"
+                                max="100"
+                                step="1"
+                                value="0">
+
+                        </div>
+
+                    </div>
+
+                </details>
+
+
+
+                <!-- ADDITIONAL DETAILS -->
+
+                <details class="task-details">
+
+                    <summary>
+                        Additional Details
+                    </summary>
+
+
+                    <div class="details-content">
+
+
+                        <div class="form-group">
+
+                            <label for="deliverableExpectedOutput">
+                                Deliverable / Expected Output
+                            </label>
+
+                            <textarea
+                                id="deliverableExpectedOutput"
+                                placeholder="Enter expected output"
+                                rows="2"></textarea>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="evidenceApplicability">
+                                Evidence Applicability
+                            </label>
+
+                            <select id="evidenceApplicability">
+
+                                <option value="">
+                                    Select
+                                </option>
+
+                                <option value="Applicable">
+                                    Applicable
+                                </option>
+
+                                <option value="Not Applicable">
+                                    Not Applicable
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="remarks">
+                                Remarks
+                            </label>
+
+                            <textarea
+                                id="remarks"
+                                placeholder="Enter remarks"
+                                rows="2"></textarea>
+
+                        </div>
+
+                    </div>
+
+                </details>
+
+
+
+                <!-- ACTIONS -->
+
+                <div class="form-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="cancelTaskBtn">
+
+                        Cancel
+
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                        Create Task
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         REVIEW TASK MODAL
+         ===================================================== -->
+
+    <div
+        class="modal"
+        id="reviewModal">
+
+        <div class="modal-content task-modal">
+
+
+            <!-- REVIEW HEADER -->
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        Review Task
+                    </h2>
+
+                    <p>
+                        Check the task output and record the review result.
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="modal-close"
+                    id="closeReviewModal">
+
+                    &times;
+
+                </button>
+
+            </div>
+
+
+
+            <!-- TASK INFORMATION -->
+
+            <div class="task-section">
+
+                <div class="section-title">
+                    Task Information
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Task / Activity
+                    </label>
+
+                    <div
+                        class="review-value"
+                        id="reviewTaskName">
+
+                        -
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-row">
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Responsible Person
+                        </label>
+
+                        <div
+                            class="review-value"
+                            id="reviewResponsiblePerson">
+
+                            -
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Current Status
+                        </label>
+
+                        <div
+                            class="review-value"
+                            id="reviewStatus">
+
+                            -
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        % Complete
+                    </label>
+
+                    <div
+                        class="review-value"
+                        id="reviewPercentComplete">
+
+                        0%
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Deliverable / Expected Output
+                    </label>
+
+                    <div
+                        class="review-value review-text"
+                        id="reviewExpectedOutput">
+
+                        -
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- REVIEW FORM -->
+
+            <form id="reviewForm">
+
+                <div class="task-section">
+
+                    <div class="section-title">
+                        Review
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="reviewedVerifiedBy">
+                            Reviewed / Verified By *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="reviewedVerifiedBy"
+                            required
+                            placeholder="Enter reviewer name">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="reviewResult">
+                            Review Result *
+                        </label>
+
+                        <select
+                            id="reviewResult"
+                            required>
+
+                            <option value="">
+                                Select Result
+                            </option>
+
+                            <option value="Approved">
+                                Approved
+                            </option>
+
+                            <option value="For Revision">
+                                For Revision
+                            </option>
+
+                            <option value="Rejected">
+                                Rejected
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="reviewDate">
+                            Review Date *
+                        </label>
+
+                        <input
+                            type="date"
+                            id="reviewDate"
+                            required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="reviewRemarks">
+                            Review Remarks
+                        </label>
+
+                        <textarea
+                            id="reviewRemarks"
+                            placeholder="Enter review comments, findings, or required revisions."
+                            rows="4"></textarea>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- REVIEW ACTIONS -->
+
+                <div class="form-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="cancelReviewBtn">
+
+                        Cancel
+
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                        Submit Review
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
+
+    <!-- Loads shared components -->
+    <script src="/js/components.js"></script>
+
+    <!-- Task page functionality -->
+    <script src="/js/tasks.js"></script>
+
+</body>
+
+</html>

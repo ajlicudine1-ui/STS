@@ -1,0 +1,489 @@
+/* ============================================================
+   PROJECT PAGE
+   ============================================================ */
+
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+
+.header {
+    margin-bottom: 30px;
+}
+
+
+/* ============================================================
+   PROJECT STATISTICS
+   ============================================================ */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+
+/* ============================================================
+   PROJECT TABLE CONTAINER
+   ============================================================ */
+
+.table-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+
+/* ============================================================
+   PROJECT TABLE
+   ============================================================ */
+
+.table-container table {
+    width: 100%;
+    min-width: 1100px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+
+/* ============================================================
+   TABLE CELLS
+   ============================================================ */
+
+.table-container th,
+.table-container td {
+    padding: 14px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+}
+
+.table-container th {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f9fafb;
+    white-space: nowrap;
+}
+
+.table-container td {
+    font-size: 14px;
+    color: #374151;
+}
+
+
+/* ============================================================
+   COLUMN WIDTHS
+   ============================================================ */
+
+/* Project */
+.table-container th:nth-child(1),
+.table-container td:nth-child(1) {
+    width: 22%;
+}
+
+/* Project Manager */
+.table-container th:nth-child(2),
+.table-container td:nth-child(2) {
+    width: 15%;
+}
+
+/* Status */
+.table-container th:nth-child(3),
+.table-container td:nth-child(3) {
+    width: 13%;
+}
+
+/* Start Date */
+.table-container th:nth-child(4),
+.table-container td:nth-child(4) {
+    width: 12%;
+}
+
+/* End Date */
+.table-container th:nth-child(5),
+.table-container td:nth-child(5) {
+    width: 12%;
+}
+
+/* Progress */
+.table-container th:nth-child(6),
+.table-container td:nth-child(6) {
+    width: 11%;
+}
+
+/* Actions */
+.table-container th:nth-child(7),
+.table-container td:nth-child(7) {
+    width: 15%;
+    min-width: 190px;
+}
+
+
+/* ============================================================
+   TABLE ROWS
+   ============================================================ */
+
+.table-container tbody tr:hover {
+    background: #f9fafb;
+}
+
+.table-container tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.table-container td:nth-child(7) {
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.table-container td:nth-child(7) > * {
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   ACTION BUTTON CONTAINER
+   ============================================================ */
+
+.project-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 6px;
+    width: max-content;
+    min-width: max-content;
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   ACTION BUTTONS
+   ============================================================ */
+
+.project-action-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+
+    width: auto !important;
+    min-width: 0;
+
+    padding: 7px 10px;
+
+    border: none;
+    border-radius: 6px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+}
+
+.project-action-btn:hover {
+    opacity: 0.9;
+}
+
+
+/* ============================================================
+   OPEN PROJECT
+   ============================================================ */
+
+.project-open {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+
+/* ============================================================
+   EDIT PROJECT
+   ============================================================ */
+
+.project-edit {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+
+/* ============================================================
+   DELETE PROJECT
+   ============================================================ */
+
+.project-delete {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+.project-delete:hover {
+    background: #b91c1c !important;
+    color: #ffffff !important;
+}
+
+
+/* ============================================================
+   STATUS BADGES
+   ============================================================ */
+
+.project-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+/* Not Started */
+
+.project-status-not-started {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+
+/* In Progress */
+
+.project-status-in-progress {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+
+/* Completed */
+
+.project-status-completed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+
+/* On Hold */
+
+.project-status-on-hold {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+
+/* ============================================================
+   PROJECT PROGRESS
+   ============================================================ */
+
+.project-progress {
+    min-width: 110px;
+}
+
+.project-progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.project-progress-bar {
+    width: 70px;
+    height: 7px;
+
+    background: #e5e7eb;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+.project-progress-fill {
+    height: 100%;
+
+    background: #2563eb;
+
+    border-radius: 10px;
+}
+
+.project-progress-text {
+    font-size: 12px;
+    font-weight: 600;
+
+    color: #374151;
+
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   EMPTY PROJECT TABLE
+   ============================================================ */
+
+.empty-project-state {
+    text-align: center;
+
+    padding: 30px 20px;
+
+    color: #6b7280;
+}
+
+
+/* ============================================================
+   PROJECT MODAL
+   ============================================================ */
+
+.project-modal {
+    width: 700px;
+
+    max-width: 95%;
+    max-height: 85vh;
+
+    overflow-y: auto;
+}
+
+
+/* ============================================================
+   PROJECT SECTION
+   ============================================================ */
+
+.project-section {
+    margin-bottom: 15px;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 600;
+
+    margin-bottom: 10px;
+}
+
+
+/* ============================================================
+   PROJECT FORM
+   ============================================================ */
+
+.project-modal .form-group {
+    margin-bottom: 10px;
+}
+
+.project-modal label {
+    display: block;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    margin-bottom: 4px;
+}
+
+.project-modal input,
+.project-modal select,
+.project-modal textarea {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 10px 11px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
+
+    outline: none;
+}
+
+.project-modal textarea {
+    resize: vertical;
+}
+
+.project-modal input:focus,
+.project-modal select:focus,
+.project-modal textarea:focus {
+    border-color: #2563eb;
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+
+/* ============================================================
+   TWO COLUMN FORM
+   ============================================================ */
+
+.project-modal .form-row {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+}
+
+
+/* ============================================================
+   MODAL ACTIONS
+   ============================================================ */
+
+.project-modal .form-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 15px;
+
+    padding-top: 12px;
+
+    border-top: 1px solid #ddd;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1000px) {
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .project-modal {
+        width: 100%;
+        max-width: 100%;
+        max-height: 90vh;
+    }
+
+    .project-modal .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+}

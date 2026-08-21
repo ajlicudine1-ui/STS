@@ -1,14 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>STS - Project Tracking System</title>
+
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
 </head>
+
 <body>
 
-    <h1>STS Project Tracking System</h1>
-    <p>System is running successfully.</p>
+    <!-- Shared Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content -->
+    <main class="main">
+
+        <div class="dashboard-header">
+
+            <div id="header-container"></div>
+
+            <button class="btn btn-primary" id="newProjectBtn">
+                + New Project
+            </button>
+
+        </div>
+
+        <!-- Dashboard Statistics -->
+        <section class="stats">
+
+            <div class="card">
+                <div class="card-title">
+                    Total Projects
+                </div>
+
+                <div class="card-value" id="totalProjects">
+                    0
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    Active Projects
+                </div>
+
+                <div class="card-value" id="activeProjects">
+                    0
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    Completed Projects
+                </div>
+
+                <div class="card-value" id="completedProjects">
+                    0
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    Total Tasks
+                </div>
+
+                <div class="card-value" id="totalTasks">
+                    0
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- Projects -->
+        <section class="content-card">
+
+            <div class="content-header">
+
+                <h2>Projects</h2>
+
+                <button class="btn btn-primary">
+                    View All Projects
+                </button>
+
+            </div>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Project Name</th>
+                            <th>Owner</th>
+                            <th>Status</th>
+                            <th>Date Opened</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="projectsTable">
+
+                        <tr>
+                            <td colspan="5">
+                                No projects found.
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- New Project Modal -->
+    <div class="modal" id="projectModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>New Project</h2>
+                    <p>Create a new project in STS.</p>
+                </div>
+
+                <button class="modal-close" id="closeProjectModal">
+                    &times;
+                </button>
+
+            </div>
+
+
+            <form id="projectForm">
+
+                <div class="form-group">
+
+                    <label for="projectName">
+                        Project Name *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="projectName"
+                        required
+                        placeholder="Enter project name"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="projectFolderLink">
+                        Project Folder Link
+                    </label>
+
+                    <input
+                        type="url"
+                        id="projectFolderLink"
+                        placeholder="https://..."
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="projectOwner">
+                        Project Owner / Responsible Person
+                    </label>
+
+                    <input
+                        type="text"
+                        id="projectOwner"
+                        placeholder="Enter responsible person"
+                    >
+
+                </div>
+
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="projectStatus">
+                            Project Status
+                        </label>
+
+                        <select id="projectStatus">
+
+                            <option value="Not Started">
+                                Not Started
+                            </option>
+
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="On Hold">
+                                On Hold
+                            </option>
+
+                            <option value="Completed">
+                                Completed
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="dateOpened">
+                            Date Opened
+                        </label>
+
+                        <input
+                            type="date"
+                            id="dateOpened"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="dateClosed">
+                        Date Closed
+                    </label>
+
+                    <input
+                        type="date"
+                        id="dateClosed"
+                    >
+
+                </div>
+
+
+                <div class="form-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="cancelProjectBtn"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Create Project
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- Shared Components -->
+    <script src="/js/components.js"></script>
+
+    <!-- Dashboard Logic -->
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/app.js"></script>
 
 </body>
+
 </html>

@@ -1,0 +1,662 @@
+/* ============================================================
+   TASK PAGE
+   ============================================================ */
+
+
+/* ============================================================
+   TASK HEADER
+   ============================================================ */
+
+.header {
+    margin-bottom: 30px;
+}
+
+
+/* ============================================================
+   TASK STATISTICS
+   ============================================================ */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+
+/* ============================================================
+   TASK TABLE CONTAINER
+   ============================================================ */
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+/* ============================================================
+   TASK TABLE
+   ============================================================ */
+
+table {
+    width: 100%;
+    min-width: 1350px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+
+/* ============================================================
+   TABLE CELLS
+   ============================================================ */
+
+th,
+td {
+    padding: 14px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+}
+
+th {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f9fafb;
+    white-space: nowrap;
+}
+
+td {
+    font-size: 14px;
+    color: #374151;
+}
+
+
+/* ============================================================
+   COLUMN WIDTHS
+   ============================================================ */
+
+/* Task / Activity */
+th:nth-child(1),
+td:nth-child(1) {
+    width: 240px;
+}
+
+/* Procedure Stage */
+th:nth-child(2),
+td:nth-child(2) {
+    width: 160px;
+}
+
+/* Status */
+th:nth-child(3),
+td:nth-child(3) {
+    width: 130px;
+}
+
+/* Priority */
+th:nth-child(4),
+td:nth-child(4) {
+    width: 110px;
+}
+
+/* Responsible Person */
+th:nth-child(5),
+td:nth-child(5) {
+    width: 170px;
+}
+
+/* Due Date */
+th:nth-child(6),
+td:nth-child(6) {
+    width: 125px;
+}
+
+/* % Complete */
+th:nth-child(7),
+td:nth-child(7) {
+    width: 130px;
+}
+
+/* Actions */
+th:nth-child(8),
+td:nth-child(8) {
+    width: 285px;
+    min-width: 285px;
+}
+
+
+/* ============================================================
+   TABLE ROWS
+   ============================================================ */
+
+tbody tr:hover {
+    background: #f9fafb;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* ============================================================
+   ACTIONS COLUMN
+   ============================================================ */
+
+td:nth-child(8) {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+
+/* ============================================================
+   ACTION BUTTON CONTAINER
+   ============================================================ */
+
+.actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    flex-wrap: nowrap !important;
+
+    gap: 8px;
+
+    width: 100%;
+    min-width: 255px;
+
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   ACTION BUTTON
+   ============================================================ */
+
+.action-btn {
+    display: inline-flex !important;
+
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+
+    width: auto !important;
+    min-width: 0;
+
+    padding: 8px 12px;
+
+    border: none;
+    border-radius: 6px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        background 0.15s ease,
+        opacity 0.15s ease,
+        transform 0.1s ease;
+}
+
+.action-btn:hover {
+    opacity: 0.9;
+}
+
+.action-btn:active {
+    transform: translateY(1px);
+}
+
+
+/* ============================================================
+   REVIEW BUTTON
+   ============================================================ */
+
+.action-review {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.action-review:hover {
+    background: #1d4ed8;
+}
+
+
+/* ============================================================
+   EDIT BUTTON
+   ============================================================ */
+
+.action-edit {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.action-edit:hover {
+    background: #d1d5db;
+}
+
+
+/* ============================================================
+   DELETE BUTTON
+   ============================================================ */
+
+.delete-task-btn {
+    background-color: #dc2626 !important;
+    color: #ffffff !important;
+    border: 1px solid #dc2626 !important;
+}
+
+.delete-task-btn:hover {
+    background-color: #b91c1c !important;
+    color: #ffffff !important;
+}
+
+
+/* ============================================================
+   STATUS BADGES
+   ============================================================ */
+
+.status {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+/* Not Started */
+
+.status-not-started {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+
+/* In Progress */
+
+.status-in-progress {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+
+/* Completed */
+
+.status-completed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+
+/* On Hold */
+
+.status-on-hold {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+
+/* ============================================================
+   PRIORITY BADGES
+   ============================================================ */
+
+.priority {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+/* Low */
+
+.priority-low {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+
+/* Medium */
+
+.priority-medium {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+
+/* High */
+
+.priority-high {
+    background: #ffedd5;
+    color: #c2410c;
+}
+
+
+/* Critical */
+
+.priority-critical {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+
+/* ============================================================
+   PERCENT COMPLETE
+   ============================================================ */
+
+.progress-cell {
+    min-width: 100px;
+}
+
+.progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.progress-bar {
+    width: 70px;
+    height: 7px;
+
+    background: #e5e7eb;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+
+    background: #2563eb;
+
+    border-radius: 10px;
+}
+
+.progress-text {
+    font-size: 12px;
+    font-weight: 600;
+
+    color: #374151;
+
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   TASK MODAL
+   ============================================================ */
+
+.task-modal {
+    width: 700px;
+    max-width: 95%;
+    max-height: 85vh;
+
+    overflow-y: auto;
+}
+
+
+/* ============================================================
+   TASK SECTION
+   ============================================================ */
+
+.task-section {
+    margin-bottom: 15px;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 600;
+
+    margin-bottom: 10px;
+}
+
+
+/* ============================================================
+   COLLAPSIBLE SECTIONS
+   ============================================================ */
+
+.task-details {
+    border: 1px solid #ddd;
+
+    border-radius: 8px;
+
+    margin-bottom: 10px;
+
+    background: #ffffff;
+}
+
+.task-details summary {
+    cursor: pointer;
+
+    padding: 12px 14px;
+
+    font-weight: 600;
+    font-size: 14px;
+
+    list-style: none;
+}
+
+.task-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.task-details summary::after {
+    content: "+";
+
+    float: right;
+
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.task-details[open] summary::after {
+    content: "−";
+}
+
+.details-content {
+    padding: 0 14px 12px 14px;
+}
+
+
+/* ============================================================
+   TASK FORM
+   ============================================================ */
+
+.task-modal .form-group {
+    margin-bottom: 10px;
+}
+
+.task-modal label {
+    display: block;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    margin-bottom: 4px;
+}
+
+.task-modal input,
+.task-modal select,
+.task-modal textarea {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 10px 11px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
+
+    outline: none;
+}
+
+.task-modal textarea {
+    resize: vertical;
+}
+
+.task-modal input:focus,
+.task-modal select:focus,
+.task-modal textarea:focus {
+    border-color: #2563eb;
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+
+/* ============================================================
+   TWO COLUMN FORM ROWS
+   ============================================================ */
+
+.task-modal .form-row {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+}
+
+
+/* ============================================================
+   MODAL ACTIONS
+   ============================================================ */
+
+.task-modal .form-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 15px;
+
+    padding-top: 12px;
+
+    border-top: 1px solid #ddd;
+}
+
+
+/* ============================================================
+   REVIEW MODAL
+   ============================================================ */
+
+.review-value {
+    width: 100%;
+
+    padding: 11px 12px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 8px;
+
+    background: #f9fafb;
+
+    font-size: 14px;
+
+    min-height: 40px;
+
+    box-sizing: border-box;
+}
+
+.review-text {
+    white-space: pre-wrap;
+
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   EMPTY TABLE
+   ============================================================ */
+
+.empty-state {
+    text-align: center;
+
+    padding: 30px 20px;
+
+    color: #6b7280;
+}
+
+
+/* ============================================================
+   TASK RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1000px) {
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .task-modal {
+        width: 100%;
+        max-width: 100%;
+        max-height: 90vh;
+    }
+
+    .task-modal .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 1350px;
+    }
+
+    /*
+       Keep the action buttons together
+       even on small screens.
+    */
+
+    td:nth-child(8) {
+        min-width: 285px;
+    }
+
+    .actions {
+        min-width: 255px;
+    }
+
+}
