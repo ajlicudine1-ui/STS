@@ -51,14 +51,8 @@ app.use(
 );
 
 
-app.get("/api/test", (req, res) => {
-    res.json({
-        success: true,
-        message: "Express API is working on Vercel",
-        path: req.path,
-        originalUrl: req.originalUrl
-    });
-}); 
+
+
 // ============================================================
 // HOME PAGE
 // ============================================================
