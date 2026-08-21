@@ -50,6 +50,15 @@ app.use(
     )
 );
 
+
+app.get("/api/test", (req, res) => {
+    res.json({
+        success: true,
+        message: "Express API is working on Vercel",
+        path: req.path,
+        originalUrl: req.originalUrl
+    });
+}); 
 // ============================================================
 // HOME PAGE
 // ============================================================
@@ -406,6 +415,9 @@ app.post("/api/projects", async (req, res) => {
 // ============================================================
 // GET TASKS FOR A PROJECT
 // ============================================================
+
+
+
 
 app.get("/api/projects/:projectId/tasks", async (req, res) => {
 
