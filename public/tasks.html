@@ -1,965 +1,993 @@
-// ============================================================
-// GET PROJECT ID FROM URL
-// ============================================================
+<!DOCTYPE html>
+<html lang="en">
 
-const urlParams = new URLSearchParams(window.location.search);
-const projectId = urlParams.get("project_id");
+<head>
 
-// ============================================================
-// CHECK PROJECT ID
-// ============================================================
+    <meta charset="UTF-8">
 
-if (!projectId) {
-    alert("No project selected.");
-    window.location.href = "/";
-}
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-// ============================================================
-// TASK MODAL ELEMENTS
-// ============================================================
+    <title>STS - Project Tasks</title>
 
-const taskModal = document.getElementById("taskModal");
-const newTaskBtn = document.getElementById("newTaskBtn");
-const closeTaskModal = document.getElementById("closeTaskModal");
-const cancelTaskBtn = document.getElementById("cancelTaskBtn");
+    <!-- Shared CSS -->
+    <link
+        rel="stylesheet"
+        href="/css/global.css">
 
-const taskForm = document.getElementById("taskForm");
+    <!-- Task Page CSS -->
+    <link
+        rel="stylesheet"
+        href="/css/tasks.css">
 
-const taskModalTitle = document.getElementById("taskModalTitle");
-const taskModalSubtitle = document.getElementById("taskModalSubtitle");
-const taskSubmitBtn = document.getElementById("taskSubmitBtn");
+</head>
 
-// ============================================================
-// EDITING STATE
-// ============================================================
+<body>
 
-let editingTaskId = null;
+    <!-- =====================================================
+         SHARED SIDEBAR
+         ===================================================== -->
 
-// ============================================================
-// HELPER: SET INPUT VALUE
-// ============================================================
+    <div id="sidebar-container"></div>
 
-function setValue(id, value) {
-    const element = document.getElementById(id);
 
-    if (element) {
-        element.value = value ?? "";
-    }
-}
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
 
-// ============================================================
-// OPEN NEW TASK MODAL
-// ============================================================
+    <main class="main">
 
-newTaskBtn.addEventListener("click", () => {
 
-    editingTaskId = null;
+        <!-- =================================================
+             PAGE HEADER
+             Task-specific content stays HERE
+             ================================================= -->
 
-    taskForm.reset();
+        <div class="header">
 
-    setValue("percentComplete", 0);
+            <div>
 
-    taskModalTitle.textContent = "New Task";
+                <h1 id="projectTitle">
+                    Project Tasks
+                </h1>
 
-    taskModalSubtitle.textContent =
-        "Add a task to this project.";
+                <p id="projectSubtitle">
+                    Manage project activities and progress.
+                </p>
 
-    taskSubmitBtn.textContent = "Create Task";
+            </div>
 
-    taskModal.classList.add("show");
-});
 
-// ============================================================
-// CLOSE TASK MODAL
-// ============================================================
+            <button
+                class="btn btn-primary"
+                id="newTaskBtn">
 
-function closeModal() {
+                + New Task
 
-    taskModal.classList.remove("show");
+            </button>
 
-    editingTaskId = null;
+        </div>
 
-    taskForm.reset();
 
-    setValue("percentComplete", 0);
+        <!-- =================================================
+             TASK STATISTICS
+             ================================================= -->
 
-    taskModalTitle.textContent = "New Task";
+        <section class="stats">
 
-    taskModalSubtitle.textContent =
-        "Add a task to this project.";
 
-    taskSubmitBtn.textContent = "Create Task";
-}
+            <div class="card stat-card total">
 
-closeTaskModal.addEventListener("click", closeModal);
+                <div class="card-title stat-title">
+                    Total Tasks
+                </div>
 
-cancelTaskBtn.addEventListener("click", closeModal);
+                <div
+                    class="card-value stat-value"
+                    id="taskTotal">
 
-// ============================================================
-// CLOSE MODAL WHEN CLICKING OUTSIDE
-// ============================================================
+                    0
 
-taskModal.addEventListener("click", (event) => {
-
-    if (event.target === taskModal) {
-        closeModal();
-    }
-
-});
-
-// ============================================================
-// OPEN EDIT TASK MODAL
-// ============================================================
-
-function openEditTaskModal(task) {
-
-    console.log("Opening task for edit:", task);
-
-    // Store ID
-    editingTaskId = task.task_id;
-
-    // Change modal title
-    taskModalTitle.textContent = "Edit Task";
-
-    taskModalSubtitle.textContent =
-        "Update the information for this task.";
-
-    taskSubmitBtn.textContent = "Update Task";
-
-    // ========================================================
-    // BASIC INFORMATION
-    // ========================================================
-
-    setValue(
-        "taskActivity",
-        task.task_activity
-    );
-
-    setValue(
-        "procedureStage",
-        task.procedure_stage
-    );
-
-    setValue(
-        "taskStatus",
-        task.status
-    );
-
-    // ========================================================
-    // ASSIGNMENT & SCHEDULE
-    // ========================================================
+                </div>
 
-    setValue(
-        "taskPriority",
-        task.priority
-    );
+            </div>
 
-    setValue(
-        "scheduleStatus",
-        task.schedule_status
-    );
 
-    setValue(
-        "responsiblePerson",
-        task.responsible_person
-    );
+            <div class="card stat-card not-started">
 
-    setValue(
-        "taskRole",
-        task.role
-    );
+                <div class="card-title stat-title">
+                    Not Started
+                </div>
 
-    setValue(
-        "stakeholderEndUser",
-        task.stakeholder_end_user
-    );
+                <div
+                    class="card-value stat-value"
+                    id="taskNotStarted">
 
-    // ========================================================
-    // DATES
-    // ========================================================
+                    0
 
-    setValue(
-        "startDate",
-        task.start_date
-            ? task.start_date.substring(0, 10)
-            : ""
-    );
+                </div>
 
-    setValue(
-        "dueDate",
-        task.due_date
-            ? task.due_date.substring(0, 10)
-            : ""
-    );
+            </div>
 
-    setValue(
-        "completionDate",
-        task.completion_date
-            ? task.completion_date.substring(0, 10)
-            : ""
-    );
 
-    // ========================================================
-    // PROGRESS
-    // ========================================================
+            <div class="card stat-card in-progress">
 
-    setValue(
-        "percentComplete",
-        task.percent_complete ?? 0
-    );
+                <div class="card-title stat-title">
+                    In Progress
+                </div>
 
-    // ========================================================
-    // ADDITIONAL DETAILS
-    // ========================================================
+                <div
+                    class="card-value stat-value"
+                    id="taskInProgress">
 
-    setValue(
-        "deliverableExpectedOutput",
-        task.deliverable_expected_output
-    );
+                    0
 
-    setValue(
-        "evidenceApplicability",
-        task.evidence_applicability
-    );
+                </div>
 
-    // ========================================================
-    // OPEN MODAL
-    // ========================================================
+            </div>
 
-    taskModal.classList.add("show");
-}
 
-// ============================================================
-// REVIEW MODAL
-// ============================================================
+            <div class="card stat-card completed">
 
-const reviewModal =
-    document.getElementById("reviewModal");
+                <div class="card-title stat-title">
+                    Completed
+                </div>
 
-const closeReviewModalBtn =
-    document.getElementById("closeReviewModal");
+                <div
+                    class="card-value stat-value"
+                    id="taskCompleted">
 
-const cancelReviewBtn =
-    document.getElementById("cancelReviewBtn");
+                    0
 
-const reviewForm =
-    document.getElementById("reviewForm");
+                </div>
 
-let currentReviewTaskId = null;
+            </div>
 
-// ============================================================
-// CLOSE REVIEW MODAL
-// ============================================================
 
-function closeReviewModal() {
+        </section>
 
-    reviewModal.classList.remove("show");
 
-    currentReviewTaskId = null;
-}
+        <!-- =================================================
+             TASK TABLE
+             ================================================= -->
 
-closeReviewModalBtn.addEventListener(
-    "click",
-    closeReviewModal
-);
+        <section class="content-card">
 
-cancelReviewBtn.addEventListener(
-    "click",
-    closeReviewModal
-);
 
-// ============================================================
-// CLOSE REVIEW MODAL OUTSIDE CLICK
-// ============================================================
+            <div class="content-header">
 
-reviewModal.addEventListener("click", (event) => {
+                <h2>
+                    Tasks
+                </h2>
 
-    if (event.target === reviewModal) {
-        closeReviewModal();
-    }
+            </div>
 
-});
 
-// ============================================================
-// OPEN REVIEW MODAL
-// ============================================================
+            <div class="table-container">
 
-function openReviewModal(task) {
+                <table class="tasks-table">
 
-    currentReviewTaskId = task.task_id;
+                    <thead>
 
-    // ========================================================
-    // TASK INFORMATION
-    // ========================================================
+                        <tr>
 
-    document.getElementById("reviewTaskName").textContent =
-        task.task_activity || "-";
+                            <th>
+                                Task / Activity
+                            </th>
 
-    document.getElementById("reviewResponsiblePerson").textContent =
-        task.responsible_person || "-";
+                            <th>
+                                Procedure Stage
+                            </th>
 
-    document.getElementById("reviewStatus").textContent =
-        task.status || "-";
+                            <th>
+                                Status
+                            </th>
 
-    document.getElementById("reviewPercentComplete").textContent =
-        `${task.percent_complete ?? 0}%`;
+                            <th>
+                                Priority
+                            </th>
 
-    document.getElementById("reviewExpectedOutput").textContent =
-        task.deliverable_expected_output || "-";
+                            <th>
+                                Responsible Person
+                            </th>
 
-    // ========================================================
-    // EXISTING REVIEW DATA
-    // ========================================================
+                            <th>
+                                Due Date
+                            </th>
 
-    setValue(
-        "reviewedVerifiedBy",
-        task.reviewed_verified_by
-    );
+                            <th>
+                                % Complete
+                            </th>
 
-    setValue(
-        "reviewResult",
-        task.review_result
-    );
+                            <th>
+                                Actions
+                            </th>
 
-    setValue(
-        "reviewDate",
-        task.review_date
-            ? task.review_date.substring(0, 10)
-            : ""
-    );
+                        </tr>
 
-    setValue(
-        "reviewRemarks",
-        task.remarks
-    );
+                    </thead>
 
-    reviewModal.classList.add("show");
-}
 
-// ============================================================
-// LOAD TASKS
-// ============================================================
+                    <tbody id="tasksTable">
 
-async function loadTasks() {
+                        <tr>
 
-    try {
+                            <td colspan="8">
+                                No tasks found.
+                            </td>
 
-        const response = await fetch(
-            `/api/projects/${projectId}/tasks`
-        );
+                        </tr>
 
-        if (!response.ok) {
-            throw new Error("Failed to load tasks.");
-        }
+                    </tbody>
 
-        const data = await response.json();
+                </table>
 
-        console.log("Tasks loaded:", data);
+            </div>
 
-        const tasks = data.tasks || [];
+        </section>
 
-        // ====================================================
-        // STATISTICS
-        // ====================================================
+    </main>
 
-        document.getElementById("taskTotal").textContent =
-            tasks.length;
 
-        document.getElementById("taskNotStarted").textContent =
-            tasks.filter(
-                task => task.status === "Not Started"
-            ).length;
 
-        document.getElementById("taskInProgress").textContent =
-            tasks.filter(
-                task => task.status === "In Progress"
-            ).length;
+    <!-- =====================================================
+         NEW TASK MODAL
+         ===================================================== -->
 
-        document.getElementById("taskCompleted").textContent =
-            tasks.filter(
-                task => task.status === "Completed"
-            ).length;
+    <div
+        class="modal"
+        id="taskModal">
 
-        // ====================================================
-        // TABLE
-        // ====================================================
+        <div class="modal-content task-modal">
 
-        const table =
-            document.getElementById("tasksTable");
 
-        table.innerHTML = "";
+            <!-- MODAL HEADER -->
 
-        if (tasks.length === 0) {
+            <div class="modal-header">
 
-            table.innerHTML = `
-                <tr>
-                    <td colspan="8">
-                        No tasks found.
-                    </td>
-                </tr>
-            `;
+                <div>
 
-            return;
-        }
+                    <h2 id="taskModalTitle">
+                        New Task
+                    </h2>
 
-        // ====================================================
-        // DISPLAY TASKS
-        // ====================================================
+                    <p id="taskModalSubtitle">
+                        Add a task to this project.
+                    </p>
+                </div>
 
-        tasks.forEach(task => {
 
-            const row =
-                document.createElement("tr");
+                <button
+                    class="modal-close"
+                    id="closeTaskModal">
 
-            // =================================================
-            // STATUS CLASS
-            // =================================================
+                    &times;
 
-            let statusClass = "status-pending";
+                </button>
 
-            if (task.status === "In Progress") {
-                statusClass = "status-active";
-            }
+            </div>
 
-            if (task.status === "Completed") {
-                statusClass = "status-completed";
-            }
 
-            if (task.status === "On Hold") {
-                statusClass = "status-pending";
-            }
 
-            // =================================================
-            // TABLE ROW
-            // =================================================
+            <!-- =================================================
+                 CREATE TASK FORM
+                 ================================================= -->
 
-            row.innerHTML = `
-                <td>
-                    ${task.task_activity || "-"}
-                </td>
+            <form id="taskForm">
 
-                <td>
-                    ${task.procedure_stage || "-"}
-                </td>
 
-                <td>
-                    <span class="status ${statusClass}">
-                        ${task.status || "-"}
-                    </span>
-                </td>
+                <!-- BASIC TASK INFORMATION -->
 
-                <td>
-                    ${task.priority || "-"}
-                </td>
+                <div class="task-section">
 
-                <td>
-                    ${task.responsible_person || "-"}
-                </td>
+                    <div class="section-title">
+                        Basic Task Information
+                    </div>
 
-                <td>
-                    ${task.due_date
-                        ? task.due_date.substring(0, 10)
-                        : "-"
-                    }
-                </td>
 
-                <td>
-                    ${task.percent_complete ?? 0}%
-                </td>
+                    <div class="form-group">
 
-                <td>
+                        <label for="taskActivity">
+                            Task / Activity *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="taskActivity"
+                            required
+                            placeholder="Enter task or activity">
+
+                    </div>
+
+
+                    <div class="form-row">
+
+
+                        <div class="form-group">
+
+                            <label for="procedureStage">
+                                Procedure Stage
+                            </label>
+
+                            <select id="procedureStage">
+
+                                <option value="">
+                                    Select Stage
+                                </option>
+
+                                <option value="Planning">
+                                    Planning
+                                </option>
+
+                                <option value="Requirements">
+                                    Requirements
+                                </option>
+
+                                <option value="Design">
+                                    Design
+                                </option>
+
+                                <option value="Development">
+                                    Development
+                                </option>
+
+                                <option value="Testing">
+                                    Testing
+                                </option>
+
+                                <option value="Implementation">
+                                    Implementation
+                                </option>
+
+                                <option value="Maintenance">
+                                    Maintenance
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="taskStatus">
+                                Status
+                            </label>
+
+                            <select id="taskStatus">
+
+                                <option value="Not Started">
+                                    Not Started
+                                </option>
+
+                                <option value="In Progress">
+                                    In Progress
+                                </option>
+
+                                <option value="Completed">
+                                    Completed
+                                </option>
+
+                                <option value="On Hold">
+                                    On Hold
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ASSIGNMENT & SCHEDULE -->
+
+                <details class="task-details">
+
+                    <summary>
+                        Assignment & Schedule
+                    </summary>
+
+
+                    <div class="details-content">
+
+
+                        <div class="form-row">
+
+
+                            <div class="form-group">
+
+                                <label for="taskPriority">
+                                    Priority
+                                </label>
+
+                                <select id="taskPriority">
+
+                                    <option value="">
+                                        Select Priority
+                                    </option>
+
+                                    <option value="Low">
+                                        Low
+                                    </option>
+
+                                    <option value="Medium">
+                                        Medium
+                                    </option>
+
+                                    <option value="High">
+                                        High
+                                    </option>
+
+                                    <option value="Critical">
+                                        Critical
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="scheduleStatus">
+                                    Schedule Status
+                                </label>
+
+                                <select id="scheduleStatus">
+
+                                    <option value="">
+                                        Select Schedule
+                                    </option>
+
+
+                                    <option value="On Schedule">
+                                        On Schedule
+                                    </option>
+
+                                    <option value="Delayed">
+                                        Delayed
+                                    </option>
+
+                                    <option value="Ahead of Schedule">
+                                        Ahead of Schedule
+                                    </option>
+
+                                    <option value="At Risk">
+                                        At Risk
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-row">
+
+
+                            <div class="form-group">
+
+                                <label for="responsiblePerson">
+                                    Responsible Person
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="responsiblePerson"
+                                    placeholder="Enter responsible person">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="taskRole">
+                                    Role
+                                </label>
+
+                                <select id="taskRole">
+
+                                    <option value="">
+                                        Select Role
+                                    </option>
+
+                                    <option value="Project Owner">
+                                        Project Owner
+                                    </option>
+
+                                    <option value="Project Manager">
+                                        Project Manager
+                                    </option>
+
+                                    <option value="Developer">
+                                        Developer
+                                    </option>
+
+                                    <option value="Designer">
+                                        Designer
+                                    </option>
+
+                                    <option value="Tester">
+                                        Tester
+                                    </option>
+
+                                    <option value="Reviewer">
+                                        Reviewer
+                                    </option>
+
+                                    <option value="End User">
+                                        End User
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="stakeholderEndUser">
+                                Stakeholder / End-user
+                            </label>
+
+                            <input
+                                type="text"
+                                id="stakeholderEndUser"
+                                placeholder="Enter stakeholder">
+
+                        </div>
+
+                    </div>
+
+                </details>
+
+
+
+                <!-- DATES & PROGRESS -->
+
+                <details class="task-details">
+
+                    <summary>
+                        Dates & Progress
+                    </summary>
+
+
+                    <div class="details-content">
+
+
+                        <div class="form-row">
+
+
+                            <div class="form-group">
+
+                                <label for="startDate">
+                                    Start Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="startDate">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="dueDate">
+                                    Due Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="dueDate">
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="completionDate">
+                                Completion Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="completionDate">
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="percentComplete">
+                                % Complete
+                            </label>
+
+                            <input
+                                type="number"
+                                id="percentComplete"
+                                min="0"
+                                max="100"
+                                step="1"
+                                value="0">
+
+                        </div>
+
+                    </div>
+
+                </details>
+
+
+
+                <!-- ADDITIONAL DETAILS -->
+
+                <details class="task-details">
+
+                    <summary>
+                        Additional Details
+                    </summary>
+
+
+                    <div class="details-content">
+
+
+                        <div class="form-group">
+
+                            <label for="deliverableExpectedOutput">
+                                Deliverable / Expected Output
+                            </label>
+
+                            <textarea
+                                id="deliverableExpectedOutput"
+                                placeholder="Enter expected output"
+                                rows="2"></textarea>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="evidenceApplicability">
+                                Evidence Applicability
+                            </label>
+
+                            <select id="evidenceApplicability">
+
+                                <option value="">
+                                    Select
+                                </option>
+
+                                <option value="Applicable">
+                                    Applicable
+                                </option>
+
+                                <option value="Not Applicable">
+                                    Not Applicable
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </details>
+
+
+
+                <!-- ACTIONS -->
+
+                <div class="form-actions">
 
                     <button
                         type="button"
-                        class="btn btn-primary review-task-btn">
+                        class="btn btn-secondary"
+                        id="cancelTaskBtn">
+
+                        Cancel
+
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="taskSubmitBtn">
+
+                        Create Task
+
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         REVIEW TASK MODAL
+         ===================================================== -->
+
+    <div
+        class="modal"
+        id="reviewModal">
+
+        <div class="modal-content task-modal">
+
+
+            <!-- REVIEW HEADER -->
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        Review Task
+                    </h2>
+
+                    <p>
+                        Check the task output and record the review result.
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="modal-close"
+                    id="closeReviewModal">
+
+                    &times;
+
+                </button>
+
+            </div>
+
+
+
+            <!-- TASK INFORMATION -->
+
+            <div class="task-section">
+
+                <div class="section-title">
+                    Task Information
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Task / Activity
+                    </label>
+
+                    <div
+                        class="review-value"
+                        id="reviewTaskName">
+
+                        -
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-row">
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Responsible Person
+                        </label>
+
+                        <div
+                            class="review-value"
+                            id="reviewResponsiblePerson">
+
+                            -
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Current Status
+                        </label>
+
+                        <div
+                            class="review-value"
+                            id="reviewStatus">
+
+                            -
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        % Complete
+                    </label>
+
+                    <div
+                        class="review-value"
+                        id="reviewPercentComplete">
+
+                        0%
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Deliverable / Expected Output
+                    </label>
+
+                    <div
+                        class="review-value review-text"
+                        id="reviewExpectedOutput">
+
+                        -
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- REVIEW FORM -->
+
+            <form id="reviewForm">
+
+                <div class="task-section">
+
+                    <div class="section-title">
                         Review
-                    </button>
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="reviewedVerifiedBy">
+                            Reviewed / Verified By *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="reviewedVerifiedBy"
+                            required
+                            placeholder="Enter reviewer name">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="reviewResult">
+                            Review Result *
+                        </label>
+
+                        <select
+                            id="reviewResult"
+                            required>
+
+                            <option value="">
+                                Select Result
+                            </option>
+
+                            <option value="Approved">
+                                Approved
+                            </option>
+
+                            <option value="For Revision">
+                                For Revision
+                            </option>
+
+                            <option value="Rejected">
+                                Rejected
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="reviewDate">
+                            Review Date *
+                        </label>
+
+                        <input
+                            type="date"
+                            id="reviewDate"
+                            required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="reviewRemarks">
+                            Review Remarks
+                        </label>
+
+                        <textarea
+                            id="reviewRemarks"
+                            placeholder="Enter review comments, findings, or required revisions."
+                            rows="4"></textarea>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- REVIEW ACTIONS -->
+
+                <div class="form-actions">
 
                     <button
                         type="button"
-                        class="btn btn-secondary edit-task-btn">
-                        Edit
+                        class="btn btn-secondary"
+                        id="cancelReviewBtn">
+
+                        Cancel
+
                     </button>
+
 
                     <button
-                        type="button"
-                        class="btn btn-danger delete-task-btn">
-                        Delete
+                        type="submit"
+                        class="btn btn-primary">
+
+                        Submit Review
+
                     </button>
 
-                </td>
-            `;
+                </div>
 
-            table.appendChild(row);
+            </form>
 
-            // =================================================
-            // REVIEW BUTTON
-            // =================================================
+        </div>
 
-            const reviewBtn =
-                row.querySelector(".review-task-btn");
+    </div>
 
-            reviewBtn.addEventListener("click", () => {
 
-                openReviewModal(task);
 
-            });
+    <!-- =====================================================
+         JAVASCRIPT
+         ===========================================a========== -->
 
-            // =================================================
-            // EDIT BUTTON
-            // =================================================
+    <!-- Loads shared components -->
+    <script src="/js/components.js"></script>
 
-            const editBtn =
-                row.querySelector(".edit-task-btn");
+    <!-- Task page functionality -->
+    <script src="/js/tasks.js"></script>
 
-            editBtn.addEventListener("click", () => {
+</body>
 
-                openEditTaskModal(task);
-
-            });
-
-            // =================================================
-            // DELETE BUTTON
-            // =================================================
-
-            const deleteBtn =
-                row.querySelector(".delete-task-btn");
-
-            deleteBtn.addEventListener(
-                "click",
-                async () => {
-
-                    const confirmed = confirm(
-                        "Are you sure you want to delete this task?"
-                    );
-
-                    if (!confirmed) {
-                        return;
-                    }
-
-                    try {
-
-                        const response =
-                            await fetch(
-                                `/api/tasks/${task.task_id}`,
-                                {
-                                    method: "DELETE"
-                                }
-                            );
-
-                        const result =
-                            await response.json();
-
-                        if (!response.ok) {
-
-                            throw new Error(
-                                result.error ||
-                                "Failed to delete task."
-                            );
-
-                        }
-
-                        alert(
-                            "Task deleted successfully!"
-                        );
-
-                        await loadTasks();
-
-                    } catch (error) {
-
-                        console.error(
-                            "Delete task error:",
-                            error
-                        );
-
-                        alert(
-                            "Error: " +
-                            error.message
-                        );
-
-                    }
-
-                }
-            );
-
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Load tasks error:",
-            error
-        );
-
-        alert(
-            "Error loading tasks: " +
-            error.message
-        );
-
-    }
-}
-
-// ============================================================
-// CREATE / UPDATE TASK
-// ============================================================
-
-taskForm.addEventListener(
-    "submit",
-    async (event) => {
-
-        event.preventDefault();
-
-        // ====================================================
-        // COLLECT FORM DATA
-        // ====================================================
-
-        const taskData = {
-
-            procedure_stage:
-                document.getElementById(
-                    "procedureStage"
-                ).value.trim(),
-
-            task_activity:
-                document.getElementById(
-                    "taskActivity"
-                ).value.trim(),
-
-            status:
-                document.getElementById(
-                    "taskStatus"
-                ).value,
-
-            schedule_status:
-                document.getElementById(
-                    "scheduleStatus"
-                ).value,
-
-            priority:
-                document.getElementById(
-                    "taskPriority"
-                ).value,
-
-            responsible_person:
-                document.getElementById(
-                    "responsiblePerson"
-                ).value.trim(),
-
-            role:
-                document.getElementById(
-                    "taskRole"
-                ).value,
-
-            stakeholder_end_user:
-                document.getElementById(
-                    "stakeholderEndUser"
-                ).value.trim(),
-
-            start_date:
-                document.getElementById(
-                    "startDate"
-                ).value || null,
-
-            due_date:
-                document.getElementById(
-                    "dueDate"
-                ).value || null,
-
-            completion_date:
-                document.getElementById(
-                    "completionDate"
-                ).value || null,
-
-            deliverable_expected_output:
-                document.getElementById(
-                    "deliverableExpectedOutput"
-                ).value.trim(),
-
-            evidence_applicability:
-                document.getElementById(
-                    "evidenceApplicability"
-                ).value,
-
-            percent_complete:
-                document.getElementById(
-                    "percentComplete"
-                ).value || 0
-        };
-
-        console.log(
-            "Task data:",
-            taskData
-        );
-
-        // ====================================================
-        // DETERMINE CREATE OR UPDATE
-        // ====================================================
-
-        const isEditing =
-            editingTaskId !== null;
-
-        let url;
-        let method;
-
-        if (isEditing) {
-
-            url =
-                `/api/tasks/${editingTaskId}`;
-
-            method = "PUT";
-
-        } else {
-
-            url =
-                `/api/projects/${projectId}/tasks`;
-
-            method = "POST";
-
-        }
-
-        console.log("Request:", method, url);
-
-        // ====================================================
-        // SEND REQUEST
-        // ====================================================
-
-        try {
-
-            const response =
-                await fetch(
-                    url,
-                    {
-                        method: method,
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify(taskData)
-                    }
-                );
-
-            const result =
-                await response.json();
-
-            console.log(
-                "Server response:",
-                result
-            );
-
-            if (!response.ok) {
-
-                throw new Error(
-                    result.error ||
-                    (
-                        isEditing
-                            ? "Failed to update task."
-                            : "Failed to create task."
-                    )
-                );
-
-            }
-
-            // =================================================
-            // SUCCESS
-            // =================================================
-
-            if (isEditing) {
-
-                alert(
-                    "Task updated successfully!"
-                );
-
-            } else {
-
-                alert(
-                    "Task created successfully!"
-                );
-
-            }
-
-            // =================================================
-            // RESET
-            // =================================================
-
-            taskForm.reset();
-
-            setValue(
-                "percentComplete",
-                0
-            );
-
-            closeModal();
-
-            await loadTasks();
-
-        } catch (error) {
-
-            console.error(
-                isEditing
-                    ? "Update task error:"
-                    : "Create task error:",
-                error
-            );
-
-            alert(
-                "Error: " +
-                error.message
-            );
-
-        }
-
-    }
-);
-
-// ============================================================
-// SUBMIT REVIEW
-// ============================================================
-
-reviewForm.addEventListener(
-    "submit",
-    async (event) => {
-
-        event.preventDefault();
-
-        if (!currentReviewTaskId) {
-
-            alert(
-                "No task selected for review."
-            );
-
-            return;
-        }
-
-        // ====================================================
-        // REVIEW DATA
-        // ====================================================
-
-        const reviewData = {
-
-            reviewed_verified_by:
-                document.getElementById(
-                    "reviewedVerifiedBy"
-                ).value.trim(),
-
-            review_result:
-                document.getElementById(
-                    "reviewResult"
-                ).value,
-
-            review_date:
-                document.getElementById(
-                    "reviewDate"
-                ).value || null,
-
-            remarks:
-                document.getElementById(
-                    "reviewRemarks"
-                ).value.trim()
-
-        };
-
-        // ====================================================
-        // VALIDATION
-        // ====================================================
-
-        if (!reviewData.reviewed_verified_by) {
-
-            alert(
-                "Please enter the name of the reviewer."
-            );
-
-            return;
-        }
-
-        if (!reviewData.review_result) {
-
-            alert(
-                "Please select a review result."
-            );
-
-            return;
-        }
-
-        if (!reviewData.review_date) {
-
-            alert(
-                "Please enter the review date."
-            );
-
-            return;
-        }
-
-        // ====================================================
-        // SEND REVIEW
-        // ====================================================
-
-        try {
-
-            const response =
-                await fetch(
-                    `/api/tasks/${currentReviewTaskId}/review`,
-                    {
-                        method: "PUT",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify(reviewData)
-                    }
-                );
-
-            const result =
-                await response.json();
-
-            console.log(
-                "Review response:",
-                result
-            );
-
-            if (!response.ok) {
-
-                throw new Error(
-                    result.error ||
-                    "Failed to submit review."
-                );
-
-            }
-
-            alert(
-                "Task review submitted successfully!"
-            );
-
-            reviewForm.reset();
-
-            closeReviewModal();
-
-            await loadTasks();
-
-        } catch (error) {
-
-            console.error(
-                "Submit review error:",
-                error
-            );
-
-            alert(
-                "Error: " +
-                error.message
-            );
-
-        }
-
-    }
-);
-
-// ============================================================
-// INITIAL LOAD
-// ============================================================
-
-loadTasks();
+</html>
