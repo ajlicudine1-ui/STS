@@ -21,43 +21,33 @@ body {
 
 .sidebar {
     position: fixed;
-
     left: 0;
     top: 0;
-
     width: 240px;
     height: 100vh;
 
-    background: #1f2937;
+    /* GREEN SIDEBAR */
+    background: #2e7d32;
 
     color: white;
-
     padding: 24px 16px;
-
     z-index: 9999;
 }
 
 .logo {
     font-size: 22px;
-
     font-weight: bold;
-
     margin-bottom: 35px;
 }
 
 .nav-item {
     display: block;
-
     padding: 12px 14px;
-
     margin-bottom: 6px;
-
     border-radius: 8px;
 
-    color: #d1d5db;
-
+    color: #e8f5e9;
     text-decoration: none;
-
     cursor: pointer;
 
     transition:
@@ -67,8 +57,7 @@ body {
 
 .nav-item:hover,
 .nav-item.active {
-    background: #2e7d32;
-
+    background: #1b5e20;
     color: white;
 }
 
@@ -79,13 +68,9 @@ body {
 
 .main {
     margin-left: 240px;
-
     min-height: 100vh;
-
     padding: 30px;
-
     position: relative;
-
     z-index: 1;
 }
 
@@ -96,21 +81,18 @@ body {
 
 .header {
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
-
     margin-bottom: 30px;
 }
 
 .header h1 {
     font-size: 28px;
+    color: #1b5e20;
 }
 
 .header p {
     color: #6b7280;
-
     margin-top: 5px;
 }
 
@@ -121,13 +103,9 @@ body {
 
 .btn {
     border: none;
-
     padding: 10px 16px;
-
     border-radius: 8px;
-
     cursor: pointer;
-
     font-weight: bold;
 
     transition:
@@ -144,25 +122,23 @@ body {
 
 .btn-primary {
     background: #2e7d32;
-
     color: white;
 }
 
 .btn-primary:hover {
-    background: #256b2a;
+    background: #1b5e20;
 }
 
 
 /* Secondary */
 
 .btn-secondary {
-    background: #e5e7eb;
-
-    color: #374151;
+    background: #e8f5e9;
+    color: #1b5e20;
 }
 
 .btn-secondary:hover {
-    background: #d1d5db;
+    background: #c8e6c9;
 }
 
 
@@ -172,19 +148,14 @@ body {
 
 .modal {
     display: none;
-
     position: fixed;
-
     z-index: 10000;
-
     inset: 0;
 
     background: rgba(0, 0, 0, 0.45);
 
     align-items: center;
-
     justify-content: center;
-
     padding: 20px;
 }
 
@@ -194,13 +165,10 @@ body {
 
 .modal-content {
     width: 100%;
-
     max-width: 650px;
 
     background: white;
-
     border-radius: 14px;
-
     padding: 28px;
 
     box-shadow:
@@ -209,35 +177,27 @@ body {
 
 .modal-header {
     display: flex;
-
     justify-content: space-between;
-
     align-items: flex-start;
-
     margin-bottom: 25px;
 }
 
 .modal-header h2 {
     font-size: 22px;
-
     margin-bottom: 5px;
+    color: #1b5e20;
 }
 
 .modal-header p {
     color: #6b7280;
-
     font-size: 14px;
 }
 
 .modal-close {
     border: none;
-
     background: transparent;
-
     font-size: 28px;
-
     color: #6b7280;
-
     cursor: pointer;
 }
 
@@ -256,26 +216,21 @@ body {
 
 .form-group label {
     display: block;
-
     font-size: 14px;
-
     font-weight: bold;
-
     margin-bottom: 7px;
+    color: #1b5e20;
 }
 
 .form-group input,
 .form-group select {
     width: 100%;
-
     padding: 11px 12px;
 
     border: 1px solid #d1d5db;
-
     border-radius: 8px;
 
     font-size: 14px;
-
     outline: none;
 
     transition:
@@ -296,19 +251,14 @@ body {
 
 .form-row {
     display: grid;
-
     grid-template-columns: 1fr 1fr;
-
     gap: 15px;
 }
 
 .form-actions {
     display: flex;
-
     justify-content: flex-end;
-
     gap: 10px;
-
     margin-top: 25px;
 }
 
@@ -319,40 +269,34 @@ body {
 
 .status {
     display: inline-block;
-
     padding: 5px 10px;
-
     border-radius: 20px;
 
     font-size: 12px;
-
     font-weight: bold;
 }
 
 
-/* Active - GREEN */
+/* Active */
 
 .status-active {
     background: #dcfce7;
-
     color: #166534;
 }
 
 
-/* Completed - GREEN */
+/* Completed */
 
 .status-completed {
     background: #d1fae5;
-
     color: #166534;
 }
 
 
-/* Pending - GOLD/YELLOW */
+/* Pending */
 
 .status-pending {
     background: #fef3c7;
-
     color: #92400e;
 }
 
@@ -361,14 +305,12 @@ body {
    GREEN ACCENT ELEMENTS
    ============================================================ */
 
-/* Links */
-
 a {
     color: #2e7d32;
 }
 
 a:hover {
-    color: #256b2a;
+    color: #1b5e20;
 }
 
 
@@ -376,7 +318,6 @@ a:hover {
 
 ::selection {
     background: #c8e6c9;
-
     color: #1b5e20;
 }
 
@@ -389,17 +330,13 @@ a:hover {
 
     .sidebar {
         position: relative;
-
         width: 100%;
-
         height: auto;
-
         z-index: 9999;
     }
 
     .main {
         margin-left: 0;
-
         padding: 20px;
     }
 
