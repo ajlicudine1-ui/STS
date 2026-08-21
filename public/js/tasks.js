@@ -22,32 +22,187 @@ const taskModal = document.getElementById("taskModal");
 const newTaskBtn = document.getElementById("newTaskBtn");
 const closeTaskModal = document.getElementById("closeTaskModal");
 const cancelTaskBtn = document.getElementById("cancelTaskBtn");
+const taskForm = document.getElementById("taskForm");
 
-// Open create task modal
+// Editing task ID
+let editingTaskId = null;
+
+// Optional modal elements
+const taskModalTitle = document.getElementById("taskModalTitle");
+const taskModalSubtitle = document.getElementById("taskModalSubtitle");
+const taskSubmitBtn = document.getElementById("taskSubmitBtn");
+
+// ============================================================
+// OPEN NEW TASK MODAL
+// ============================================================
+
 newTaskBtn.addEventListener("click", () => {
+
+    editingTaskId = null;
+
+    taskForm.reset();
+
+    const percentComplete =
+        document.getElementById("percentComplete");
+
+    if (percentComplete) {
+        percentComplete.value = 0;
+    }
+
+    if (taskModalTitle) {
+        taskModalTitle.textContent = "New Task";
+    }
+
+    if (taskModalSubtitle) {
+        taskModalSubtitle.textContent =
+            "Add a task to this project.";
+    }
+
+    if (taskSubmitBtn) {
+        taskSubmitBtn.textContent = "Create Task";
+    }
+
     taskModal.classList.add("show");
 });
 
-// Close modal
+// ============================================================
+// CLOSE TASK MODAL
+// ============================================================
+
 function closeModal() {
+
     taskModal.classList.remove("show");
+
+    editingTaskId = null;
+
+    taskForm.reset();
+
+    const percentComplete =
+        document.getElementById("percentComplete");
+
+    if (percentComplete) {
+        percentComplete.value = 0;
+    }
+
+    if (taskModalTitle) {
+        taskModalTitle.textContent = "New Task";
+    }
+
+    if (taskModalSubtitle) {
+        taskModalSubtitle.textContent =
+            "Add a task to this project.";
+    }
+
+    if (taskSubmitBtn) {
+        taskSubmitBtn.textContent = "Create Task";
+    }
 }
 
 closeTaskModal.addEventListener("click", closeModal);
 cancelTaskBtn.addEventListener("click", closeModal);
 
-// Close when clicking outside
+// Close when clicking outside modal
+
 taskModal.addEventListener("click", (event) => {
+
     if (event.target === taskModal) {
         closeModal();
     }
+
 });
+
+// ============================================================
+// OPEN EDIT TASK MODAL
+// ============================================================
+
+function openEditTaskModal(task) {
+
+    console.log("Editing task:", task);
+
+    editingTaskId = task.task_id;
+
+    // --------------------------------------------------------
+    // CHANGE MODAL TITLE
+    // --------------------------------------------------------
+
+    if (taskModalTitle) {
+        taskModalTitle.textContent = "Edit Task";
+    }
+
+    if (taskModalSubtitle) {
+        taskModalSubtitle.textContent =
+            "Update the information for this task.";
+    }
+
+    if (taskSubmitBtn) {
+        taskSubmitBtn.textContent = "Update Task";
+    }
+
+    // --------------------------------------------------------
+    // FILL FORM
+    // --------------------------------------------------------
+
+    document.getElementById("procedureStage").value =
+        task.procedure_stage || "";
+
+    document.getElementById("taskActivity").value =
+        task.task_activity || "";
+
+    document.getElementById("taskStatus").value =
+        task.status || "Not Started";
+
+    document.getElementById("scheduleStatus").value =
+        task.schedule_status || "";
+
+    document.getElementById("taskPriority").value =
+        task.priority || "";
+
+    document.getElementById("responsiblePerson").value =
+        task.responsible_person || "";
+
+    document.getElementById("taskRole").value =
+        task.role || "";
+
+    document.getElementById("stakeholderEndUser").value =
+        task.stakeholder_end_user || "";
+
+    document.getElementById("startDate").value =
+        task.start_date
+            ? task.start_date.substring(0, 10)
+            : "";
+
+    document.getElementById("dueDate").value =
+        task.due_date
+            ? task.due_date.substring(0, 10)
+            : "";
+
+    document.getElementById("completionDate").value =
+        task.completion_date
+            ? task.completion_date.substring(0, 10)
+            : "";
+
+    document.getElementById("deliverableExpectedOutput").value =
+        task.deliverable_expected_output || "";
+
+    document.getElementById("evidenceApplicability").value =
+        task.evidence_applicability || "";
+
+    document.getElementById("percentComplete").value =
+        task.percent_complete || 0;
+
+    // --------------------------------------------------------
+    // OPEN MODAL
+    // --------------------------------------------------------
+
+    taskModal.classList.add("show");
+}
 
 // ============================================================
 // REVIEW MODAL
 // ============================================================
 
-const reviewModal = document.getElementById("reviewModal");
+const reviewModal =
+    document.getElementById("reviewModal");
 
 const closeReviewModalBtn =
     document.getElementById("closeReviewModal");
@@ -60,9 +215,14 @@ const reviewForm =
 
 let currentReviewTaskId = null;
 
-// Close review modal
+// ============================================================
+// CLOSE REVIEW MODAL
+// ============================================================
+
 function closeReviewModal() {
+
     reviewModal.classList.remove("show");
+
     currentReviewTaskId = null;
 }
 
@@ -76,11 +236,12 @@ cancelReviewBtn.addEventListener(
     closeReviewModal
 );
 
-// Close review modal when clicking outside
 reviewModal.addEventListener("click", (event) => {
+
     if (event.target === reviewModal) {
         closeReviewModal();
     }
+
 });
 
 // ============================================================
@@ -90,10 +251,6 @@ reviewModal.addEventListener("click", (event) => {
 function openReviewModal(task) {
 
     currentReviewTaskId = task.task_id;
-
-    // --------------------------------------------------------
-    // DISPLAY TASK INFORMATION
-    // --------------------------------------------------------
 
     document.getElementById("reviewTaskName").textContent =
         task.task_activity || "-";
@@ -110,12 +267,6 @@ function openReviewModal(task) {
     document.getElementById("reviewExpectedOutput").textContent =
         task.deliverable_expected_output || "-";
 
-    // --------------------------------------------------------
-    // LOAD EXISTING REVIEW DATA
-    // IMPORTANT:
-    // Review remarks are stored in tasks.remarks
-    // --------------------------------------------------------
-
     document.getElementById("reviewedVerifiedBy").value =
         task.reviewed_verified_by || "";
 
@@ -129,10 +280,6 @@ function openReviewModal(task) {
 
     document.getElementById("reviewRemarks").value =
         task.remarks || "";
-
-    // --------------------------------------------------------
-    // OPEN MODAL
-    // --------------------------------------------------------
 
     reviewModal.classList.add("show");
 }
@@ -182,7 +329,7 @@ async function loadTasks() {
             ).length;
 
         // ----------------------------------------------------
-        // TASK TABLE
+        // TABLE
         // ----------------------------------------------------
 
         const table =
@@ -226,22 +373,14 @@ async function loadTasks() {
                 statusClass = "status-completed";
             }
 
-            if (task.status === "On Hold") {
-                statusClass = "status-pending";
-            }
-
             // ------------------------------------------------
-            // TABLE ROW
+            // ROW
             // ------------------------------------------------
 
             row.innerHTML = `
-                <td>
-                    ${task.task_activity || "-"}
-                </td>
+                <td>${task.task_activity || "-"}</td>
 
-                <td>
-                    ${task.procedure_stage || "-"}
-                </td>
+                <td>${task.procedure_stage || "-"}</td>
 
                 <td>
                     <span class="status ${statusClass}">
@@ -249,39 +388,31 @@ async function loadTasks() {
                     </span>
                 </td>
 
-                <td>
-                    ${task.priority || "-"}
-                </td>
+                <td>${task.priority || "-"}</td>
 
-                <td>
-                    ${task.responsible_person || "-"}
-                </td>
+                <td>${task.responsible_person || "-"}</td>
 
-                <td>
-                    ${task.due_date || "-"}
-                </td>
+                <td>${task.due_date || "-"}</td>
 
-                <td>
-                    ${task.percent_complete || 0}%
-                </td>
+                <td>${task.percent_complete || 0}%</td>
 
                 <td>
 
                     <button
-                        class="btn btn-primary review-task-btn"
-                    >
+                        type="button"
+                        class="btn btn-primary review-task-btn">
                         Review
                     </button>
 
                     <button
-                        class="btn btn-secondary edit-task-btn"
-                    >
+                        type="button"
+                        class="btn btn-secondary edit-task-btn">
                         Edit
                     </button>
 
                     <button
-                        class="btn btn-danger delete-task-btn"
-                    >
+                        type="button"
+                        class="btn btn-danger delete-task-btn">
                         Delete
                     </button>
 
@@ -290,35 +421,38 @@ async function loadTasks() {
 
             table.appendChild(row);
 
-            // =================================================
-            // REVIEW BUTTON
-            // =================================================
+            // ------------------------------------------------
+            // REVIEW
+            // ------------------------------------------------
 
-            const reviewBtn =
-                row.querySelector(".review-task-btn");
+            row.querySelector(".review-task-btn")
+                .addEventListener("click", () => {
 
-            reviewBtn.addEventListener(
-                "click",
-                () => {
                     openReviewModal(task);
-                }
-            );
 
-            // =================================================
-            // DELETE BUTTON
-            // =================================================
+                });
 
-            const deleteBtn =
-                row.querySelector(".delete-task-btn");
+            // ------------------------------------------------
+            // EDIT
+            // ------------------------------------------------
 
-            deleteBtn.addEventListener(
-                "click",
-                async () => {
+            row.querySelector(".edit-task-btn")
+                .addEventListener("click", () => {
 
-                    const confirmed =
-                        confirm(
-                            "Are you sure you want to delete this task?"
-                        );
+                    openEditTaskModal(task);
+
+                });
+
+            // ------------------------------------------------
+            // DELETE
+            // ------------------------------------------------
+
+            row.querySelector(".delete-task-btn")
+                .addEventListener("click", async () => {
+
+                    const confirmed = confirm(
+                        "Are you sure you want to delete this task?"
+                    );
 
                     if (!confirmed) {
                         return;
@@ -326,13 +460,12 @@ async function loadTasks() {
 
                     try {
 
-                        const response =
-                            await fetch(
-                                `/api/tasks/${task.task_id}`,
-                                {
-                                    method: "DELETE"
-                                }
-                            );
+                        const response = await fetch(
+                            `/api/tasks/${task.task_id}`,
+                            {
+                                method: "DELETE"
+                            }
+                        );
 
                         const result =
                             await response.json();
@@ -343,14 +476,13 @@ async function loadTasks() {
                                 result.error ||
                                 "Failed to delete task."
                             );
-
                         }
 
                         alert(
                             "Task deleted successfully!"
                         );
 
-                        loadTasks();
+                        await loadTasks();
 
                     } catch (error) {
 
@@ -363,29 +495,9 @@ async function loadTasks() {
                             "Error: " +
                             error.message
                         );
-
                     }
 
-                }
-            );
-
-            // =================================================
-            // EDIT BUTTON
-            // =================================================
-
-            const editBtn =
-                row.querySelector(".edit-task-btn");
-
-            editBtn.addEventListener(
-                "click",
-                () => {
-
-                    alert(
-                        "Edit task functionality can be added here."
-                    );
-
-                }
-            );
+                });
 
         });
 
@@ -400,16 +512,12 @@ async function loadTasks() {
             "Error loading tasks: " +
             error.message
         );
-
     }
 }
 
 // ============================================================
-// CREATE TASK
+// CREATE / UPDATE TASK
 // ============================================================
-
-const taskForm =
-    document.getElementById("taskForm");
 
 taskForm.addEventListener(
     "submit",
@@ -417,120 +525,106 @@ taskForm.addEventListener(
 
         event.preventDefault();
 
-        // ====================================================
-        // ONLY TASK CREATION INFORMATION
-        // ====================================================
-        // IMPORTANT:
-        // NO remarks here.
-        // Remarks belong to the reviewer.
-        // ====================================================
+        // ----------------------------------------------------
+        // COLLECT FORM DATA
+        // ----------------------------------------------------
 
         const taskData = {
 
             procedure_stage:
-                document.getElementById(
-                    "procedureStage"
-                ).value.trim(),
+                document.getElementById("procedureStage").value.trim(),
 
             task_activity:
-                document.getElementById(
-                    "taskActivity"
-                ).value.trim(),
+                document.getElementById("taskActivity").value.trim(),
 
             status:
-                document.getElementById(
-                    "taskStatus"
-                ).value,
+                document.getElementById("taskStatus").value,
 
             schedule_status:
-                document.getElementById(
-                    "scheduleStatus"
-                ).value,
+                document.getElementById("scheduleStatus").value,
 
             priority:
-                document.getElementById(
-                    "taskPriority"
-                ).value,
+                document.getElementById("taskPriority").value,
 
             responsible_person:
-                document.getElementById(
-                    "responsiblePerson"
-                ).value.trim(),
+                document.getElementById("responsiblePerson").value.trim(),
 
             role:
-                document.getElementById(
-                    "taskRole"
-                ).value,
+                document.getElementById("taskRole").value,
 
             stakeholder_end_user:
-                document.getElementById(
-                    "stakeholderEndUser"
-                ).value.trim(),
+                document.getElementById("stakeholderEndUser").value.trim(),
 
             start_date:
-                document.getElementById(
-                    "startDate"
-                ).value || null,
+                document.getElementById("startDate").value || null,
 
             due_date:
-                document.getElementById(
-                    "dueDate"
-                ).value || null,
+                document.getElementById("dueDate").value || null,
 
             completion_date:
-                document.getElementById(
-                    "completionDate"
-                ).value || null,
+                document.getElementById("completionDate").value || null,
 
             deliverable_expected_output:
-                document.getElementById(
-                    "deliverableExpectedOutput"
-                ).value.trim(),
+                document
+                    .getElementById("deliverableExpectedOutput")
+                    .value
+                    .trim(),
 
             evidence_applicability:
-                document.getElementById(
-                    "evidenceApplicability"
-                ).value,
+                document.getElementById("evidenceApplicability").value,
 
             percent_complete:
-                document.getElementById(
-                    "percentComplete"
-                ).value || 0
-
+                document.getElementById("percentComplete").value || 0
         };
 
-        console.log(
-            "Creating task:",
-            taskData
-        );
+        console.log("Submitting task:", taskData);
 
-        // ====================================================
-        // SEND TASK TO SERVER
-        // ====================================================
+        // ----------------------------------------------------
+        // CREATE OR UPDATE
+        // ----------------------------------------------------
+
+        let url;
+        let method;
+
+        if (editingTaskId) {
+
+            // EDIT
+            url = `/api/tasks/${editingTaskId}`;
+            method = "PUT";
+
+        } else {
+
+            // CREATE
+            url = `/api/projects/${projectId}/tasks`;
+            method = "POST";
+        }
+
+        console.log("Request:", method, url);
+
+        // ----------------------------------------------------
+        // SEND REQUEST
+        // ----------------------------------------------------
 
         try {
 
-            const response =
-                await fetch(
-                    `/api/projects/${projectId}/tasks`,
-                    {
-                        method: "POST",
+            const response = await fetch(
+                url,
+                {
+                    method: method,
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
 
-                        body:
-                            JSON.stringify(taskData)
-                    }
-                );
+                    body: JSON.stringify(taskData)
+                }
+            );
 
             const result =
                 await response.json();
 
             console.log(
-                "Create task response:",
+                "Server response:",
                 result
             );
 
@@ -538,33 +632,43 @@ taskForm.addEventListener(
 
                 throw new Error(
                     result.error ||
-                    "Failed to create task."
+                    "Failed to save task."
                 );
-
             }
 
-            alert(
-                "Task created successfully!"
-            );
+            // ------------------------------------------------
+            // SUCCESS
+            // ------------------------------------------------
 
-            // Reset form
-            taskForm.reset();
+            if (editingTaskId) {
 
-            // Reset percentage
-            document.getElementById(
-                "percentComplete"
-            ).value = 0;
+                alert(
+                    "Task updated successfully!"
+                );
 
-            // Close modal
+            } else {
+
+                alert(
+                    "Task created successfully!"
+                );
+            }
+
+            // ------------------------------------------------
+            // CLOSE
+            // ------------------------------------------------
+
             closeModal();
 
-            // Reload task table
-            loadTasks();
+            // ------------------------------------------------
+            // RELOAD
+            // ------------------------------------------------
+
+            await loadTasks();
 
         } catch (error) {
 
             console.error(
-                "Create task error:",
+                "Save task error:",
                 error
             );
 
@@ -572,7 +676,6 @@ taskForm.addEventListener(
                 "Error: " +
                 error.message
             );
-
         }
 
     }
@@ -597,45 +700,30 @@ reviewForm.addEventListener(
             return;
         }
 
-        // ====================================================
-        // REVIEW DATA ONLY
-        // ====================================================
-        // IMPORTANT:
-        // Database column is "remarks".
-        // ====================================================
-
         const reviewData = {
 
             reviewed_verified_by:
-                document.getElementById(
-                    "reviewedVerifiedBy"
-                ).value.trim(),
+                document
+                    .getElementById("reviewedVerifiedBy")
+                    .value
+                    .trim(),
 
             review_result:
-                document.getElementById(
-                    "reviewResult"
-                ).value,
+                document.getElementById("reviewResult").value,
 
             review_date:
-                document.getElementById(
-                    "reviewDate"
-                ).value || null,
+                document.getElementById("reviewDate").value || null,
 
             remarks:
-                document.getElementById(
-                    "reviewRemarks"
-                ).value.trim()
-
+                document
+                    .getElementById("reviewRemarks")
+                    .value
+                    .trim()
         };
 
-        console.log(
-            "Submitting review:",
-            reviewData
-        );
-
-        // ====================================================
+        // ----------------------------------------------------
         // VALIDATION
-        // ====================================================
+        // ----------------------------------------------------
 
         if (!reviewData.reviewed_verified_by) {
 
@@ -664,35 +752,27 @@ reviewForm.addEventListener(
             return;
         }
 
-        // ====================================================
-        // SEND REVIEW TO SERVER
-        // ====================================================
+        // ----------------------------------------------------
+        // SEND REVIEW
+        // ----------------------------------------------------
 
         try {
 
-            const response =
-                await fetch(
-                    `/api/tasks/${currentReviewTaskId}/review`,
-                    {
-                        method: "PUT",
+            const response = await fetch(
+                `/api/tasks/${currentReviewTaskId}/review`,
+                {
+                    method: "PUT",
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
 
-                        body:
-                            JSON.stringify(reviewData)
-                    }
-                );
+                    body: JSON.stringify(reviewData)
+                }
+            );
 
             const result =
                 await response.json();
-
-            console.log(
-                "Review response:",
-                result
-            );
 
             if (!response.ok) {
 
@@ -700,7 +780,6 @@ reviewForm.addEventListener(
                     result.error ||
                     "Failed to submit review."
                 );
-
             }
 
             alert(
@@ -711,7 +790,7 @@ reviewForm.addEventListener(
 
             closeReviewModal();
 
-            loadTasks();
+            await loadTasks();
 
         } catch (error) {
 
@@ -724,7 +803,6 @@ reviewForm.addEventListener(
                 "Error: " +
                 error.message
             );
-
         }
 
     }
