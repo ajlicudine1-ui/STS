@@ -4,26 +4,39 @@
 
 .stats {
     display: grid;
+
     grid-template-columns: repeat(4, 1fr);
+
     gap: 18px;
+
     margin-bottom: 30px;
 }
 
 .card {
     background: white;
+
     border-radius: 12px;
+
     padding: 22px;
+
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    border-top: 3px solid #2e7d32;
 }
 
 .card-title {
     color: #6b7280;
+
     font-size: 14px;
+
     margin-bottom: 10px;
 }
 
 .card-value {
+    color: #2e7d32;
+
     font-size: 30px;
+
     font-weight: bold;
 }
 
@@ -34,20 +47,28 @@
 
 .content-card {
     background: white;
+
     border-radius: 12px;
+
     padding: 24px;
+
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .content-header {
     display: flex;
+
     justify-content: space-between;
+
     align-items: center;
+
     margin-bottom: 20px;
 }
 
 .content-header h2 {
     font-size: 20px;
+
+    color: #1f2937;
 }
 
 
@@ -61,24 +82,42 @@
 
 table {
     width: 100%;
+
     border-collapse: collapse;
 }
 
 th,
 td {
     padding: 14px 12px;
+
     text-align: left;
+
     border-bottom: 1px solid #e5e7eb;
 }
 
 th {
     font-size: 13px;
+
     color: #6b7280;
+
     background: #f9fafb;
 }
 
 td {
     font-size: 14px;
+}
+
+
+/* ============================================================
+   TABLE GREEN ACCENT
+   ============================================================ */
+
+table tbody tr:hover {
+    background: #f1f8f2;
+}
+
+table tbody tr:hover td {
+    border-bottom-color: #c8e6c9;
 }
 
 
@@ -102,6 +141,7 @@ td {
     }
 }
 
+
 @media (max-width: 700px) {
 
     .stats {
@@ -109,10 +149,18 @@ td {
     }
 }
 
+
+/* ============================================================
+   DASHBOARD HEADER
+   ============================================================ */
+
 .dashboard-header {
     display: flex;
+
     justify-content: space-between;
+
     align-items: center;
+
     margin-bottom: 30px;
 }
 
