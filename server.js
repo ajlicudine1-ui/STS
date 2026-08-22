@@ -1,7 +1,6 @@
 const express = require("express");
 const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
-
 require("dotenv").config();
 
 const app = express();
@@ -60,6 +59,86 @@ app.use(
 );
 
 // ============================================================
+// TASK HISTORY HELPER
+// ============================================================
+// IMPORTANT:
+// This function ONLY inserts a history record.
+// Do NOT call createTaskHistory() from inside itself.
+// ============================================================
+
+async function createTaskHistory({
+    taskId,
+    projectId,
+    action,
+    oldStatus = null,
+    newStatus = null,
+    oldPercentComplete = null,
+    newPercentComplete = null,
+    oldResponsiblePerson = null,
+    newResponsiblePerson = null,
+    remarks = null,
+    changedBy = "System"
+}) {
+    try {
+        const historyData = {
+            task_id: taskId,
+            project_id: projectId,
+            action: action,
+            old_status: oldStatus,
+            new_status: newStatus,
+            old_percent_complete: oldPercentComplete,
+            new_percent_complete: newPercentComplete,
+            old_responsible_person: oldResponsiblePerson,
+            new_responsible_person: newResponsiblePerson,
+            remarks: remarks,
+            changed_by: changedBy
+        };
+
+        const {
+            data,
+            error
+        } = await supabase
+            .from("task_history")
+            .insert([historyData])
+            .select()
+            .single();
+
+        if (error) {
+            console.error(
+                "TASK HISTORY ERROR:",
+                error
+            );
+
+            return {
+                success: false,
+                error: error
+            };
+        }
+
+        console.log(
+            "Task history recorded:",
+            data
+        );
+
+        return {
+            success: true,
+            data: data
+        };
+
+    } catch (error) {
+        console.error(
+            "Create task history error:",
+            error
+        );
+
+        return {
+            success: false,
+            error: error
+        };
+    }
+}
+
+// ============================================================
 // HOME PAGE
 // ============================================================
 
@@ -79,6 +158,7 @@ app.get("/", (req, res) => {
 
 app.get("/api/test", async (req, res) => {
     try {
+
         const {
             data,
             error
@@ -110,6 +190,7 @@ app.get("/api/test", async (req, res) => {
         });
 
     } catch (error) {
+
         console.error(
             "Supabase connection error:",
             error
@@ -127,6 +208,7 @@ app.get("/api/test", async (req, res) => {
 // ============================================================
 
 app.get("/api/dashboard", async (req, res) => {
+
     try {
 
         // ----------------------------------------------------
@@ -200,6 +282,7 @@ app.get("/api/dashboard", async (req, res) => {
         });
 
     } catch (error) {
+
         console.error(
             "Dashboard error:",
             error
@@ -220,6 +303,7 @@ app.get("/api/dashboard", async (req, res) => {
 // ============================================================
 
 app.post("/api/projects", async (req, res) => {
+
     try {
 
         console.log(
@@ -248,6 +332,7 @@ app.post("/api/projects", async (req, res) => {
             !project_name ||
             !project_name.trim()
         ) {
+
             return res.status(400).json({
                 success: false,
                 error:
@@ -291,7 +376,7 @@ app.post("/api/projects", async (req, res) => {
         );
 
         // ----------------------------------------------------
-        // INSERT INTO SUPABASE
+        // INSERT PROJECT
         // ----------------------------------------------------
 
         const {
@@ -302,10 +387,6 @@ app.post("/api/projects", async (req, res) => {
             .insert([projectData])
             .select()
             .single();
-
-        // ----------------------------------------------------
-        // HANDLE SUPABASE ERROR
-        // ----------------------------------------------------
 
         if (error) {
 
@@ -335,14 +416,10 @@ app.post("/api/projects", async (req, res) => {
 
             return res.status(500).json({
                 success: false,
-                error:
-                    error.message,
-                code:
-                    error.code,
-                details:
-                    error.details,
-                hint:
-                    error.hint
+                error: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
             });
         }
 
@@ -372,21 +449,13 @@ app.post("/api/projects", async (req, res) => {
 
         res.status(500).json({
             success: false,
-            error:
-                error.message,
-            code:
-                error.code,
-            details:
-                error.details,
-            hint:
-                error.hint
+            error: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint
         });
     }
 });
-
-// ============================================================
-// TASK API ROUTES
-// ============================================================
 
 // ============================================================
 // GET TASKS FOR A PROJECT
@@ -472,13 +541,78 @@ app.get(
 );
 
 // ============================================================
-// CREATE TASK
+// GET TASK HISTORY
 // ============================================================
-// IMPORTANT:
-// Review information is NOT accepted here.
-//
-// `remarks` is intentionally NOT included.
-// It belongs to the reviewer.
+
+app.get(
+    "/api/tasks/:taskId/history",
+    async (req, res) => {
+
+        try {
+
+            const { taskId } =
+                req.params;
+
+            console.log(
+                "Getting history for task:",
+                taskId
+            );
+
+            const {
+                data,
+                error
+            } = await supabase
+                .from("task_history")
+                .select("*")
+                .eq(
+                    "task_id",
+                    taskId
+                )
+                .order(
+                    "changed_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+            if (error) {
+
+                console.error(
+                    "GET TASK HISTORY ERROR:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: error.message,
+                    code: error.code,
+                    details: error.details,
+                    hint: error.hint
+                });
+            }
+
+            res.json({
+                success: true,
+                history: data || []
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Get task history error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+);
+
+// ============================================================
+// CREATE TASK
 // ============================================================
 
 app.post(
@@ -529,14 +663,15 @@ app.post(
                 percent_complete
             } = req.body;
 
-            // ====================================================
+            // ----------------------------------------------------
             // VALIDATE TASK
-            // ====================================================
+            // ----------------------------------------------------
 
             if (
                 !task_activity ||
                 !task_activity.trim()
             ) {
+
                 return res.status(400).json({
                     success: false,
                     error:
@@ -544,9 +679,9 @@ app.post(
                 });
             }
 
-            // ====================================================
+            // ----------------------------------------------------
             // PREPARE TASK DATA
-            // ====================================================
+            // ----------------------------------------------------
 
             const taskData = {
 
@@ -604,11 +739,6 @@ app.post(
                     percent_complete !== ""
                         ? Number(percent_complete)
                         : 0
-
-                // =================================================
-                // NO REMARKS HERE
-                // REMARKS BELONG TO THE REVIEWER
-                // =================================================
             };
 
             console.log(
@@ -616,9 +746,9 @@ app.post(
                 taskData
             );
 
-            // ====================================================
+            // ----------------------------------------------------
             // INSERT TASK
-            // ====================================================
+            // ----------------------------------------------------
 
             const {
                 data,
@@ -628,10 +758,6 @@ app.post(
                 .insert([taskData])
                 .select()
                 .single();
-
-            // ====================================================
-            // HANDLE ERROR
-            // ====================================================
 
             if (error) {
 
@@ -668,9 +794,58 @@ app.post(
                 });
             }
 
-            // ====================================================
+            // ----------------------------------------------------
+            // RECORD CREATION IN HISTORY
+            // ----------------------------------------------------
+
+            const historyResult =
+                await createTaskHistory({
+
+                    taskId:
+                        data.task_id,
+
+                    projectId:
+                        data.project_id,
+
+                    action:
+                        "Created",
+
+                    oldStatus:
+                        null,
+
+                    newStatus:
+                        data.status,
+
+                    oldPercentComplete:
+                        null,
+
+                    newPercentComplete:
+                        data.percent_complete,
+
+                    oldResponsiblePerson:
+                        null,
+
+                    newResponsiblePerson:
+                        data.responsible_person,
+
+                    remarks:
+                        "Task created",
+
+                    changedBy:
+                        data.responsible_person ||
+                        "System"
+                });
+
+            if (!historyResult.success) {
+
+                console.error(
+                    "WARNING: Task created but history was not recorded."
+                );
+            }
+
+            // ----------------------------------------------------
             // SUCCESS
-            // ====================================================
+            // ----------------------------------------------------
 
             console.log(
                 "Task created successfully:"
@@ -679,10 +854,17 @@ app.post(
             console.log(data);
 
             res.status(201).json({
+
                 success: true,
+
                 message:
                     "Task created successfully.",
-                task: data
+
+                task:
+                    data,
+
+                historyRecorded:
+                    historyResult.success
             });
 
         } catch (error) {
@@ -702,12 +884,6 @@ app.post(
 
 // ============================================================
 // UPDATE TASK
-// ============================================================
-// IMPORTANT:
-// This updates TASK information only.
-//
-// `remarks` is intentionally NOT included.
-// Reviewer information is handled by the review route.
 // ============================================================
 
 app.put(
@@ -741,6 +917,40 @@ app.put(
                 "=============================================="
             );
 
+            // ----------------------------------------------------
+            // GET CURRENT TASK FIRST
+            // ----------------------------------------------------
+
+            const {
+                data: oldTask,
+                error: oldTaskError
+            } = await supabase
+                .from("tasks")
+                .select("*")
+                .eq(
+                    "task_id",
+                    taskId
+                )
+                .single();
+
+            if (oldTaskError) {
+
+                console.error(
+                    "GET OLD TASK ERROR:",
+                    oldTaskError
+                );
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Task not found."
+                });
+            }
+
+            // ----------------------------------------------------
+            // GET REQUEST DATA
+            // ----------------------------------------------------
+
             const {
                 procedure_stage,
                 task_activity,
@@ -758,14 +968,15 @@ app.put(
                 percent_complete
             } = req.body;
 
-            // ====================================================
+            // ----------------------------------------------------
             // VALIDATE TASK
-            // ====================================================
+            // ----------------------------------------------------
 
             if (
                 !task_activity ||
                 !task_activity.trim()
             ) {
+
                 return res.status(400).json({
                     success: false,
                     error:
@@ -773,9 +984,9 @@ app.put(
                 });
             }
 
-            // ====================================================
-            // TASK DATA ONLY
-            // ====================================================
+            // ----------------------------------------------------
+            // PREPARE NEW TASK DATA
+            // ----------------------------------------------------
 
             const taskData = {
 
@@ -830,15 +1041,11 @@ app.put(
                     percent_complete !== ""
                         ? Number(percent_complete)
                         : 0
-
-                // =================================================
-                // NO REMARKS HERE
-                // =================================================
             };
 
-            // ====================================================
+            // ----------------------------------------------------
             // UPDATE TASK
-            // ====================================================
+            // ----------------------------------------------------
 
             const {
                 data,
@@ -869,11 +1076,119 @@ app.put(
                 });
             }
 
+            // ----------------------------------------------------
+            // DETERMINE WHAT CHANGED
+            // ----------------------------------------------------
+
+            const statusChanged =
+                oldTask.status !== data.status;
+
+            const percentChanged =
+                Number(
+                    oldTask.percent_complete || 0
+                ) !==
+                Number(
+                    data.percent_complete || 0
+                );
+
+            const responsibleChanged =
+                (oldTask.responsible_person || null) !==
+                (data.responsible_person || null);
+
+            // ----------------------------------------------------
+            // ONLY RECORD HISTORY IF TRACKED VALUES CHANGED
+            // ----------------------------------------------------
+
+            if (
+                statusChanged ||
+                percentChanged ||
+                responsibleChanged
+            ) {
+
+                let action = "Updated";
+
+                if (
+                    statusChanged &&
+                    percentChanged
+                ) {
+                    action =
+                        "Status and Progress Updated";
+
+                } else if (statusChanged) {
+
+                    action =
+                        "Status Updated";
+
+                } else if (percentChanged) {
+
+                    action =
+                        "Progress Updated";
+
+                } else if (responsibleChanged) {
+
+                    action =
+                        "Responsible Person Updated";
+                }
+
+                const historyResult =
+                    await createTaskHistory({
+
+                        taskId:
+                            data.task_id,
+
+                        projectId:
+                            data.project_id,
+
+                        action:
+                            action,
+
+                        oldStatus:
+                            oldTask.status,
+
+                        newStatus:
+                            data.status,
+
+                        oldPercentComplete:
+                            oldTask.percent_complete,
+
+                        newPercentComplete:
+                            data.percent_complete,
+
+                        oldResponsiblePerson:
+                            oldTask.responsible_person,
+
+                        newResponsiblePerson:
+                            data.responsible_person,
+
+                        remarks:
+                            "Task information updated",
+
+                        changedBy:
+                            data.responsible_person ||
+                            "System"
+                    });
+
+                if (!historyResult.success) {
+
+                    console.error(
+                        "WARNING: Task updated but history was not recorded."
+                    );
+                }
+            }
+
+            // ----------------------------------------------------
+            // SUCCESS
+            // ----------------------------------------------------
+
             res.json({
+
                 success: true,
+
                 message:
                     "Task updated successfully.",
-                task: data
+
+                task:
+                    data
             });
 
         } catch (error) {
@@ -893,14 +1208,6 @@ app.put(
 
 // ============================================================
 // REVIEW TASK
-// ============================================================
-// Reviewer-only operation.
-//
-// Existing `remarks` column is used for reviewer remarks.
-//
-// CREATE TASK      → does NOT touch remarks
-// UPDATE TASK      → does NOT touch remarks
-// REVIEW TASK      → saves remarks
 // ============================================================
 
 app.put(
@@ -934,6 +1241,40 @@ app.put(
                 "=============================================="
             );
 
+            // ----------------------------------------------------
+            // GET CURRENT TASK
+            // ----------------------------------------------------
+
+            const {
+                data: oldTask,
+                error: oldTaskError
+            } = await supabase
+                .from("tasks")
+                .select("*")
+                .eq(
+                    "task_id",
+                    taskId
+                )
+                .single();
+
+            if (oldTaskError) {
+
+                console.error(
+                    "GET TASK FOR REVIEW ERROR:",
+                    oldTaskError
+                );
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Task not found."
+                });
+            }
+
+            // ----------------------------------------------------
+            // REVIEW DATA
+            // ----------------------------------------------------
+
             const {
                 reviewed_verified_by,
                 review_result,
@@ -941,9 +1282,9 @@ app.put(
                 remarks
             } = req.body;
 
-            // ====================================================
+            // ----------------------------------------------------
             // VALIDATE REVIEWER
-            // ====================================================
+            // ----------------------------------------------------
 
             if (
                 !reviewed_verified_by ||
@@ -957,9 +1298,9 @@ app.put(
                 });
             }
 
-            // ====================================================
+            // ----------------------------------------------------
             // VALIDATE REVIEW RESULT
-            // ====================================================
+            // ----------------------------------------------------
 
             const validResults = [
                 "Approved",
@@ -981,9 +1322,9 @@ app.put(
                 });
             }
 
-            // ====================================================
+            // ----------------------------------------------------
             // VALIDATE REVIEW DATE
-            // ====================================================
+            // ----------------------------------------------------
 
             if (!review_date) {
 
@@ -994,9 +1335,9 @@ app.put(
                 });
             }
 
-            // ====================================================
-            // REVIEW DATA ONLY
-            // ====================================================
+            // ----------------------------------------------------
+            // PREPARE REVIEW DATA
+            // ----------------------------------------------------
 
             const reviewData = {
 
@@ -1020,9 +1361,9 @@ app.put(
                 reviewData
             );
 
-            // ====================================================
+            // ----------------------------------------------------
             // UPDATE REVIEW
-            // ====================================================
+            // ----------------------------------------------------
 
             const {
                 data,
@@ -1036,10 +1377,6 @@ app.put(
                 )
                 .select()
                 .single();
-
-            // ====================================================
-            // HANDLE ERROR
-            // ====================================================
 
             if (error) {
 
@@ -1069,20 +1406,69 @@ app.put(
 
                 return res.status(500).json({
                     success: false,
-                    error:
-                        error.message,
-                    code:
-                        error.code,
-                    details:
-                        error.details,
-                    hint:
-                        error.hint
+                    error: error.message,
+                    code: error.code,
+                    details: error.details,
+                    hint: error.hint
                 });
             }
 
-            // ====================================================
+            // ----------------------------------------------------
+            // RECORD REVIEW IN HISTORY
+            // ----------------------------------------------------
+
+            const historyResult =
+                await createTaskHistory({
+
+                    taskId:
+                        data.task_id,
+
+                    projectId:
+                        data.project_id,
+
+                    action:
+                        "Reviewed",
+
+                    oldStatus:
+                        oldTask.status,
+
+                    newStatus:
+                        data.status,
+
+                    oldPercentComplete:
+                        oldTask.percent_complete,
+
+                    newPercentComplete:
+                        data.percent_complete,
+
+                    oldResponsiblePerson:
+                        oldTask.responsible_person,
+
+                    newResponsiblePerson:
+                        data.responsible_person,
+
+                    remarks:
+                        `Review: ${review_result}` +
+                        (
+                            remarks
+                                ? ` - ${remarks.trim()}`
+                                : ""
+                        ),
+
+                    changedBy:
+                        reviewed_verified_by.trim()
+                });
+
+            if (!historyResult.success) {
+
+                console.error(
+                    "WARNING: Review saved but history was not recorded."
+                );
+            }
+
+            // ----------------------------------------------------
             // SUCCESS
-            // ====================================================
+            // ----------------------------------------------------
 
             console.log(
                 "Task review saved successfully:"
@@ -1091,10 +1477,17 @@ app.put(
             console.log(data);
 
             res.json({
+
                 success: true,
+
                 message:
                     "Task review submitted successfully.",
-                task: data
+
+                task:
+                    data,
+
+                historyRecorded:
+                    historyResult.success
             });
 
         } catch (error) {
@@ -1106,8 +1499,7 @@ app.put(
 
             res.status(500).json({
                 success: false,
-                error:
-                    error.message
+                error: error.message
             });
         }
     }
@@ -1131,6 +1523,10 @@ app.delete(
                 taskId
             );
 
+            // ----------------------------------------------------
+            // DELETE TASK
+            // ----------------------------------------------------
+
             const {
                 error
             } = await supabase
@@ -1150,19 +1546,17 @@ app.delete(
 
                 return res.status(500).json({
                     success: false,
-                    error:
-                        error.message,
-                    code:
-                        error.code,
-                    details:
-                        error.details,
-                    hint:
-                        error.hint
+                    error: error.message,
+                    code: error.code,
+                    details: error.details,
+                    hint: error.hint
                 });
             }
 
             res.json({
+
                 success: true,
+
                 message:
                     "Task deleted successfully."
             });
@@ -1176,8 +1570,7 @@ app.delete(
 
             res.status(500).json({
                 success: false,
-                error:
-                    error.message
+                error: error.message
             });
         }
     }
@@ -1186,6 +1579,7 @@ app.delete(
 // ============================================================
 // START SERVER
 // ============================================================
+
 // Only listen when running locally.
 // Vercel will use module.exports instead.
 

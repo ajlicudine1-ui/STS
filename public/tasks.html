@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,25 +12,34 @@
 
     <title>STS - Project Tasks</title>
 
-    <!-- Shared CSS -->
+    <!-- =====================================================
+         SHARED CSS
+         ===================================================== -->
+
     <link
         rel="stylesheet"
         href="/css/global.css">
 
-    <!-- Task Page CSS -->
+    <!-- =====================================================
+         TASK PAGE CSS
+         ===================================================== -->
+
     <link
         rel="stylesheet"
         href="/css/tasks.css">
 
 </head>
 
+
 <body>
+
 
     <!-- =====================================================
          SHARED SIDEBAR
          ===================================================== -->
 
     <div id="sidebar-container"></div>
+
 
 
     <!-- =====================================================
@@ -41,7 +51,6 @@
 
         <!-- =================================================
              PAGE HEADER
-             Task-specific content stays HERE
              ================================================= -->
 
         <div class="header">
@@ -68,6 +77,7 @@
             </button>
 
         </div>
+
 
 
         <!-- =================================================
@@ -146,6 +156,7 @@
 
 
         </section>
+
 
 
         <!-- =================================================
@@ -227,6 +238,7 @@
 
         </section>
 
+
     </main>
 
 
@@ -255,6 +267,7 @@
                     <p id="taskModalSubtitle">
                         Add a task to this project.
                     </p>
+
                 </div>
 
 
@@ -271,7 +284,7 @@
 
 
             <!-- =================================================
-                 CREATE TASK FORM
+                 CREATE / EDIT TASK FORM
                  ================================================= -->
 
             <form id="taskForm">
@@ -443,7 +456,6 @@
                                         Select Schedule
                                     </option>
 
-
                                     <option value="On Schedule">
                                         On Schedule
                                     </option>
@@ -591,7 +603,8 @@
                             </div>
 
                         </div>
-                        
+
+
                         <div class="form-group">
 
                             <label for="percentComplete">
@@ -692,7 +705,9 @@
                         Create Task
 
                     </button>
+
                 </div>
+
 
             </form>
 
@@ -965,15 +980,196 @@
 
 
     <!-- =====================================================
-         JAVASCRIPT
-         ===========================================a========== -->
+         TASK HISTORY MODAL
+         ===================================================== -->
 
-    <!-- Loads shared components -->
+    <div
+        class="modal"
+        id="historyModal">
+
+        <div class="modal-content task-history-modal">
+
+
+            <!-- HISTORY HEADER -->
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        Task History
+                    </h2>
+
+                    <p id="historyTaskName">
+                        Activity history and changes
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="modal-close"
+                    
+                    id="closeHistoryModal">
+
+                    &times;
+
+                </button>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 HISTORY SUMMARY
+                 ================================================= -->
+
+            <div class="task-history-summary">
+
+                <div>
+
+                    <span class="history-label">
+                        Task
+                    </span>
+
+                    <strong id="historyTaskTitle">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span class="history-label">
+                        Current Status
+                    </span>
+
+                    <strong id="historyCurrentStatus">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span class="history-label">
+                        % Complete
+                    </span>
+
+                    <strong id="historyCurrentPercent">
+                        0%
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 HISTORY TABLE
+                 ================================================= -->
+
+            <div class="table-container history-table-container">
+
+                <table class="tasks-table history-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Date / Time
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                % Complete
+                            </th>
+
+                            <th>
+                                Responsible Person
+                            </th>
+
+                            <th>
+                                Remarks
+                            </th>
+
+                            <th>
+                                Changed By
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="taskHistoryTable">
+
+                        <tr>
+
+                            <td colspan="7">
+                                No history found.
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 HISTORY FOOTER
+                 ================================================= -->
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="cancelHistoryBtn">
+
+                    Close
+
+                </button>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
+
+    <!-- Shared components -->
+
     <script src="/js/components.js"></script>
 
+
     <!-- Task page functionality -->
+
     <script src="/js/tasks.js"></script>
+
 
 </body>
 
 </html>
+```

@@ -14,6 +14,7 @@ if (!projectId) {
     window.location.href = "/";
 }
 
+
 // ============================================================
 // TASK MODAL ELEMENTS
 // ============================================================
@@ -22,12 +23,11 @@ const taskModal = document.getElementById("taskModal");
 const newTaskBtn = document.getElementById("newTaskBtn");
 const closeTaskModal = document.getElementById("closeTaskModal");
 const cancelTaskBtn = document.getElementById("cancelTaskBtn");
-
 const taskForm = document.getElementById("taskForm");
-
 const taskModalTitle = document.getElementById("taskModalTitle");
 const taskModalSubtitle = document.getElementById("taskModalSubtitle");
 const taskSubmitBtn = document.getElementById("taskSubmitBtn");
+
 
 // ============================================================
 // EDITING STATE
@@ -35,39 +35,95 @@ const taskSubmitBtn = document.getElementById("taskSubmitBtn");
 
 let editingTaskId = null;
 
+
 // ============================================================
-// HELPER: SET INPUT VALUE
+// HELPER - GET ELEMENT
+// ============================================================
+
+function getElement(id) {
+    return document.getElementById(id);
+}
+
+
+// ============================================================
+// HELPER - SET VALUE
 // ============================================================
 
 function setValue(id, value) {
-    const element = document.getElementById(id);
+    const element = getElement(id);
 
     if (element) {
         element.value = value ?? "";
     }
 }
 
+
+// ============================================================
+// HELPER - GET VALUE
+// ============================================================
+
+function getValue(id) {
+    const element = getElement(id);
+
+    return element ? element.value : "";
+}
+
+
+// ============================================================
+// HELPER - ESCAPE HTML
+// ============================================================
+
+function escapeHtml(value) {
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+// ============================================================
+// HELPER - FORMAT DATE
+// ============================================================
+
+function formatDate(dateValue) {
+    if (!dateValue) {
+        return "-";
+    }
+
+    return String(dateValue).substring(0, 10);
+}
+
+
 // ============================================================
 // OPEN NEW TASK MODAL
 // ============================================================
 
-newTaskBtn.addEventListener("click", () => {
+if (newTaskBtn) {
+    newTaskBtn.addEventListener("click", () => {
 
-    editingTaskId = null;
+        editingTaskId = null;
 
-    taskForm.reset();
+        taskForm.reset();
 
-    setValue("percentComplete", 0);
+        setValue("percentComplete", 0);
 
-    taskModalTitle.textContent = "New Task";
+        taskModalTitle.textContent = "New Task";
 
-    taskModalSubtitle.textContent =
-        "Add a task to this project.";
+        taskModalSubtitle.textContent =
+            "Add a task to this project.";
 
-    taskSubmitBtn.textContent = "Create Task";
+        taskSubmitBtn.textContent = "Create Task";
 
-    taskModal.classList.add("show");
-});
+        taskModal.classList.add("show");
+    });
+}
+
 
 // ============================================================
 // CLOSE TASK MODAL
@@ -75,37 +131,64 @@ newTaskBtn.addEventListener("click", () => {
 
 function closeModal() {
 
+    if (!taskModal) {
+        return;
+    }
+
     taskModal.classList.remove("show");
 
     editingTaskId = null;
 
-    taskForm.reset();
+    if (taskForm) {
+        taskForm.reset();
+    }
 
     setValue("percentComplete", 0);
 
-    taskModalTitle.textContent = "New Task";
-
-    taskModalSubtitle.textContent =
-        "Add a task to this project.";
-
-    taskSubmitBtn.textContent = "Create Task";
-}
-
-closeTaskModal.addEventListener("click", closeModal);
-
-cancelTaskBtn.addEventListener("click", closeModal);
-
-// ============================================================
-// CLOSE MODAL WHEN CLICKING OUTSIDE
-// ============================================================
-
-taskModal.addEventListener("click", (event) => {
-
-    if (event.target === taskModal) {
-        closeModal();
+    if (taskModalTitle) {
+        taskModalTitle.textContent = "New Task";
     }
 
-});
+    if (taskModalSubtitle) {
+        taskModalSubtitle.textContent =
+            "Add a task to this project.";
+    }
+
+    if (taskSubmitBtn) {
+        taskSubmitBtn.textContent = "Create Task";
+    }
+}
+
+
+// ============================================================
+// CLOSE TASK MODAL BUTTONS
+// ============================================================
+
+if (closeTaskModal) {
+    closeTaskModal.addEventListener("click", closeModal);
+}
+
+if (cancelTaskBtn) {
+    cancelTaskBtn.addEventListener("click", closeModal);
+}
+
+
+// ============================================================
+// CLOSE TASK MODAL WHEN CLICKING OUTSIDE
+// ============================================================
+
+if (taskModal) {
+
+    taskModal.addEventListener("click", (event) => {
+
+        if (event.target === taskModal) {
+            closeModal();
+        }
+
+    });
+
+}
+
 
 // ============================================================
 // OPEN EDIT TASK MODAL
@@ -115,10 +198,13 @@ function openEditTaskModal(task) {
 
     console.log("Opening task for edit:", task);
 
-    // Store ID
     editingTaskId = task.task_id;
 
-    // Change modal title
+
+    // --------------------------------------------------------
+    // MODAL HEADER
+    // --------------------------------------------------------
+
     taskModalTitle.textContent = "Edit Task";
 
     taskModalSubtitle.textContent =
@@ -126,9 +212,10 @@ function openEditTaskModal(task) {
 
     taskSubmitBtn.textContent = "Update Task";
 
-    // ========================================================
+
+    // --------------------------------------------------------
     // BASIC INFORMATION
-    // ========================================================
+    // --------------------------------------------------------
 
     setValue(
         "taskActivity",
@@ -145,9 +232,10 @@ function openEditTaskModal(task) {
         task.status
     );
 
-    // ========================================================
+
+    // --------------------------------------------------------
     // ASSIGNMENT & SCHEDULE
-    // ========================================================
+    // --------------------------------------------------------
 
     setValue(
         "taskPriority",
@@ -174,36 +262,35 @@ function openEditTaskModal(task) {
         task.stakeholder_end_user
     );
 
-    // ========================================================
+
+    // --------------------------------------------------------
     // DATES
-    // ========================================================
+    // --------------------------------------------------------
 
     setValue(
         "startDate",
-        task.start_date
-            ? task.start_date.substring(0, 10)
-            : ""
+        formatDate(task.start_date)
     );
 
     setValue(
         "dueDate",
-        task.due_date
-            ? task.due_date.substring(0, 10)
-            : ""
+        formatDate(task.due_date)
     );
 
-    // ========================================================
+
+    // --------------------------------------------------------
     // PROGRESS
-    // ========================================================
+    // --------------------------------------------------------
 
     setValue(
         "percentComplete",
         task.percent_complete ?? 0
     );
 
-    // ========================================================
+
+    // --------------------------------------------------------
     // ADDITIONAL DETAILS
-    // ========================================================
+    // --------------------------------------------------------
 
     setValue(
         "deliverableExpectedOutput",
@@ -215,30 +302,29 @@ function openEditTaskModal(task) {
         task.evidence_applicability
     );
 
-    // ========================================================
+
+    // --------------------------------------------------------
     // OPEN MODAL
-    // ========================================================
+    // --------------------------------------------------------
 
     taskModal.classList.add("show");
 }
+
 
 // ============================================================
 // REVIEW MODAL
 // ============================================================
 
-const reviewModal =
-    document.getElementById("reviewModal");
-
+const reviewModal = document.getElementById("reviewModal");
 const closeReviewModalBtn =
     document.getElementById("closeReviewModal");
-
 const cancelReviewBtn =
     document.getElementById("cancelReviewBtn");
-
 const reviewForm =
     document.getElementById("reviewForm");
 
 let currentReviewTaskId = null;
+
 
 // ============================================================
 // CLOSE REVIEW MODAL
@@ -246,32 +332,51 @@ let currentReviewTaskId = null;
 
 function closeReviewModal() {
 
+    if (!reviewModal) {
+        return;
+    }
+
     reviewModal.classList.remove("show");
 
     currentReviewTaskId = null;
 }
 
-closeReviewModalBtn.addEventListener(
-    "click",
-    closeReviewModal
-);
 
-cancelReviewBtn.addEventListener(
-    "click",
-    closeReviewModal
-);
+// ============================================================
+// REVIEW CLOSE BUTTONS
+// ============================================================
+
+if (closeReviewModalBtn) {
+    closeReviewModalBtn.addEventListener(
+        "click",
+        closeReviewModal
+    );
+}
+
+if (cancelReviewBtn) {
+    cancelReviewBtn.addEventListener(
+        "click",
+        closeReviewModal
+    );
+}
+
 
 // ============================================================
 // CLOSE REVIEW MODAL OUTSIDE CLICK
 // ============================================================
 
-reviewModal.addEventListener("click", (event) => {
+if (reviewModal) {
 
-    if (event.target === reviewModal) {
-        closeReviewModal();
-    }
+    reviewModal.addEventListener("click", (event) => {
 
-});
+        if (event.target === reviewModal) {
+            closeReviewModal();
+        }
+
+    });
+
+}
+
 
 // ============================================================
 // OPEN REVIEW MODAL
@@ -279,30 +384,60 @@ reviewModal.addEventListener("click", (event) => {
 
 function openReviewModal(task) {
 
+    console.log("Opening review:", task);
+
     currentReviewTaskId = task.task_id;
 
-    // ========================================================
+
+    // --------------------------------------------------------
     // TASK INFORMATION
-    // ========================================================
+    // --------------------------------------------------------
 
-    document.getElementById("reviewTaskName").textContent =
-        task.task_activity || "-";
+    const reviewTaskName =
+        document.getElementById("reviewTaskName");
 
-    document.getElementById("reviewResponsiblePerson").textContent =
-        task.responsible_person || "-";
+    const reviewResponsiblePerson =
+        document.getElementById("reviewResponsiblePerson");
 
-    document.getElementById("reviewStatus").textContent =
-        task.status || "-";
+    const reviewStatus =
+        document.getElementById("reviewStatus");
 
-    document.getElementById("reviewPercentComplete").textContent =
-        `${task.percent_complete ?? 0}%`;
+    const reviewPercentComplete =
+        document.getElementById("reviewPercentComplete");
 
-    document.getElementById("reviewExpectedOutput").textContent =
-        task.deliverable_expected_output || "-";
+    const reviewExpectedOutput =
+        document.getElementById("reviewExpectedOutput");
 
-    // ========================================================
+
+    if (reviewTaskName) {
+        reviewTaskName.textContent =
+            task.task_activity || "-";
+    }
+
+    if (reviewResponsiblePerson) {
+        reviewResponsiblePerson.textContent =
+            task.responsible_person || "-";
+    }
+
+    if (reviewStatus) {
+        reviewStatus.textContent =
+            task.status || "-";
+    }
+
+    if (reviewPercentComplete) {
+        reviewPercentComplete.textContent =
+            `${task.percent_complete ?? 0}%`;
+    }
+
+    if (reviewExpectedOutput) {
+        reviewExpectedOutput.textContent =
+            task.deliverable_expected_output || "-";
+    }
+
+
+    // --------------------------------------------------------
     // EXISTING REVIEW DATA
-    // ========================================================
+    // --------------------------------------------------------
 
     setValue(
         "reviewedVerifiedBy",
@@ -316,9 +451,7 @@ function openReviewModal(task) {
 
     setValue(
         "reviewDate",
-        task.review_date
-            ? task.review_date.substring(0, 10)
-            : ""
+        formatDate(task.review_date)
     );
 
     setValue(
@@ -326,8 +459,423 @@ function openReviewModal(task) {
         task.remarks
     );
 
+
+    // --------------------------------------------------------
+    // OPEN MODAL
+    // --------------------------------------------------------
+
     reviewModal.classList.add("show");
 }
+
+
+// ============================================================
+// TASK HISTORY MODAL
+// ============================================================
+
+const historyModal =
+    document.getElementById("historyModal");
+
+const closeHistoryModalBtn =
+    document.getElementById("closeHistoryModal");
+
+const cancelHistoryBtn =
+    document.getElementById("cancelHistoryBtn");
+
+const historyTaskName =
+    document.getElementById("historyTaskName");
+
+const historyTaskTitle =
+    document.getElementById("historyTaskTitle");
+
+const historyCurrentStatus =
+    document.getElementById("historyCurrentStatus");
+
+const historyCurrentPercent =
+    document.getElementById("historyCurrentPercent");
+
+const taskHistoryTable =
+    document.getElementById("taskHistoryTable");
+
+let currentHistoryTaskId = null;
+
+
+// ============================================================
+// CLOSE HISTORY MODAL
+// ============================================================
+
+function closeHistoryModal() {
+
+    if (!historyModal) {
+        return;
+    }
+
+    historyModal.classList.remove("show");
+
+    currentHistoryTaskId = null;
+
+    if (taskHistoryTable) {
+
+        taskHistoryTable.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    No history found.
+                </td>
+            </tr>
+        `;
+
+    }
+}
+
+
+// ============================================================
+// HISTORY CLOSE BUTTONS
+// ============================================================
+
+if (closeHistoryModalBtn) {
+
+    closeHistoryModalBtn.addEventListener(
+        "click",
+        closeHistoryModal
+    );
+
+}
+
+if (cancelHistoryBtn) {
+
+    cancelHistoryBtn.addEventListener(
+        "click",
+        closeHistoryModal
+    );
+
+}
+
+
+// ============================================================
+// CLOSE HISTORY MODAL OUTSIDE CLICK
+// ============================================================
+
+if (historyModal) {
+
+    historyModal.addEventListener("click", (event) => {
+
+        if (event.target === historyModal) {
+            closeHistoryModal();
+        }
+
+    });
+
+}
+
+
+// ============================================================
+// LOAD TASK HISTORY
+// ============================================================
+
+async function loadTaskHistory(task) {
+
+    if (!task || !task.task_id) {
+        return;
+    }
+
+    currentHistoryTaskId = task.task_id;
+
+
+    // --------------------------------------------------------
+    // UPDATE HISTORY HEADER
+    // --------------------------------------------------------
+
+    if (historyTaskName) {
+
+        historyTaskName.textContent =
+            task.task_activity ||
+            "Activity history and changes";
+
+    }
+
+
+    if (historyTaskTitle) {
+
+        historyTaskTitle.textContent =
+            task.task_activity || "-";
+
+    }
+
+
+    if (historyCurrentStatus) {
+
+        historyCurrentStatus.textContent =
+            task.status || "-";
+
+    }
+
+
+    if (historyCurrentPercent) {
+
+        historyCurrentPercent.textContent =
+            `${task.percent_complete ?? 0}%`;
+
+    }
+
+
+    // --------------------------------------------------------
+    // SHOW LOADING
+    // --------------------------------------------------------
+
+    if (taskHistoryTable) {
+
+        taskHistoryTable.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    Loading history...
+                </td>
+            </tr>
+        `;
+
+    }
+
+
+    historyModal.classList.add("show");
+
+
+    // --------------------------------------------------------
+    // FETCH HISTORY
+    // --------------------------------------------------------
+
+    try {
+
+        const response = await fetch(
+            `/api/tasks/${task.task_id}/history`
+        );
+
+
+        const result = await response.json();
+
+
+        console.log(
+            "Task history response:",
+            result
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.error ||
+                "Failed to load task history."
+            );
+
+        }
+
+
+        const history =
+            result.history || [];
+
+
+        // ----------------------------------------------------
+        // NO HISTORY
+        // ----------------------------------------------------
+
+        if (history.length === 0) {
+
+            if (taskHistoryTable) {
+
+                taskHistoryTable.innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            No changes have been recorded
+                            for this task yet.
+                        </td>
+                    </tr>
+                `;
+
+            }
+
+            return;
+        }
+
+
+        // ----------------------------------------------------
+        // DISPLAY HISTORY
+        // ----------------------------------------------------
+
+        if (taskHistoryTable) {
+
+            taskHistoryTable.innerHTML = history
+                .map((item) => {
+
+                    const changedAt =
+                        item.changed_at ||
+                        item.created_at ||
+                        item.date ||
+                        null;
+
+
+                    const action =
+                        item.action ||
+                        "Task Updated";
+
+
+                    const oldStatus =
+                        item.old_status ??
+                        "-";
+
+
+                    const newStatus =
+                        item.new_status ??
+                        "-";
+
+
+                    const oldPercent =
+                        item.old_percent_complete ??
+                        0;
+
+
+                    const newPercent =
+                        item.new_percent_complete ??
+                        0;
+
+
+                    const responsiblePerson =
+                        item.responsible_person ||
+                        item.new_responsible_person ||
+                        "-";
+
+
+                    const remarks =
+                        item.remarks ||
+                        "-";
+
+
+                    const changedBy =
+                        item.changed_by ||
+                        item.changed_by_name ||
+                        "-";
+
+
+                    return `
+                        <tr>
+
+                            <td>
+                                ${escapeHtml(
+                                    formatHistoryDate(changedAt)
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(action)}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(oldStatus)}
+                                →
+                                ${escapeHtml(newStatus)}
+                            </td>
+
+                            <td>
+                                ${oldPercent}%
+                                →
+                                ${newPercent}%
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    responsiblePerson
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(remarks)}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(changedBy)}
+                            </td>
+
+                        </tr>
+                    `;
+
+                })
+                .join("");
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Load task history error:",
+            error
+        );
+
+
+        if (taskHistoryTable) {
+
+            taskHistoryTable.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        Failed to load history:
+                        ${escapeHtml(error.message)}
+                    </td>
+                </tr>
+            `;
+
+        }
+
+    }
+
+}
+
+
+// ============================================================
+// FORMAT HISTORY DATE
+// ============================================================
+
+function formatHistoryDate(dateValue) {
+
+    if (!dateValue) {
+        return "-";
+    }
+
+
+    const date =
+        new Date(dateValue);
+
+
+    if (Number.isNaN(date.getTime())) {
+        return String(dateValue);
+    }
+
+
+    return date.toLocaleString();
+}
+
+
+// ============================================================
+// GET STATUS CSS CLASS
+// ============================================================
+
+function getStatusClass(status) {
+
+    switch (status) {
+
+        case "In Progress":
+            return "status-active";
+
+        case "Completed":
+            return "status-completed";
+
+        case "Not Started":
+            return "status-pending";
+
+        case "On Hold":
+            return "status-pending";
+
+        default:
+            return "status-pending";
+    }
+
+}
+
 
 // ============================================================
 // LOAD TASKS
@@ -337,50 +885,125 @@ async function loadTasks() {
 
     try {
 
+        console.log(
+            "Loading tasks for project:",
+            projectId
+        );
+
+
         const response = await fetch(
             `/api/projects/${projectId}/tasks`
         );
 
-        if (!response.ok) {
-            throw new Error("Failed to load tasks.");
-        }
 
         const data = await response.json();
 
-        console.log("Tasks loaded:", data);
 
-        const tasks = data.tasks || [];
+        console.log(
+            "Tasks response:",
+            data
+        );
 
-        // ====================================================
-        // STATISTICS
-        // ====================================================
 
-        document.getElementById("taskTotal").textContent =
-            tasks.length;
+        if (!response.ok) {
 
-        document.getElementById("taskNotStarted").textContent =
-            tasks.filter(
-                task => task.status === "Not Started"
-            ).length;
+            throw new Error(
+                data.error ||
+                "Failed to load tasks."
+            );
 
-        document.getElementById("taskInProgress").textContent =
-            tasks.filter(
-                task => task.status === "In Progress"
-            ).length;
+        }
 
-        document.getElementById("taskCompleted").textContent =
-            tasks.filter(
-                task => task.status === "Completed"
-            ).length;
+
+        const tasks =
+            Array.isArray(data.tasks)
+                ? data.tasks
+                : [];
+
 
         // ====================================================
-        // TABLE
+        // UPDATE STATISTICS
+        // ====================================================
+
+        const taskTotal =
+            document.getElementById("taskTotal");
+
+        const taskNotStarted =
+            document.getElementById("taskNotStarted");
+
+        const taskInProgress =
+            document.getElementById("taskInProgress");
+
+        const taskCompleted =
+            document.getElementById("taskCompleted");
+
+
+        if (taskTotal) {
+
+            taskTotal.textContent =
+                tasks.length;
+
+        }
+
+
+        if (taskNotStarted) {
+
+            taskNotStarted.textContent =
+                tasks.filter(
+                    task =>
+                        task.status === "Not Started"
+                ).length;
+
+        }
+
+
+        if (taskInProgress) {
+
+            taskInProgress.textContent =
+                tasks.filter(
+                    task =>
+                        task.status === "In Progress"
+                ).length;
+
+        }
+
+
+        if (taskCompleted) {
+
+            taskCompleted.textContent =
+                tasks.filter(
+                    task =>
+                        task.status === "Completed"
+                ).length;
+
+        }
+
+
+        // ====================================================
+        // TASK TABLE
         // ====================================================
 
         const table =
             document.getElementById("tasksTable");
 
+
+        if (!table) {
+
+            console.error(
+                "tasksTable element was not found."
+            );
+
+            return;
+
+        }
+
+
         table.innerHTML = "";
+
+
+        // ====================================================
+        // NO TASKS
+        // ====================================================
 
         if (tasks.length === 0) {
 
@@ -395,72 +1018,94 @@ async function loadTasks() {
             return;
         }
 
+
         // ====================================================
         // DISPLAY TASKS
         // ====================================================
 
-        tasks.forEach(task => {
+        tasks.forEach((task) => {
 
             const row =
                 document.createElement("tr");
 
-            // =================================================
-            // STATUS CLASS
-            // =================================================
 
-            let statusClass = "status-pending";
+            const statusClass =
+                getStatusClass(task.status);
 
-            if (task.status === "In Progress") {
-                statusClass = "status-active";
-            }
-
-            if (task.status === "Completed") {
-                statusClass = "status-completed";
-            }
-
-            if (task.status === "On Hold") {
-                statusClass = "status-pending";
-            }
-
-            // =================================================
-            // TABLE ROW
-            // =================================================
 
             row.innerHTML = `
-                <td>
-                    ${task.task_activity || "-"}
-                </td>
+
+                <!-- TASK -->
 
                 <td>
-                    ${task.procedure_stage || "-"}
+                    ${escapeHtml(
+                        task.task_activity || "-"
+                    )}
                 </td>
 
+
+                <!-- PROCEDURE STAGE -->
+
                 <td>
-                    <span class="status ${statusClass}">
-                        ${task.status || "-"}
+                    ${escapeHtml(
+                        task.procedure_stage || "-"
+                    )}
+                </td>
+
+
+                <!-- STATUS -->
+
+                <td>
+
+                    <span
+                        class="status ${statusClass}">
+
+                        ${escapeHtml(
+                            task.status || "-"
+                        )}
+
                     </span>
+
                 </td>
 
-                <td>
-                    ${task.priority || "-"}
-                </td>
+
+                <!-- PRIORITY -->
 
                 <td>
-                    ${task.responsible_person || "-"}
+                    ${escapeHtml(
+                        task.priority || "-"
+                    )}
                 </td>
 
+
+                <!-- RESPONSIBLE PERSON -->
+
                 <td>
-                    ${task.due_date
-                        ? task.due_date.substring(0, 10)
-                        : "-"
-                    }
+                    ${escapeHtml(
+                        task.responsible_person || "-"
+                    )}
                 </td>
+
+
+                <!-- DUE DATE -->
+
+                <td>
+                    ${escapeHtml(
+                        formatDate(task.due_date)
+                    )}
+                </td>
+
+
+                <!-- PERCENT COMPLETE -->
 
                 <td>
                     ${task.percent_complete ?? 0}%
                 </td>
 
-                <td>
+
+                <!-- ACTIONS -->
+
+                <td class="task-actions">
 
                     <button
                         type="button"
@@ -468,11 +1113,20 @@ async function loadTasks() {
                         Review
                     </button>
 
+
                     <button
                         type="button"
                         class="btn btn-secondary edit-task-btn">
                         Edit
                     </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary history-task-btn">
+                        History
+                    </button>
+
 
                     <button
                         type="button"
@@ -481,101 +1135,161 @@ async function loadTasks() {
                     </button>
 
                 </td>
+
             `;
 
+
             table.appendChild(row);
+
 
             // =================================================
             // REVIEW BUTTON
             // =================================================
 
             const reviewBtn =
-                row.querySelector(".review-task-btn");
+                row.querySelector(
+                    ".review-task-btn"
+                );
 
-            reviewBtn.addEventListener("click", () => {
 
-                openReviewModal(task);
+            if (reviewBtn) {
 
-            });
+                reviewBtn.addEventListener(
+                    "click",
+                    () => {
+                        openReviewModal(task);
+                    }
+                );
+
+            }
+
 
             // =================================================
             // EDIT BUTTON
             // =================================================
 
             const editBtn =
-                row.querySelector(".edit-task-btn");
+                row.querySelector(
+                    ".edit-task-btn"
+                );
 
-            editBtn.addEventListener("click", () => {
 
-                openEditTaskModal(task);
+            if (editBtn) {
 
-            });
+                editBtn.addEventListener(
+                    "click",
+                    () => {
+                        openEditTaskModal(task);
+                    }
+                );
+
+            }
+
+
+            // =================================================
+            // HISTORY BUTTON
+            // =================================================
+
+            const historyBtn =
+                row.querySelector(
+                    ".history-task-btn"
+                );
+
+
+            if (historyBtn) {
+
+                historyBtn.addEventListener(
+                    "click",
+                    () => {
+                        loadTaskHistory(task);
+                    }
+                );
+
+            }
+
 
             // =================================================
             // DELETE BUTTON
             // =================================================
 
             const deleteBtn =
-                row.querySelector(".delete-task-btn");
+                row.querySelector(
+                    ".delete-task-btn"
+                );
 
-            deleteBtn.addEventListener(
-                "click",
-                async () => {
 
-                    const confirmed = confirm(
-                        "Are you sure you want to delete this task?"
-                    );
+            if (deleteBtn) {
 
-                    if (!confirmed) {
-                        return;
-                    }
+                deleteBtn.addEventListener(
+                    "click",
+                    async () => {
 
-                    try {
-
-                        const response =
-                            await fetch(
-                                `/api/tasks/${task.task_id}`,
-                                {
-                                    method: "DELETE"
-                                }
+                        const confirmed =
+                            confirm(
+                                "Are you sure you want to delete this task?"
                             );
 
-                        const result =
-                            await response.json();
 
-                        if (!response.ok) {
+                        if (!confirmed) {
+                            return;
+                        }
 
-                            throw new Error(
-                                result.error ||
-                                "Failed to delete task."
+
+                        try {
+
+                            const response =
+                                await fetch(
+                                    `/api/tasks/${task.task_id}`,
+                                    {
+                                        method: "DELETE"
+                                    }
+                                );
+
+
+                            const result =
+                                await response.json();
+
+
+                            if (!response.ok) {
+
+                                throw new Error(
+                                    result.error ||
+                                    "Failed to delete task."
+                                );
+
+                            }
+
+
+                            alert(
+                                "Task deleted successfully!"
+                            );
+
+
+                            await loadTasks();
+
+
+                        } catch (error) {
+
+                            console.error(
+                                "Delete task error:",
+                                error
+                            );
+
+
+                            alert(
+                                "Error: " +
+                                error.message
                             );
 
                         }
 
-                        alert(
-                            "Task deleted successfully!"
-                        );
-
-                        await loadTasks();
-
-                    } catch (error) {
-
-                        console.error(
-                            "Delete task error:",
-                            error
-                        );
-
-                        alert(
-                            "Error: " +
-                            error.message
-                        );
-
                     }
+                );
 
-                }
-            );
+            }
 
         });
+
 
     } catch (error) {
 
@@ -584,367 +1298,401 @@ async function loadTasks() {
             error
         );
 
+
         alert(
             "Error loading tasks: " +
             error.message
         );
 
     }
+
 }
+
 
 // ============================================================
 // CREATE / UPDATE TASK
 // ============================================================
 
-taskForm.addEventListener(
-    "submit",
-    async (event) => {
+if (taskForm) {
 
-        event.preventDefault();
+    taskForm.addEventListener(
+        "submit",
+        async (event) => {
 
-        // ====================================================
-        // COLLECT FORM DATA
-        // ====================================================
+            event.preventDefault();
 
-        const taskData = {
 
-            procedure_stage:
-                document.getElementById(
-                    "procedureStage"
-                ).value.trim(),
+            // ==================================================
+            // COLLECT FORM DATA
+            // ==================================================
 
-            task_activity:
-                document.getElementById(
-                    "taskActivity"
-                ).value.trim(),
+            const taskData = {
 
-            status:
-                document.getElementById(
-                    "taskStatus"
-                ).value,
+                procedure_stage:
+                    getValue("procedureStage").trim(),
 
-            schedule_status:
-                document.getElementById(
-                    "scheduleStatus"
-                ).value,
+                task_activity:
+                    getValue("taskActivity").trim(),
 
-            priority:
-                document.getElementById(
-                    "taskPriority"
-                ).value,
+                status:
+                    getValue("taskStatus"),
 
-            responsible_person:
-                document.getElementById(
-                    "responsiblePerson"
-                ).value.trim(),
+                schedule_status:
+                    getValue("scheduleStatus"),
 
-            role:
-                document.getElementById(
-                    "taskRole"
-                ).value,
+                priority:
+                    getValue("taskPriority"),
 
-            stakeholder_end_user:
-                document.getElementById(
-                    "stakeholderEndUser"
-                ).value.trim(),
+                responsible_person:
+                    getValue("responsiblePerson").trim(),
 
-            start_date:
-                document.getElementById(
-                    "startDate"
-                ).value || null,
+                role:
+                    getValue("taskRole"),
 
-            due_date:
-                document.getElementById(
-                    "dueDate"
-                ).value || null,
-                
-            deliverable_expected_output:
-                document.getElementById(
-                    "deliverableExpectedOutput"
-                ).value.trim(),
+                stakeholder_end_user:
+                    getValue("stakeholderEndUser").trim(),
 
-            evidence_applicability:
-                document.getElementById(
-                    "evidenceApplicability"
-                ).value,
+                start_date:
+                    getValue("startDate") || null,
 
-            percent_complete:
-                document.getElementById(
-                    "percentComplete"
-                ).value || 0
-        };
+                due_date:
+                    getValue("dueDate") || null,
 
-        console.log(
-            "Task data:",
-            taskData
-        );
+                deliverable_expected_output:
+                    getValue(
+                        "deliverableExpectedOutput"
+                    ).trim(),
 
-        // ====================================================
-        // DETERMINE CREATE OR UPDATE
-        // ====================================================
+                evidence_applicability:
+                    getValue(
+                        "evidenceApplicability"
+                    ),
 
-        const isEditing =
-            editingTaskId !== null;
+                percent_complete:
+                    Number(
+                        getValue("percentComplete") || 0
+                    )
 
-        let url;
-        let method;
+            };
 
-        if (isEditing) {
-
-            url =
-                `/api/tasks/${editingTaskId}`;
-
-            method = "PUT";
-
-        } else {
-
-            url =
-                `/api/projects/${projectId}/tasks`;
-
-            method = "POST";
-
-        }
-
-        console.log("Request:", method, url);
-
-        // ====================================================
-        // SEND REQUEST
-        // ====================================================
-
-        try {
-
-            const response =
-                await fetch(
-                    url,
-                    {
-                        method: method,
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify(taskData)
-                    }
-                );
-
-            const result =
-                await response.json();
 
             console.log(
-                "Server response:",
-                result
+                "Task data:",
+                taskData
             );
 
-            if (!response.ok) {
 
-                throw new Error(
-                    result.error ||
-                    (
-                        isEditing
-                            ? "Failed to update task."
-                            : "Failed to create task."
-                    )
-                );
+            // ==================================================
+            // DETERMINE CREATE OR UPDATE
+            // ==================================================
 
-            }
+            const isEditing =
+                editingTaskId !== null;
 
-            // =================================================
-            // SUCCESS
-            // =================================================
+
+            let url;
+            let method;
+
 
             if (isEditing) {
 
-                alert(
-                    "Task updated successfully!"
-                );
+                url =
+                    `/api/tasks/${editingTaskId}`;
+
+                method =
+                    "PUT";
 
             } else {
 
+                url =
+                    `/api/projects/${projectId}/tasks`;
+
+                method =
+                    "POST";
+
+            }
+
+
+            console.log(
+                "Request:",
+                method,
+                url
+            );
+
+
+            // ==================================================
+            // SEND REQUEST
+            // ==================================================
+
+            try {
+
+                const response =
+                    await fetch(
+                        url,
+                        {
+                            method: method,
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(taskData)
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                console.log(
+                    "Server response:",
+                    result
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        (
+                            isEditing
+                                ? "Failed to update task."
+                                : "Failed to create task."
+                        )
+                    );
+
+                }
+
+
+                // =================================================
+                // SUCCESS
+                // =================================================
+
                 alert(
-                    "Task created successfully!"
+                    isEditing
+                        ? "Task updated successfully!"
+                        : "Task created successfully!"
+                );
+
+
+                // =================================================
+                // CLOSE MODAL
+                // =================================================
+
+                closeModal();
+
+
+                // =================================================
+                // REFRESH TASKS
+                // =================================================
+
+                await loadTasks();
+
+            } catch (error) {
+
+                console.error(
+                    isEditing
+                        ? "Update task error:"
+                        : "Create task error:",
+                    error
+                );
+
+
+                alert(
+                    "Error: " +
+                    error.message
                 );
 
             }
 
-            // =================================================
-            // RESET
-            // =================================================
-
-            taskForm.reset();
-
-            setValue(
-                "percentComplete",
-                0
-            );
-
-            closeModal();
-
-            await loadTasks();
-
-        } catch (error) {
-
-            console.error(
-                isEditing
-                    ? "Update task error:"
-                    : "Create task error:",
-                error
-            );
-
-            alert(
-                "Error: " +
-                error.message
-            );
-
         }
+    );
 
-    }
-);
+}
+
 
 // ============================================================
 // SUBMIT REVIEW
 // ============================================================
 
-reviewForm.addEventListener(
-    "submit",
-    async (event) => {
+if (reviewForm) {
 
-        event.preventDefault();
+    reviewForm.addEventListener(
+        "submit",
+        async (event) => {
 
-        if (!currentReviewTaskId) {
+            event.preventDefault();
 
-            alert(
-                "No task selected for review."
-            );
 
-            return;
-        }
+            // ==================================================
+            // CHECK TASK
+            // ==================================================
 
-        // ====================================================
-        // REVIEW DATA
-        // ====================================================
+            if (!currentReviewTaskId) {
 
-        const reviewData = {
-
-            reviewed_verified_by:
-                document.getElementById(
-                    "reviewedVerifiedBy"
-                ).value.trim(),
-
-            review_result:
-                document.getElementById(
-                    "reviewResult"
-                ).value,
-
-            review_date:
-                document.getElementById(
-                    "reviewDate"
-                ).value || null,
-
-            remarks:
-                document.getElementById(
-                    "reviewRemarks"
-                ).value.trim()
-
-        };
-
-        // ====================================================
-        // VALIDATION
-        // ====================================================
-
-        if (!reviewData.reviewed_verified_by) {
-
-            alert(
-                "Please enter the name of the reviewer."
-            );
-
-            return;
-        }
-
-        if (!reviewData.review_result) {
-
-            alert(
-                "Please select a review result."
-            );
-
-            return;
-        }
-
-        if (!reviewData.review_date) {
-
-            alert(
-                "Please enter the review date."
-            );
-
-            return;
-        }
-
-        // ====================================================
-        // SEND REVIEW
-        // ====================================================
-
-        try {
-
-            const response =
-                await fetch(
-                    `/api/tasks/${currentReviewTaskId}/review`,
-                    {
-                        method: "PUT",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify(reviewData)
-                    }
+                alert(
+                    "No task selected for review."
                 );
 
-            const result =
-                await response.json();
+                return;
+            }
 
-            console.log(
-                "Review response:",
-                result
-            );
 
-            if (!response.ok) {
+            // ==================================================
+            // COLLECT REVIEW DATA
+            // ==================================================
 
-                throw new Error(
-                    result.error ||
-                    "Failed to submit review."
+            const reviewData = {
+
+                reviewed_verified_by:
+                    getValue(
+                        "reviewedVerifiedBy"
+                    ).trim(),
+
+                review_result:
+                    getValue(
+                        "reviewResult"
+                    ),
+
+                review_date:
+                    getValue(
+                        "reviewDate"
+                    ) || null,
+
+                remarks:
+                    getValue(
+                        "reviewRemarks"
+                    ).trim()
+
+            };
+
+
+            // ==================================================
+            // VALIDATION
+            // ==================================================
+
+            if (
+                !reviewData.reviewed_verified_by
+            ) {
+
+                alert(
+                    "Please enter the name of the reviewer."
+                );
+
+                return;
+            }
+
+
+            if (
+                !reviewData.review_result
+            ) {
+
+                alert(
+                    "Please select a review result."
+                );
+
+                return;
+            }
+
+
+            if (
+                !reviewData.review_date
+            ) {
+
+                alert(
+                    "Please enter the review date."
+                );
+
+                return;
+            }
+
+
+            // ==================================================
+            // SEND REVIEW
+            // ==================================================
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/tasks/${currentReviewTaskId}/review`,
+                        {
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    reviewData
+                                )
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                console.log(
+                    "Review response:",
+                    result
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        "Failed to submit review."
+                    );
+
+                }
+
+
+                // =================================================
+                // SUCCESS
+                // =================================================
+
+                alert(
+                    "Task review submitted successfully!"
+                );
+
+
+                reviewForm.reset();
+
+
+                closeReviewModal();
+
+
+                await loadTasks();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Submit review error:",
+                    error
+                );
+
+
+                alert(
+                    "Error: " +
+                    error.message
                 );
 
             }
 
-            alert(
-                "Task review submitted successfully!"
-            );
-
-            reviewForm.reset();
-
-            closeReviewModal();
-
-            await loadTasks();
-
-        } catch (error) {
-
-            console.error(
-                "Submit review error:",
-                error
-            );
-
-            alert(
-                "Error: " +
-                error.message
-            );
-
         }
+    );
 
-    }
-);
+}
+
 
 // ============================================================
 // INITIAL LOAD
