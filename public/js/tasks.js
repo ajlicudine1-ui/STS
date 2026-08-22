@@ -192,13 +192,6 @@ function openEditTaskModal(task) {
             : ""
     );
 
-    setValue(
-        "completionDate",
-        task.completion_date
-            ? task.completion_date.substring(0, 10)
-            : ""
-    );
-
     // ========================================================
     // PROGRESS
     // ========================================================
@@ -664,12 +657,7 @@ taskForm.addEventListener(
                 document.getElementById(
                     "dueDate"
                 ).value || null,
-
-            completion_date:
-                document.getElementById(
-                    "completionDate"
-                ).value || null,
-
+                
             deliverable_expected_output:
                 document.getElementById(
                     "deliverableExpectedOutput"
