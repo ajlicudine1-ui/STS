@@ -12,6 +12,7 @@
 
     <title>STS - Project Tasks</title>
 
+
     <!-- =====================================================
          SHARED CSS
          ===================================================== -->
@@ -19,6 +20,7 @@
     <link
         rel="stylesheet"
         href="/css/global.css">
+
 
     <!-- =====================================================
          TASK PAGE CSS
@@ -43,7 +45,7 @@
 
 
     <!-- =====================================================
-         MAIN
+         MAIN CONTENT
          ===================================================== -->
 
     <main class="main">
@@ -54,6 +56,9 @@
              ================================================= -->
 
         <div class="header">
+
+
+            <!-- PAGE TITLE -->
 
             <div>
 
@@ -68,13 +73,39 @@
             </div>
 
 
-            <button
-                class="btn btn-primary"
-                id="newTaskBtn">
 
-                + New Task
+            <!-- =================================================
+                 HEADER ACTIONS
+                 ================================================= -->
 
-            </button>
+            <div class="header-actions">
+
+
+                <!-- NEW TASK -->
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="newTaskBtn">
+
+                    + New Task
+
+                </button>
+
+
+                <!-- HISTORY -->
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="openHistoryBtn">
+
+                    History
+
+                </button>
+
+
+            </div>
 
         </div>
 
@@ -86,6 +117,8 @@
 
         <section class="stats">
 
+
+            <!-- TOTAL -->
 
             <div class="card stat-card total">
 
@@ -104,6 +137,9 @@
             </div>
 
 
+
+            <!-- NOT STARTED -->
+
             <div class="card stat-card not-started">
 
                 <div class="card-title stat-title">
@@ -121,6 +157,9 @@
             </div>
 
 
+
+            <!-- IN PROGRESS -->
+
             <div class="card stat-card in-progress">
 
                 <div class="card-title stat-title">
@@ -137,6 +176,9 @@
 
             </div>
 
+
+
+            <!-- COMPLETED -->
 
             <div class="card stat-card completed">
 
@@ -175,9 +217,11 @@
             </div>
 
 
+
             <div class="table-container">
 
                 <table class="tasks-table">
+
 
                     <thead>
 
@@ -220,6 +264,7 @@
                     </thead>
 
 
+
                     <tbody id="tasksTable">
 
                         <tr>
@@ -232,9 +277,11 @@
 
                     </tbody>
 
+
                 </table>
 
             </div>
+
 
         </section>
 
@@ -251,12 +298,16 @@
         class="modal"
         id="taskModal">
 
+
         <div class="modal-content task-modal">
 
 
-            <!-- MODAL HEADER -->
+            <!-- =================================================
+                 MODAL HEADER
+                 ================================================= -->
 
             <div class="modal-header">
+
 
                 <div>
 
@@ -271,7 +322,9 @@
                 </div>
 
 
+
                 <button
+                    type="button"
                     class="modal-close"
                     id="closeTaskModal">
 
@@ -279,25 +332,32 @@
 
                 </button>
 
+
             </div>
 
 
 
             <!-- =================================================
-                 CREATE / EDIT TASK FORM
+                 TASK FORM
                  ================================================= -->
 
             <form id="taskForm">
 
 
-                <!-- BASIC TASK INFORMATION -->
+                <!-- =================================================
+                     BASIC TASK INFORMATION
+                     ================================================= -->
 
                 <div class="task-section">
+
 
                     <div class="section-title">
                         Basic Task Information
                     </div>
 
+
+
+                    <!-- TASK -->
 
                     <div class="form-group">
 
@@ -313,6 +373,9 @@
 
                     </div>
 
+
+
+                    <!-- STAGE + STATUS -->
 
                     <div class="form-row">
 
@@ -362,6 +425,7 @@
                         </div>
 
 
+
                         <div class="form-group">
 
                             <label for="taskStatus">
@@ -390,23 +454,31 @@
 
                         </div>
 
+
                     </div>
+
 
                 </div>
 
 
 
-                <!-- ASSIGNMENT & SCHEDULE -->
+                <!-- =================================================
+                     ASSIGNMENT & SCHEDULE
+                     ================================================= -->
 
                 <details class="task-details">
+
 
                     <summary>
                         Assignment & Schedule
                     </summary>
 
 
+
                     <div class="details-content">
 
+
+                        <!-- PRIORITY + SCHEDULE -->
 
                         <div class="form-row">
 
@@ -444,6 +516,7 @@
                             </div>
 
 
+
                             <div class="form-group">
 
                                 <label for="scheduleStatus">
@@ -476,8 +549,12 @@
 
                             </div>
 
+
                         </div>
 
+
+
+                        <!-- RESPONSIBLE + ROLE -->
 
                         <div class="form-row">
 
@@ -494,6 +571,7 @@
                                     placeholder="Enter responsible person">
 
                             </div>
+
 
 
                             <div class="form-group">
@@ -540,8 +618,12 @@
 
                             </div>
 
+
                         </div>
 
+
+
+                        <!-- STAKEHOLDER -->
 
                         <div class="form-group">
 
@@ -556,19 +638,25 @@
 
                         </div>
 
+
                     </div>
+
 
                 </details>
 
 
 
-                <!-- DATES & PROGRESS -->
+                <!-- =================================================
+                     DATES & PROGRESS
+                     ================================================= -->
 
                 <details class="task-details">
+
 
                     <summary>
                         Dates & Progress
                     </summary>
+
 
 
                     <div class="details-content">
@@ -590,6 +678,7 @@
                             </div>
 
 
+
                             <div class="form-group">
 
                                 <label for="dueDate">
@@ -602,7 +691,9 @@
 
                             </div>
 
+
                         </div>
+
 
 
                         <div class="form-group">
@@ -621,19 +712,25 @@
 
                         </div>
 
+
                     </div>
+
 
                 </details>
 
 
 
-                <!-- ADDITIONAL DETAILS -->
+                <!-- =================================================
+                     ADDITIONAL DETAILS
+                     ================================================= -->
 
                 <details class="task-details">
+
 
                     <summary>
                         Additional Details
                     </summary>
+
 
 
                     <div class="details-content">
@@ -651,6 +748,7 @@
                                 rows="2"></textarea>
 
                         </div>
+
 
 
                         <div class="form-group">
@@ -677,15 +775,20 @@
 
                         </div>
 
+
                     </div>
+
 
                 </details>
 
 
 
-                <!-- ACTIONS -->
+                <!-- =================================================
+                     FORM ACTIONS
+                     ================================================= -->
 
                 <div class="form-actions">
+
 
                     <button
                         type="button"
@@ -697,6 +800,7 @@
                     </button>
 
 
+
                     <button
                         type="submit"
                         class="btn btn-primary"
@@ -706,10 +810,12 @@
 
                     </button>
 
+
                 </div>
 
 
             </form>
+
 
         </div>
 
@@ -725,12 +831,14 @@
         class="modal"
         id="reviewModal">
 
+
         <div class="modal-content task-modal">
 
 
-            <!-- REVIEW HEADER -->
+            <!-- HEADER -->
 
             <div class="modal-header">
+
 
                 <div>
 
@@ -745,13 +853,16 @@
                 </div>
 
 
+
                 <button
+                    type="button"
                     class="modal-close"
                     id="closeReviewModal">
 
                     &times;
 
                 </button>
+
 
             </div>
 
@@ -761,9 +872,11 @@
 
             <div class="task-section">
 
+
                 <div class="section-title">
                     Task Information
                 </div>
+
 
 
                 <div class="form-group">
@@ -781,6 +894,7 @@
                     </div>
 
                 </div>
+
 
 
                 <div class="form-row">
@@ -803,6 +917,7 @@
                     </div>
 
 
+
                     <div class="form-group">
 
                         <label>
@@ -819,7 +934,9 @@
 
                     </div>
 
+
                 </div>
+
 
 
                 <div class="form-group">
@@ -839,6 +956,7 @@
                 </div>
 
 
+
                 <div class="form-group">
 
                     <label>
@@ -855,6 +973,7 @@
 
                 </div>
 
+
             </div>
 
 
@@ -863,11 +982,14 @@
 
             <form id="reviewForm">
 
+
                 <div class="task-section">
+
 
                     <div class="section-title">
                         Review
                     </div>
+
 
 
                     <div class="form-group">
@@ -883,6 +1005,7 @@
                             placeholder="Enter reviewer name">
 
                     </div>
+
 
 
                     <div class="form-group">
@@ -916,6 +1039,7 @@
                     </div>
 
 
+
                     <div class="form-group">
 
                         <label for="reviewDate">
@@ -928,6 +1052,7 @@
                             required>
 
                     </div>
+
 
 
                     <div class="form-group">
@@ -943,13 +1068,13 @@
 
                     </div>
 
+
                 </div>
 
 
 
-                <!-- REVIEW ACTIONS -->
-
                 <div class="form-actions">
+
 
                     <button
                         type="button"
@@ -961,6 +1086,7 @@
                     </button>
 
 
+
                     <button
                         type="submit"
                         class="btn btn-primary">
@@ -969,9 +1095,12 @@
 
                     </button>
 
+
                 </div>
 
+
             </form>
+
 
         </div>
 
@@ -987,12 +1116,16 @@
         class="modal"
         id="historyModal">
 
+
         <div class="modal-content task-history-modal">
 
 
-            <!-- HISTORY HEADER -->
+            <!-- =================================================
+                 HISTORY HEADER
+                 ================================================= -->
 
             <div class="modal-header">
+
 
                 <div>
 
@@ -1007,14 +1140,16 @@
                 </div>
 
 
+
                 <button
+                    type="button"
                     class="modal-close"
-                    
                     id="closeHistoryModal">
 
                     &times;
 
                 </button>
+
 
             </div>
 
@@ -1025,6 +1160,7 @@
                  ================================================= -->
 
             <div class="task-history-summary">
+
 
                 <div>
 
@@ -1037,6 +1173,7 @@
                     </strong>
 
                 </div>
+
 
 
                 <div>
@@ -1052,6 +1189,7 @@
                 </div>
 
 
+
                 <div>
 
                     <span class="history-label">
@@ -1064,6 +1202,7 @@
 
                 </div>
 
+
             </div>
 
 
@@ -1074,7 +1213,9 @@
 
             <div class="table-container history-table-container">
 
+
                 <table class="tasks-table history-table">
+
 
                     <thead>
 
@@ -1113,6 +1254,7 @@
                     </thead>
 
 
+
                     <tbody id="taskHistoryTable">
 
                         <tr>
@@ -1125,7 +1267,9 @@
 
                     </tbody>
 
+
                 </table>
+
 
             </div>
 
@@ -1137,6 +1281,7 @@
 
             <div class="form-actions">
 
+
                 <button
                     type="button"
                     class="btn btn-secondary"
@@ -1145,6 +1290,7 @@
                     Close
 
                 </button>
+
 
             </div>
 
@@ -1164,7 +1310,7 @@
     <script src="/js/components.js"></script>
 
 
-    <!-- Task page functionality -->
+    <!-- Task page -->
 
     <script src="/js/tasks.js"></script>
 
