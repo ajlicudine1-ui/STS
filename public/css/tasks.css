@@ -232,7 +232,11 @@
     border: 1px solid #e2e7ee;
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(23, 43, 77, 0.04);
-    overflow: hidden;
+
+    /* IMPORTANT:
+       Allows dropdown to escape the card */
+    overflow: visible;
+
     position: relative;
     z-index: 1;
 }
@@ -266,8 +270,14 @@
 .table-container {
     width: 100%;
     background: #ffffff;
+
+    /*
+       Horizontal scrolling remains available if needed.
+       Vertical overflow is allowed for the dropdown.
+    */
     overflow-x: auto;
     overflow-y: visible;
+
     position: relative;
     z-index: 1;
 }
@@ -279,7 +289,14 @@
 
 .tasks-table {
     width: 100%;
-    min-width: 1200px;
+
+    /*
+       IMPORTANT:
+       Do NOT force 1200px.
+       The table now uses the available width.
+    */
+    min-width: 100%;
+
     border-collapse: collapse;
     table-layout: fixed;
 }
@@ -378,6 +395,10 @@
     padding: 10px 12px;
     vertical-align: middle;
     white-space: nowrap;
+
+    /*
+       Allow dropdown to escape the cell.
+    */
     overflow: visible;
 }
 
@@ -435,13 +456,6 @@
 
 /* ============================================================
    TASK ACTIONS
-   IMPORTANT:
-   ONLY THE FIRST BUTTON / MENU BUTTON IS VISIBLE
-   OTHER ACTION BUTTONS ARE HIDDEN UNTIL HOVER
-   ============================================================ */
-
-/* ============================================================
-   TASK ACTION DROPDOWN
    ============================================================ */
 
 .task-actions {
@@ -458,6 +472,7 @@
     display: inline-block;
     width: auto;
 }
+
 
 /* ============================================================
    ACTIONS TRIGGER BUTTON
@@ -513,14 +528,18 @@
    DROPDOWN MENU
    ============================================================ */
 
+/*
+   IMPORTANT:
+   The dropdown uses FIXED positioning.
+
+   This prevents the table's overflow container from
+   cutting the menu.
+
+   JavaScript positions it beside the Actions button.
+*/
+
 .task-action-menu {
-    position: absolute;
-
-    /* OPEN UPWARD */
-    bottom: calc(100% + 5px);
-    top: auto;
-
-    right: 0;
+    position: fixed;
 
     width: 155px;
 
@@ -536,7 +555,7 @@
     box-shadow:
         0 8px 20px rgba(23, 43, 77, 0.15);
 
-    z-index: 99999;
+    z-index: 999999;
 }
 
 .task-action-menu.show {
@@ -553,6 +572,7 @@
 
     display: flex;
     align-items: center;
+
     gap: 10px;
 
     padding: 9px 10px;
@@ -652,9 +672,7 @@
 
 .task-action-divider {
     height: 1px;
-
     margin: 4px 6px;
-
     background: #e5e7eb;
 }
 
@@ -798,7 +816,6 @@
     font-weight: 600;
     cursor: pointer;
     list-style: none;
-    background: #ffffff;
 }
 
 .task-details summary::-webkit-details-marker {
@@ -1503,30 +1520,17 @@
         font-size: 22px;
     }
 
+    /*
+       IMPORTANT:
+       Do not force the table to 1200px.
+    */
     .tasks-table {
-        min-width: 1200px;
+        min-width: 100%;
     }
 
     .tasks-table th:last-child,
     .tasks-table td:last-child {
         min-width: 180px;
-    }
-
-    .task-actions {
-        gap: 5px;
-    }
-
-    .task-actions .btn {
-        height: 32px;
-        padding: 6px 8px;
-        font-size: 11px;
-    }
-
-    .task-actions .btn:first-child {
-        width: 34px;
-        height: 34px;
-        flex-basis: 34px;
-        font-size: 19px;
     }
 }
 
@@ -1690,21 +1694,24 @@
        ======================================================== */
 
     .task-actions {
-        gap: 4px;
-        justify-content: flex-end;
+        width: 100%;
+        min-width: 105px;
     }
 
-    .task-actions .btn {
-        height: 30px;
-        padding: 5px 7px;
-        font-size: 10px;
+    .task-action-trigger {
+        min-width: 105px;
+        height: 34px;
+        padding: 7px 10px;
+        font-size: 12px;
     }
 
-    .task-actions .btn:first-child {
-        width: 32px;
-        height: 32px;
-        flex-basis: 32px;
-        font-size: 18px;
+    .task-action-menu {
+        width: 150px;
+    }
+
+    .task-action-item {
+        padding: 9px 10px;
+        font-size: 12px;
     }
 
 
