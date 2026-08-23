@@ -594,9 +594,14 @@ const historyCurrentStatus =
 const historyCurrentPercent =
     document.getElementById("historyCurrentPercent");
 
+const historyProgressBar =
+    document.getElementById("historyProgressBar");
+
+const historyTransactionCount =
+    document.getElementById("historyTransactionCount");
+
 const taskHistoryTable =
     document.getElementById("taskHistoryTable");
-
 
 // ============================================================
 // CLOSE HISTORY MODAL
@@ -680,6 +685,610 @@ async function loadTaskHistory(task) {
 
 
     currentHistoryTaskId = task.task_id;
+
+
+    // ========================================================
+    // CURRENT TASK INFORMATION
+    // ========================================================
+
+    const currentPercent =
+        Number(task.percent_complete ?? 0);
+
+
+    if (historyTaskName) {
+
+        historyTaskName.textContent =
+            task.task_activity ||
+            "Activity history and changes";
+    }
+
+
+    if (historyTaskTitle) {
+
+        historyTaskTitle.textContent =
+            task.task_activity || "-";
+    }
+
+
+    if (historyCurrentStatus) {
+
+        historyCurrentStatus.textContent =
+            task.status || "-";
+
+        // Remove previous status classes
+        historyCurrentStatus.classList.remove(
+            "status-active",
+            "status-completed",
+            "status-pending"
+        );
+
+        // Apply current status class
+        historyCurrentStatus.classList.add(
+            getStatusClass(task.status)
+        );
+    }
+
+
+    if (historyCurrentPercent) {
+
+        historyCurrentPercent.textContent =
+            `${currentPercent}%`;
+    }
+
+
+    if (historyProgressBar) {
+
+        historyProgressBar.style.width =
+            `${Math.min(Math.max(currentPercent, 0), 100)}%`;
+    }
+
+
+    // ========================================================
+    // RESET TRANSACTION COUNT
+    // ========================================================
+
+    if (historyTransactionCount) {
+
+        historyTransactionCount.textContent =
+            "0";
+    }
+
+
+    // ========================================================
+    // SHOW LOADING
+    // ========================================================
+
+    if (taskHistoryTable) {
+
+        taskHistoryTable.innerHTML = `
+
+            <tr>
+
+                <td colspan="7">
+
+                    <div class="history-empty">
+
+                        <div class="history-empty-icon">
+                            ↻
+                        </div>
+
+                        <strong>
+                            Loading history...
+                        </strong>
+
+                        <span>
+                            Retrieving task activity records.
+                        </span>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `;
+    }
+
+
+    // ========================================================
+    // OPEN MODAL
+    // ========================================================
+
+    if (historyModal) {
+
+        historyModal.classList.add("show");
+    }
+
+
+    // ========================================================
+    // FETCH HISTORY
+    // ========================================================
+
+    try {
+
+        const response = await fetch(
+            `/api/tasks/${task.task_id}/history`
+        );
+
+
+        const result =
+            await response.json();
+
+
+        console.log(
+            "Task history response:",
+            result
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.error ||
+                "Failed to load task history."
+            );
+        }
+
+
+        const history =
+            Array.isArray(result.history)
+                ? result.history
+                : [];
+
+
+        // ====================================================
+        // TRANSACTION COUNT
+        // ====================================================
+
+        if (historyTransactionCount) {
+
+            historyTransactionCount.textContent =
+                history.length;
+        }
+
+
+        // ====================================================
+        // NO HISTORY
+        // ====================================================
+
+        if (history.length === 0) {
+
+            if (taskHistoryTable) {
+
+                taskHistoryTable.innerHTML = `
+
+                    <tr>
+
+                        <td colspan="7">
+
+                            <div class="history-empty">
+
+                                <div class="history-empty-icon">
+                                    ↻
+                                </div>
+
+                                <strong>
+                                    No history found
+                                </strong>
+
+                                <span>
+                                    Changes made to this task will appear here.
+                                </span>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                `;
+            }
+
+            return;
+        }
+
+
+        // ====================================================
+        // DISPLAY HISTORY
+        // ====================================================
+
+        if (taskHistoryTable) {
+
+            taskHistoryTable.innerHTML = history
+
+                .map((item) => {
+
+                    // ========================================
+                    // DATE
+                    // ========================================
+
+                    const changedAt =
+                        item.changed_at ||
+                        item.created_at ||
+                        item.date ||
+                        null;
+
+
+                    const dateObject =
+                        changedAt
+                            ? new Date(changedAt)
+                            : null;
+
+
+                    let dateMain = "-";
+                    let dateTime = "";
+
+
+                    if (
+                        dateObject &&
+                        !Number.isNaN(
+                            dateObject.getTime()
+                        )
+                    ) {
+
+                        dateMain =
+                            dateObject.toLocaleDateString(
+                                undefined,
+                                {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric"
+                                }
+                            );
+
+
+                        dateTime =
+                            dateObject.toLocaleTimeString(
+                                undefined,
+                                {
+                                    hour: "2-digit",
+                                    minute: "2-digit"
+                                }
+                            );
+
+                    } else if (changedAt) {
+
+                        dateMain =
+                            String(changedAt);
+                    }
+
+
+                    // ========================================
+                    // ACTION
+                    // ========================================
+
+                    const rawAction =
+                        item.action ||
+                        "Task Updated";
+
+
+                    const actionLower =
+                        String(rawAction).toLowerCase();
+
+
+                    let actionClass =
+                        "updated";
+
+
+                    if (
+                        actionLower.includes("creat")
+                    ) {
+
+                        actionClass = "created";
+
+                    } else if (
+                        actionLower.includes("review")
+                    ) {
+
+                        actionClass = "reviewed";
+
+                    } else if (
+                        actionLower.includes("update")
+                    ) {
+
+                        actionClass = "updated";
+                    }
+
+
+                    // ========================================
+                    // STATUS
+                    // ========================================
+
+                    const oldStatus =
+                        item.old_status ?? "-";
+
+
+                    const newStatus =
+                        item.new_status ??
+                        item.status ??
+                        "-";
+
+
+                    const newStatusClass =
+                        getStatusClass(
+                            newStatus
+                        );
+
+
+                    // ========================================
+                    // PERCENT COMPLETE
+                    // ========================================
+
+                    const oldPercent =
+                        Number(
+                            item.old_percent_complete ?? 0
+                        );
+
+
+                    const newPercent =
+                        Number(
+                            item.new_percent_complete ??
+                            item.percent_complete ??
+                            0
+                        );
+
+
+                    const safeNewPercent =
+                        Math.min(
+                            Math.max(
+                                newPercent,
+                                0
+                            ),
+                            100
+                        );
+
+
+                    // ========================================
+                    // RESPONSIBLE PERSON
+                    // ========================================
+
+                    const responsiblePerson =
+                        item.responsible_person ||
+                        item.new_responsible_person ||
+                        "-";
+
+
+                    // ========================================
+                    // REMARKS
+                    // ========================================
+
+                    const remarks =
+                        item.remarks ||
+                        "-";
+
+
+                    // ========================================
+                    // CHANGED BY
+                    // ========================================
+
+                    const changedBy =
+                        item.changed_by ||
+                        item.changed_by_name ||
+                        "-";
+
+
+                    // ========================================
+                    // RETURN ROW
+                    // ========================================
+
+                    return `
+
+                        <tr>
+
+                            <!-- DATE / TIME -->
+
+                            <td>
+
+                                <div class="history-date">
+
+                                    <span class="history-date-main">
+
+                                        ${escapeHtml(
+                                            dateMain
+                                        )}
+
+                                    </span>
+
+                                    ${
+                                        dateTime
+                                            ? `
+                                                <span class="history-date-time">
+
+                                                    ${escapeHtml(
+                                                        dateTime
+                                                    )}
+
+                                                </span>
+                                            `
+                                            : ""
+                                    }
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- ACTION -->
+
+                            <td>
+
+                                <span
+                                    class="history-action ${actionClass}">
+
+                                    ${escapeHtml(
+                                        rawAction
+                                    )}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- STATUS -->
+
+                            <td>
+
+                                <div class="history-status-change">
+
+                                    <span
+                                        class="status ${getStatusClass(
+                                            oldStatus
+                                        )}">
+
+                                        ${escapeHtml(
+                                            oldStatus
+                                        )}
+
+                                    </span>
+
+                                    <span class="history-arrow">
+                                        →
+                                    </span>
+
+                                    <span
+                                        class="status ${newStatusClass}">
+
+                                        ${escapeHtml(
+                                            newStatus
+                                        )}
+
+                                    </span>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- PROGRESS -->
+
+                            <td>
+
+                                <div class="history-row-progress">
+
+                                    <span
+                                        class="history-row-progress-value">
+
+                                        ${escapeHtml(
+                                            oldPercent
+                                        )}%
+                                        →
+                                        ${escapeHtml(
+                                            newPercent
+                                        )}%
+
+                                    </span>
+
+                                    <div
+                                        class="history-row-progress-track">
+
+                                        <div
+                                            class="history-row-progress-fill"
+                                            style="width: ${safeNewPercent}%">
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- RESPONSIBLE PERSON -->
+
+                            <td>
+
+                                <span>
+
+                                    ${escapeHtml(
+                                        responsiblePerson
+                                    )}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- REMARKS -->
+
+                            <td>
+
+                                <div class="history-remarks">
+
+                                    ${escapeHtml(
+                                        remarks
+                                    )}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- CHANGED BY -->
+
+                            <td>
+
+                                <span class="history-changed-by">
+
+                                    ${escapeHtml(
+                                        changedBy
+                                    )}
+
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                    `;
+
+                })
+
+                .join("");
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Load task history error:",
+            error
+        );
+
+
+        if (taskHistoryTable) {
+
+            taskHistoryTable.innerHTML = `
+
+                <tr>
+
+                    <td colspan="7">
+
+                        <div class="history-empty">
+
+                            <div class="history-empty-icon">
+                                !
+                            </div>
+
+                            <strong>
+                                Failed to load history
+                            </strong>
+
+                            <span>
+                                ${escapeHtml(
+                                    error.message
+                                )}
+                            </span>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            `;
+        }
+    }
+}
 
 
     // --------------------------------------------------------
@@ -915,7 +1524,7 @@ async function loadTaskHistory(task) {
             `;
         }
     }
-}
+
 
 
 // ============================================================

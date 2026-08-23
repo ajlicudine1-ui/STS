@@ -1112,20 +1112,27 @@
          TASK HISTORY MODAL
          ===================================================== -->
 
-    <div
-        class="modal"
-        id="historyModal">
+    <!-- =====================================================
+     TASK HISTORY MODAL
+     ===================================================== -->
 
+<div
+    class="modal"
+    id="historyModal">
 
-        <div class="modal-content task-history-modal">
+    <div class="modal-content task-history-modal">
 
+        <!-- =================================================
+             HISTORY HEADER
+             ================================================= -->
 
-            <!-- =================================================
-                 HISTORY HEADER
-                 ================================================= -->
+        <div class="history-header">
 
-            <div class="modal-header">
+            <div class="history-header-info">
 
+                <div class="history-icon">
+                    ↻
+                </div>
 
                 <div>
 
@@ -1139,19 +1146,239 @@
 
                 </div>
 
+            </div>
 
 
-                <button
-                    type="button"
-                    class="modal-close"
-                    id="closeHistoryModal">
+            <button
+                type="button"
+                class="modal-close"
+                id="closeHistoryModal"
+                aria-label="Close">
 
-                    &times;
+                &times;
 
-                </button>
+            </button>
 
+        </div>
+
+
+        <!-- =================================================
+             TASK SUMMARY
+             ================================================= -->
+
+        <div class="history-task-summary">
+
+            <div class="history-task-info">
+
+                <span class="history-label">
+                    Task
+                </span>
+
+                <strong id="historyTaskTitle">
+                    -
+                </strong>
 
             </div>
+
+
+            <div class="history-summary-grid">
+
+                <!-- CURRENT STATUS -->
+
+                <div class="history-summary-card">
+
+                    <span class="history-label">
+                        Current Status
+                    </span>
+
+                    <strong
+                        id="historyCurrentStatus"
+                        class="history-status-badge">
+
+                        -
+
+                    </strong>
+
+                </div>
+
+
+                <!-- COMPLETION -->
+
+                <div class="history-summary-card">
+
+                    <span class="history-label">
+                        Completion
+                    </span>
+
+                    <div class="history-progress-wrapper">
+
+                        <strong id="historyCurrentPercent">
+                            0%
+                        </strong>
+
+                        <div class="history-progress">
+
+                            <div
+                                class="history-progress-bar"
+                                id="historyProgressBar"
+                                style="width: 0%;">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- TRANSACTIONS -->
+
+                <div class="history-summary-card">
+
+                    <span class="history-label">
+                        Transactions
+                    </span>
+
+                    <strong id="historyTransactionCount">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             HISTORY SECTION HEADER
+             ================================================= -->
+
+        <div class="history-section-header">
+
+            <div>
+
+                <h3>
+                    Activity Log
+                </h3>
+
+                <p>
+                    Record of changes and updates made to this task.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             HISTORY TABLE
+             ================================================= -->
+
+        <div class="table-container history-table-container">
+
+            <table class="tasks-table history-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Date / Time
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Progress
+                        </th>
+
+                        <th>
+                            Responsible Person
+                        </th>
+
+                        <th>
+                            Remarks
+                        </th>
+
+                        <th>
+                            Changed By
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="taskHistoryTable">
+
+                    <tr>
+
+                        <td colspan="7">
+
+                            <div class="history-empty">
+
+                                <div class="history-empty-icon">
+                                    ↻
+                                </div>
+
+                                <strong>
+                                    No history found
+                                </strong>
+
+                                <span>
+                                    Changes made to this task will appear here.
+                                </span>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- =================================================
+             HISTORY FOOTER
+             ================================================= -->
+
+        <div class="history-footer">
+
+            <div class="history-footer-info">
+
+                <span>
+                    History is recorded automatically for every successful update.
+                </span>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                id="cancelHistoryBtn">
+
+                Close
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 
 
