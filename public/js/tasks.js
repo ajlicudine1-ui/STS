@@ -16,8 +16,11 @@ const projectId = urlParams.get("project_id");
 // ============================================================
 
 if (!projectId) {
+
     alert("No project selected.");
+
     window.location.href = "/";
+
 }
 
 
@@ -25,14 +28,29 @@ if (!projectId) {
 // TASK MODAL ELEMENTS
 // ============================================================
 
-const taskModal = document.getElementById("taskModal");
-const newTaskBtn = document.getElementById("newTaskBtn");
-const closeTaskModal = document.getElementById("closeTaskModal");
-const cancelTaskBtn = document.getElementById("cancelTaskBtn");
-const taskForm = document.getElementById("taskForm");
-const taskModalTitle = document.getElementById("taskModalTitle");
-const taskModalSubtitle = document.getElementById("taskModalSubtitle");
-const taskSubmitBtn = document.getElementById("taskSubmitBtn");
+const taskModal =
+    document.getElementById("taskModal");
+
+const newTaskBtn =
+    document.getElementById("newTaskBtn");
+
+const closeTaskModal =
+    document.getElementById("closeTaskModal");
+
+const cancelTaskBtn =
+    document.getElementById("cancelTaskBtn");
+
+const taskForm =
+    document.getElementById("taskForm");
+
+const taskModalTitle =
+    document.getElementById("taskModalTitle");
+
+const taskModalSubtitle =
+    document.getElementById("taskModalSubtitle");
+
+const taskSubmitBtn =
+    document.getElementById("taskSubmitBtn");
 
 
 // ============================================================
@@ -61,7 +79,9 @@ let currentHistoryTaskId = null;
 // ============================================================
 
 function getElement(id) {
+
     return document.getElementById(id);
+
 }
 
 
@@ -70,11 +90,15 @@ function getElement(id) {
 // ============================================================
 
 function setValue(id, value) {
+
     const element = getElement(id);
 
     if (element) {
+
         element.value = value ?? "";
+
     }
+
 }
 
 
@@ -83,9 +107,11 @@ function setValue(id, value) {
 // ============================================================
 
 function getValue(id) {
+
     const element = getElement(id);
 
     return element ? element.value : "";
+
 }
 
 
@@ -94,16 +120,28 @@ function getValue(id) {
 // ============================================================
 
 function escapeHtml(value) {
-    if (value === null || value === undefined) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
         return "";
+
     }
 
     return String(value)
+
         .replace(/&/g, "&amp;")
+
         .replace(/</g, "&lt;")
+
         .replace(/>/g, "&gt;")
+
         .replace(/"/g, "&quot;")
+
         .replace(/'/g, "&#039;");
+
 }
 
 
@@ -112,11 +150,15 @@ function escapeHtml(value) {
 // ============================================================
 
 function formatDate(dateValue) {
+
     if (!dateValue) {
+
         return "-";
+
     }
 
     return String(dateValue).substring(0, 10);
+
 }
 
 
@@ -125,17 +167,23 @@ function formatDate(dateValue) {
 // ============================================================
 
 function formatHistoryDate(dateValue) {
+
     if (!dateValue) {
+
         return "-";
+
     }
 
     const date = new Date(dateValue);
 
     if (Number.isNaN(date.getTime())) {
+
         return String(dateValue);
+
     }
 
     return date.toLocaleString();
+
 }
 
 
@@ -144,7 +192,9 @@ function formatHistoryDate(dateValue) {
 // ============================================================
 
 function getStatusClass(status) {
+
     switch (status) {
+
         case "In Progress":
             return "status-active";
 
@@ -159,7 +209,9 @@ function getStatusClass(status) {
 
         default:
             return "status-pending";
+
     }
+
 }
 
 
@@ -168,22 +220,37 @@ function getStatusClass(status) {
 // ============================================================
 
 function closeAllActionMenus() {
+
     document
         .querySelectorAll(".task-action-menu.show")
         .forEach(menu => {
+
             menu.classList.remove("show");
 
-            const trigger = menu
-                .parentElement
-                ?.querySelector(".task-action-trigger");
+
+            const trigger =
+                menu
+                    .parentElement
+                    ?.querySelector(
+                        ".task-action-trigger"
+                    );
+
 
             if (trigger) {
+
                 trigger.setAttribute(
                     "aria-expanded",
                     "false"
                 );
+
+                trigger.classList.remove(
+                    "active"
+                );
+
             }
+
         });
+
 }
 
 
@@ -192,33 +259,60 @@ function closeAllActionMenus() {
 // ============================================================
 
 if (newTaskBtn) {
-    newTaskBtn.addEventListener("click", () => {
 
-        editingTaskId = null;
+    newTaskBtn.addEventListener(
+        "click",
+        () => {
 
-        if (taskForm) {
-            taskForm.reset();
+            editingTaskId = null;
+
+
+            if (taskForm) {
+
+                taskForm.reset();
+
+            }
+
+
+            setValue(
+                "percentComplete",
+                0
+            );
+
+
+            if (taskModalTitle) {
+
+                taskModalTitle.textContent =
+                    "New Task";
+
+            }
+
+
+            if (taskModalSubtitle) {
+
+                taskModalSubtitle.textContent =
+                    "Add a task to this project.";
+
+            }
+
+
+            if (taskSubmitBtn) {
+
+                taskSubmitBtn.textContent =
+                    "Create Task";
+
+            }
+
+
+            if (taskModal) {
+
+                taskModal.classList.add("show");
+
+            }
+
         }
+    );
 
-        setValue("percentComplete", 0);
-
-        if (taskModalTitle) {
-            taskModalTitle.textContent = "New Task";
-        }
-
-        if (taskModalSubtitle) {
-            taskModalSubtitle.textContent =
-                "Add a task to this project.";
-        }
-
-        if (taskSubmitBtn) {
-            taskSubmitBtn.textContent = "Create Task";
-        }
-
-        if (taskModal) {
-            taskModal.classList.add("show");
-        }
-    });
 }
 
 
@@ -229,31 +323,53 @@ if (newTaskBtn) {
 function closeModal() {
 
     if (!taskModal) {
+
         return;
+
     }
+
 
     taskModal.classList.remove("show");
 
     editingTaskId = null;
 
+
     if (taskForm) {
+
         taskForm.reset();
+
     }
 
-    setValue("percentComplete", 0);
+
+    setValue(
+        "percentComplete",
+        0
+    );
+
 
     if (taskModalTitle) {
-        taskModalTitle.textContent = "New Task";
+
+        taskModalTitle.textContent =
+            "New Task";
+
     }
+
 
     if (taskModalSubtitle) {
+
         taskModalSubtitle.textContent =
             "Add a task to this project.";
+
     }
 
+
     if (taskSubmitBtn) {
-        taskSubmitBtn.textContent = "Create Task";
+
+        taskSubmitBtn.textContent =
+            "Create Task";
+
     }
+
 }
 
 
@@ -262,17 +378,22 @@ function closeModal() {
 // ============================================================
 
 if (closeTaskModal) {
+
     closeTaskModal.addEventListener(
         "click",
         closeModal
     );
+
 }
 
+
 if (cancelTaskBtn) {
+
     cancelTaskBtn.addEventListener(
         "click",
         closeModal
     );
+
 }
 
 
@@ -282,13 +403,19 @@ if (cancelTaskBtn) {
 
 if (taskModal) {
 
-    taskModal.addEventListener("click", event => {
+    taskModal.addEventListener(
+        "click",
+        event => {
 
-        if (event.target === taskModal) {
-            closeModal();
+            if (event.target === taskModal) {
+
+                closeModal();
+
+            }
+
         }
+    );
 
-    });
 }
 
 
@@ -303,7 +430,9 @@ function openEditTaskModal(task) {
         task
     );
 
-    editingTaskId = task.task_id;
+
+    editingTaskId =
+        task.task_id;
 
 
     // --------------------------------------------------------
@@ -311,16 +440,26 @@ function openEditTaskModal(task) {
     // --------------------------------------------------------
 
     if (taskModalTitle) {
-        taskModalTitle.textContent = "Edit Task";
+
+        taskModalTitle.textContent =
+            "Edit Task";
+
     }
+
 
     if (taskModalSubtitle) {
+
         taskModalSubtitle.textContent =
             "Update the information for this task.";
+
     }
 
+
     if (taskSubmitBtn) {
-        taskSubmitBtn.textContent = "Update Task";
+
+        taskSubmitBtn.textContent =
+            "Update Task";
+
     }
 
 
@@ -333,10 +472,12 @@ function openEditTaskModal(task) {
         task.task_activity
     );
 
+
     setValue(
         "procedureStage",
         task.procedure_stage
     );
+
 
     setValue(
         "taskStatus",
@@ -353,20 +494,24 @@ function openEditTaskModal(task) {
         task.priority
     );
 
+
     setValue(
         "scheduleStatus",
         task.schedule_status
     );
+
 
     setValue(
         "responsiblePerson",
         task.responsible_person
     );
 
+
     setValue(
         "taskRole",
         task.role
     );
+
 
     setValue(
         "stakeholderEndUser",
@@ -382,6 +527,7 @@ function openEditTaskModal(task) {
         "startDate",
         formatDate(task.start_date)
     );
+
 
     setValue(
         "dueDate",
@@ -408,6 +554,7 @@ function openEditTaskModal(task) {
         task.deliverable_expected_output
     );
 
+
     setValue(
         "evidenceApplicability",
         task.evidence_applicability
@@ -419,8 +566,11 @@ function openEditTaskModal(task) {
     // --------------------------------------------------------
 
     if (taskModal) {
+
         taskModal.classList.add("show");
+
     }
+
 }
 
 
@@ -429,16 +579,24 @@ function openEditTaskModal(task) {
 // ============================================================
 
 const reviewModal =
-    document.getElementById("reviewModal");
+    document.getElementById(
+        "reviewModal"
+    );
 
 const closeReviewModalBtn =
-    document.getElementById("closeReviewModal");
+    document.getElementById(
+        "closeReviewModal"
+    );
 
 const cancelReviewBtn =
-    document.getElementById("cancelReviewBtn");
+    document.getElementById(
+        "cancelReviewBtn"
+    );
 
 const reviewForm =
-    document.getElementById("reviewForm");
+    document.getElementById(
+        "reviewForm"
+    );
 
 
 // ============================================================
@@ -448,16 +606,23 @@ const reviewForm =
 function closeReviewModal() {
 
     if (!reviewModal) {
+
         return;
+
     }
+
 
     reviewModal.classList.remove("show");
 
     currentReviewTaskId = null;
 
+
     if (reviewForm) {
+
         reviewForm.reset();
+
     }
+
 }
 
 
@@ -466,17 +631,22 @@ function closeReviewModal() {
 // ============================================================
 
 if (closeReviewModalBtn) {
+
     closeReviewModalBtn.addEventListener(
         "click",
         closeReviewModal
     );
+
 }
 
+
 if (cancelReviewBtn) {
+
     cancelReviewBtn.addEventListener(
         "click",
         closeReviewModal
     );
+
 }
 
 
@@ -486,13 +656,19 @@ if (cancelReviewBtn) {
 
 if (reviewModal) {
 
-    reviewModal.addEventListener("click", event => {
+    reviewModal.addEventListener(
+        "click",
+        event => {
 
-        if (event.target === reviewModal) {
-            closeReviewModal();
+            if (event.target === reviewModal) {
+
+                closeReviewModal();
+
+            }
+
         }
+    );
 
-    });
 }
 
 
@@ -507,7 +683,9 @@ function openReviewModal(task) {
         task
     );
 
-    currentReviewTaskId = task.task_id;
+
+    currentReviewTaskId =
+        task.task_id;
 
 
     // --------------------------------------------------------
@@ -515,20 +693,28 @@ function openReviewModal(task) {
     // --------------------------------------------------------
 
     const reviewTaskName =
-        document.getElementById("reviewTaskName");
+        document.getElementById(
+            "reviewTaskName"
+        );
+
 
     const reviewResponsiblePerson =
         document.getElementById(
             "reviewResponsiblePerson"
         );
 
+
     const reviewStatus =
-        document.getElementById("reviewStatus");
+        document.getElementById(
+            "reviewStatus"
+        );
+
 
     const reviewPercentComplete =
         document.getElementById(
             "reviewPercentComplete"
         );
+
 
     const reviewExpectedOutput =
         document.getElementById(
@@ -537,28 +723,42 @@ function openReviewModal(task) {
 
 
     if (reviewTaskName) {
+
         reviewTaskName.textContent =
             task.task_activity || "-";
+
     }
+
 
     if (reviewResponsiblePerson) {
+
         reviewResponsiblePerson.textContent =
             task.responsible_person || "-";
+
     }
+
 
     if (reviewStatus) {
+
         reviewStatus.textContent =
             task.status || "-";
+
     }
+
 
     if (reviewPercentComplete) {
+
         reviewPercentComplete.textContent =
             `${task.percent_complete ?? 0}%`;
+
     }
 
+
     if (reviewExpectedOutput) {
+
         reviewExpectedOutput.textContent =
             task.deliverable_expected_output || "-";
+
     }
 
 
@@ -571,15 +771,18 @@ function openReviewModal(task) {
         task.reviewed_verified_by
     );
 
+
     setValue(
         "reviewResult",
         task.review_result
     );
 
+
     setValue(
         "reviewDate",
         formatDate(task.review_date)
     );
+
 
     setValue(
         "reviewRemarks",
@@ -592,8 +795,11 @@ function openReviewModal(task) {
     // --------------------------------------------------------
 
     if (reviewModal) {
+
         reviewModal.classList.add("show");
+
     }
+
 }
 
 
@@ -602,28 +808,44 @@ function openReviewModal(task) {
 // ============================================================
 
 const historyModal =
-    document.getElementById("historyModal");
+    document.getElementById(
+        "historyModal"
+    );
 
 const closeHistoryModalBtn =
-    document.getElementById("closeHistoryModal");
+    document.getElementById(
+        "closeHistoryModal"
+    );
 
 const cancelHistoryBtn =
-    document.getElementById("cancelHistoryBtn");
+    document.getElementById(
+        "cancelHistoryBtn"
+    );
 
 const historyTaskName =
-    document.getElementById("historyTaskName");
+    document.getElementById(
+        "historyTaskName"
+    );
 
 const historyTaskTitle =
-    document.getElementById("historyTaskTitle");
+    document.getElementById(
+        "historyTaskTitle"
+    );
 
 const historyCurrentStatus =
-    document.getElementById("historyCurrentStatus");
+    document.getElementById(
+        "historyCurrentStatus"
+    );
 
 const historyCurrentPercent =
-    document.getElementById("historyCurrentPercent");
+    document.getElementById(
+        "historyCurrentPercent"
+    );
 
 const historyProgressBar =
-    document.getElementById("historyProgressBar");
+    document.getElementById(
+        "historyProgressBar"
+    );
 
 const historyTransactionCount =
     document.getElementById(
@@ -643,12 +865,16 @@ const taskHistoryTable =
 function closeHistoryModal() {
 
     if (!historyModal) {
+
         return;
+
     }
+
 
     historyModal.classList.remove("show");
 
     currentHistoryTaskId = null;
+
 
     if (taskHistoryTable) {
 
@@ -659,11 +885,17 @@ function closeHistoryModal() {
                 </td>
             </tr>
         `;
+
     }
 
+
     if (historyTransactionCount) {
-        historyTransactionCount.textContent = "0";
+
+        historyTransactionCount.textContent =
+            "0";
+
     }
+
 }
 
 
@@ -672,17 +904,22 @@ function closeHistoryModal() {
 // ============================================================
 
 if (closeHistoryModalBtn) {
+
     closeHistoryModalBtn.addEventListener(
         "click",
         closeHistoryModal
     );
+
 }
 
+
 if (cancelHistoryBtn) {
+
     cancelHistoryBtn.addEventListener(
         "click",
         closeHistoryModal
     );
+
 }
 
 
@@ -697,11 +934,14 @@ if (historyModal) {
         event => {
 
             if (event.target === historyModal) {
+
                 closeHistoryModal();
+
             }
 
         }
     );
+
 }
 
 
@@ -718,9 +958,12 @@ async function loadTaskHistory(task) {
         );
 
         return;
+
     }
 
-    currentHistoryTaskId = task.task_id;
+
+    currentHistoryTaskId =
+        task.task_id;
 
 
     // --------------------------------------------------------
@@ -738,6 +981,7 @@ async function loadTaskHistory(task) {
         historyTaskName.textContent =
             task.task_activity ||
             "Activity history and changes";
+
     }
 
 
@@ -745,6 +989,7 @@ async function loadTaskHistory(task) {
 
         historyTaskTitle.textContent =
             task.task_activity || "-";
+
     }
 
 
@@ -753,15 +998,20 @@ async function loadTaskHistory(task) {
         historyCurrentStatus.textContent =
             task.status || "-";
 
+
         historyCurrentStatus.classList.remove(
             "status-active",
             "status-completed",
             "status-pending"
         );
 
+
         historyCurrentStatus.classList.add(
-            getStatusClass(task.status)
+            getStatusClass(
+                task.status
+            )
         );
+
     }
 
 
@@ -769,6 +1019,7 @@ async function loadTaskHistory(task) {
 
         historyCurrentPercent.textContent =
             `${currentPercent}%`;
+
     }
 
 
@@ -776,14 +1027,21 @@ async function loadTaskHistory(task) {
 
         historyProgressBar.style.width =
             `${Math.min(
-                Math.max(currentPercent, 0),
+                Math.max(
+                    currentPercent,
+                    0
+                ),
                 100
             )}%`;
+
     }
 
 
     if (historyTransactionCount) {
-        historyTransactionCount.textContent = "0";
+
+        historyTransactionCount.textContent =
+            "0";
+
     }
 
 
@@ -796,6 +1054,7 @@ async function loadTaskHistory(task) {
         taskHistoryTable.innerHTML = `
             <tr>
                 <td colspan="7">
+
                     <div class="history-empty">
 
                         <div class="history-empty-icon">
@@ -811,9 +1070,11 @@ async function loadTaskHistory(task) {
                         </span>
 
                     </div>
+
                 </td>
             </tr>
         `;
+
     }
 
 
@@ -822,7 +1083,9 @@ async function loadTaskHistory(task) {
     // --------------------------------------------------------
 
     if (historyModal) {
+
         historyModal.classList.add("show");
+
     }
 
 
@@ -832,11 +1095,12 @@ async function loadTaskHistory(task) {
 
     try {
 
-        const response = await fetch(
-            `/api/tasks/${encodeURIComponent(
-                task.task_id
-            )}/history`
-        );
+        const response =
+            await fetch(
+                `/api/tasks/${encodeURIComponent(
+                    task.task_id
+                )}/history`
+            );
 
 
         const result =
@@ -855,6 +1119,7 @@ async function loadTaskHistory(task) {
                 result.error ||
                 "Failed to load task history."
             );
+
         }
 
 
@@ -872,6 +1137,7 @@ async function loadTaskHistory(task) {
 
             historyTransactionCount.textContent =
                 history.length;
+
         }
 
 
@@ -906,9 +1172,11 @@ async function loadTaskHistory(task) {
                         </td>
                     </tr>
                 `;
+
             }
 
             return;
+
         }
 
 
@@ -918,294 +1186,344 @@ async function loadTaskHistory(task) {
 
         if (taskHistoryTable) {
 
-            taskHistoryTable.innerHTML = history
-                .map(item => {
+            taskHistoryTable.innerHTML =
+                history
+                    .map(item => {
 
-                    // ----------------------------------------
-                    // DATE
-                    // ----------------------------------------
+                        // ------------------------------------
+                        // DATE
+                        // ------------------------------------
 
-                    const changedAt =
-                        item.changed_at ||
-                        item.created_at ||
-                        item.date ||
-                        null;
-
-                    let dateMain = "-";
-                    let dateTime = "";
+                        const changedAt =
+                            item.changed_at ||
+                            item.created_at ||
+                            item.date ||
+                            null;
 
 
-                    if (changedAt) {
+                        let dateMain = "-";
+                        let dateTime = "";
 
-                        const dateObject =
-                            new Date(changedAt);
+
+                        if (changedAt) {
+
+                            const dateObject =
+                                new Date(
+                                    changedAt
+                                );
+
+
+                            if (
+                                !Number.isNaN(
+                                    dateObject.getTime()
+                                )
+                            ) {
+
+                                dateMain =
+                                    dateObject.toLocaleDateString(
+                                        undefined,
+                                        {
+                                            year: "numeric",
+                                            month: "short",
+                                            day: "numeric"
+                                        }
+                                    );
+
+
+                                dateTime =
+                                    dateObject.toLocaleTimeString(
+                                        undefined,
+                                        {
+                                            hour: "2-digit",
+                                            minute: "2-digit"
+                                        }
+                                    );
+
+                            } else {
+
+                                dateMain =
+                                    String(
+                                        changedAt
+                                    );
+
+                            }
+
+                        }
+
+
+                        // ------------------------------------
+                        // ACTION
+                        // ------------------------------------
+
+                        const rawAction =
+                            item.action ||
+                            "Task Updated";
+
+
+                        const actionLower =
+                            String(
+                                rawAction
+                            ).toLowerCase();
+
+
+                        let actionClass =
+                            "updated";
 
 
                         if (
-                            !Number.isNaN(
-                                dateObject.getTime()
+                            actionLower.includes(
+                                "creat"
                             )
                         ) {
 
-                            dateMain =
-                                dateObject.toLocaleDateString(
-                                    undefined,
-                                    {
-                                        year: "numeric",
-                                        month: "short",
-                                        day: "numeric"
-                                    }
-                                );
+                            actionClass =
+                                "created";
 
+                        } else if (
+                            actionLower.includes(
+                                "review"
+                            )
+                        ) {
 
-                            dateTime =
-                                dateObject.toLocaleTimeString(
-                                    undefined,
-                                    {
-                                        hour: "2-digit",
-                                        minute: "2-digit"
-                                    }
-                                );
+                            actionClass =
+                                "reviewed";
 
-                        } else {
+                        } else if (
+                            actionLower.includes(
+                                "update"
+                            )
+                        ) {
 
-                            dateMain =
-                                String(changedAt);
+                            actionClass =
+                                "updated";
+
                         }
-                    }
 
 
-                    // ----------------------------------------
-                    // ACTION
-                    // ----------------------------------------
+                        // ------------------------------------
+                        // STATUS
+                        // ------------------------------------
 
-                    const rawAction =
-                        item.action ||
-                        "Task Updated";
-
-                    const actionLower =
-                        String(
-                            rawAction
-                        ).toLowerCase();
-
-                    let actionClass =
-                        "updated";
+                        const oldStatus =
+                            item.old_status ?? "-";
 
 
-                    if (
-                        actionLower.includes("creat")
-                    ) {
-
-                        actionClass =
-                            "created";
-
-                    } else if (
-                        actionLower.includes("review")
-                    ) {
-
-                        actionClass =
-                            "reviewed";
-
-                    } else if (
-                        actionLower.includes("update")
-                    ) {
-
-                        actionClass =
-                            "updated";
-                    }
+                        const newStatus =
+                            item.new_status ??
+                            item.status ??
+                            "-";
 
 
-                    // ----------------------------------------
-                    // STATUS
-                    // ----------------------------------------
+                        // ------------------------------------
+                        // PROGRESS
+                        // ------------------------------------
 
-                    const oldStatus =
-                        item.old_status ?? "-";
-
-                    const newStatus =
-                        item.new_status ??
-                        item.status ??
-                        "-";
-
-
-                    // ----------------------------------------
-                    // PROGRESS
-                    // ----------------------------------------
-
-                    const oldPercent =
-                        Number(
-                            item.old_percent_complete ??
-                            0
-                        );
-
-                    const newPercent =
-                        Number(
-                            item.new_percent_complete ??
-                            item.percent_complete ??
-                            0
-                        );
-
-
-                    const safeNewPercent =
-                        Math.min(
-                            Math.max(
-                                newPercent,
+                        const oldPercent =
+                            Number(
+                                item.old_percent_complete ??
                                 0
-                            ),
-                            100
-                        );
+                            );
 
 
-                    // ----------------------------------------
-                    // RESPONSIBLE PERSON
-                    // ----------------------------------------
-
-                    const responsiblePerson =
-                        item.responsible_person ||
-                        item.new_responsible_person ||
-                        "-";
+                        const newPercent =
+                            Number(
+                                item.new_percent_complete ??
+                                item.percent_complete ??
+                                0
+                            );
 
 
-                    // ----------------------------------------
-                    // REMARKS
-                    // ----------------------------------------
-
-                    const remarks =
-                        item.remarks || "-";
-
-
-                    // ----------------------------------------
-                    // CHANGED BY
-                    // ----------------------------------------
-
-                    const changedBy =
-                        item.changed_by ||
-                        item.changed_by_name ||
-                        "-";
+                        const safeNewPercent =
+                            Math.min(
+                                Math.max(
+                                    newPercent,
+                                    0
+                                ),
+                                100
+                            );
 
 
-                    // ----------------------------------------
-                    // RETURN HISTORY ROW
-                    // ----------------------------------------
+                        // ------------------------------------
+                        // RESPONSIBLE PERSON
+                        // ------------------------------------
 
-                    return `
-                        <tr>
-
-                            <td>
-                                <div class="history-date">
-
-                                    <span class="history-date-main">
-                                        ${escapeHtml(dateMain)}
-                                    </span>
-
-                                    ${
-                                        dateTime
-                                            ? `
-                                                <span class="history-date-time">
-                                                    ${escapeHtml(dateTime)}
-                                                </span>
-                                            `
-                                            : ""
-                                    }
-
-                                </div>
-                            </td>
+                        const responsiblePerson =
+                            item.responsible_person ||
+                            item.new_responsible_person ||
+                            "-";
 
 
-                            <td>
+                        // ------------------------------------
+                        // REMARKS
+                        // ------------------------------------
 
-                                <span
-                                    class="history-action ${actionClass}"
-                                >
-                                    ${escapeHtml(rawAction)}
-                                </span>
-
-                            </td>
+                        const remarks =
+                            item.remarks || "-";
 
 
-                            <td>
+                        // ------------------------------------
+                        // CHANGED BY
+                        // ------------------------------------
 
-                                <div class="history-status-change">
-
-                                    <span
-                                        class="status ${getStatusClass(oldStatus)}"
-                                    >
-                                        ${escapeHtml(oldStatus)}
-                                    </span>
-
-                                    <span class="history-arrow">
-                                        →
-                                    </span>
-
-                                    <span
-                                        class="status ${getStatusClass(newStatus)}"
-                                    >
-                                        ${escapeHtml(newStatus)}
-                                    </span>
-
-                                </div>
-
-                            </td>
+                        const changedBy =
+                            item.changed_by ||
+                            item.changed_by_name ||
+                            "-";
 
 
-                            <td>
+                        // ------------------------------------
+                        // RETURN HISTORY ROW
+                        // ------------------------------------
 
-                                <div class="history-row-progress">
+                        return `
+                            <tr>
 
-                                    <span
-                                        class="history-row-progress-value"
-                                    >
-                                        ${escapeHtml(oldPercent)}%
-                                        →
-                                        ${escapeHtml(newPercent)}%
-                                    </span>
+                                <td>
 
-                                    <div
-                                        class="history-row-progress-track"
-                                    >
+                                    <div class="history-date">
 
-                                        <div
-                                            class="history-row-progress-fill"
-                                            style="width: ${safeNewPercent}%"
-                                        ></div>
+                                        <span class="history-date-main">
+                                            ${escapeHtml(
+                                                dateMain
+                                            )}
+                                        </span>
+
+                                        ${
+                                            dateTime
+                                                ? `
+                                                    <span class="history-date-time">
+                                                        ${escapeHtml(
+                                                            dateTime
+                                                        )}
+                                                    </span>
+                                                `
+                                                : ""
+                                        }
 
                                     </div>
 
-                                </div>
-
-                            </td>
+                                </td>
 
 
-                            <td>
+                                <td>
 
-                                <span>
-                                    ${escapeHtml(responsiblePerson)}
-                                </span>
+                                    <span
+                                        class="history-action ${actionClass}"
+                                    >
+                                        ${escapeHtml(
+                                            rawAction
+                                        )}
+                                    </span>
 
-                            </td>
-
-
-                            <td>
-
-                                <div class="history-remarks">
-                                    ${escapeHtml(remarks)}
-                                </div>
-
-                            </td>
+                                </td>
 
 
-                            <td>
+                                <td>
 
-                                <span class="history-changed-by">
-                                    ${escapeHtml(changedBy)}
-                                </span>
+                                    <div class="history-status-change">
 
-                            </td>
+                                        <span
+                                            class="status ${getStatusClass(
+                                                oldStatus
+                                            )}"
+                                        >
+                                            ${escapeHtml(
+                                                oldStatus
+                                            )}
+                                        </span>
 
-                        </tr>
-                    `;
-                })
-                .join("");
+                                        <span class="history-arrow">
+                                            →
+                                        </span>
+
+                                        <span
+                                            class="status ${getStatusClass(
+                                                newStatus
+                                            )}"
+                                        >
+                                            ${escapeHtml(
+                                                newStatus
+                                            )}
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="history-row-progress">
+
+                                        <span
+                                            class="history-row-progress-value"
+                                        >
+                                            ${escapeHtml(
+                                                oldPercent
+                                            )}%
+
+                                            →
+
+                                            ${escapeHtml(
+                                                newPercent
+                                            )}%
+                                        </span>
+
+
+                                        <div
+                                            class="history-row-progress-track"
+                                        >
+
+                                            <div
+                                                class="history-row-progress-fill"
+                                                style="width: ${safeNewPercent}%"
+                                            ></div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span>
+                                        ${escapeHtml(
+                                            responsiblePerson
+                                        )}
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="history-remarks">
+                                        ${escapeHtml(
+                                            remarks
+                                        )}
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="history-changed-by">
+                                        ${escapeHtml(
+                                            changedBy
+                                        )}
+                                    </span>
+
+                                </td>
+
+                            </tr>
+                        `;
+
+                    })
+                    .join("");
+
         }
 
     } catch (error) {
@@ -1220,6 +1538,7 @@ async function loadTaskHistory(task) {
 
             taskHistoryTable.innerHTML = `
                 <tr>
+
                     <td colspan="7">
 
                         <div class="history-empty">
@@ -1241,10 +1560,14 @@ async function loadTaskHistory(task) {
                         </div>
 
                     </td>
+
                 </tr>
             `;
+
         }
+
     }
+
 }
 
 
@@ -1261,6 +1584,7 @@ async function deleteTask(task) {
         );
 
         return;
+
     }
 
 
@@ -1271,7 +1595,9 @@ async function deleteTask(task) {
 
 
     if (!confirmed) {
+
         return;
+
     }
 
 
@@ -1298,6 +1624,7 @@ async function deleteTask(task) {
                 result.error ||
                 "Failed to delete task."
             );
+
         }
 
 
@@ -1320,7 +1647,9 @@ async function deleteTask(task) {
             "Error: " +
             error.message
         );
+
     }
+
 }
 
 
@@ -1331,13 +1660,19 @@ async function deleteTask(task) {
 function createActionMenu(task) {
 
     const wrapper =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     wrapper.className =
         "task-action-wrapper";
 
 
     wrapper.innerHTML = `
+
+        <!-- ACTION BUTTON -->
+
         <button
             type="button"
             class="task-action-trigger"
@@ -1345,12 +1680,23 @@ function createActionMenu(task) {
             aria-expanded="false"
             title="Actions">
 
-            <span>⋮</span>
+            <span class="task-action-label">
+                Actions
+            </span>
+
+            <span class="task-action-arrow">
+                ▾
+            </span>
 
         </button>
 
 
+        <!-- ACTION MENU -->
+
         <div class="task-action-menu">
+
+
+            <!-- REVIEW -->
 
             <button
                 type="button"
@@ -1367,6 +1713,8 @@ function createActionMenu(task) {
             </button>
 
 
+            <!-- EDIT -->
+
             <button
                 type="button"
                 class="task-action-item edit-action">
@@ -1381,6 +1729,8 @@ function createActionMenu(task) {
 
             </button>
 
+
+            <!-- HISTORY -->
 
             <button
                 type="button"
@@ -1397,8 +1747,12 @@ function createActionMenu(task) {
             </button>
 
 
+            <!-- DIVIDER -->
+
             <div class="task-action-divider"></div>
 
+
+            <!-- DELETE -->
 
             <button
                 type="button"
@@ -1415,13 +1769,19 @@ function createActionMenu(task) {
             </button>
 
         </div>
+
     `;
 
+
+    // ========================================================
+    // ELEMENTS
+    // ========================================================
 
     const trigger =
         wrapper.querySelector(
             ".task-action-trigger"
         );
+
 
     const menu =
         wrapper.querySelector(
@@ -1430,7 +1790,7 @@ function createActionMenu(task) {
 
 
     // ========================================================
-    // THREE DOT BUTTON
+    // ACTION BUTTON
     // ========================================================
 
     if (trigger && menu) {
@@ -1448,8 +1808,12 @@ function createActionMenu(task) {
                     );
 
 
+                // Close all menus first
+
                 closeAllActionMenus();
 
+
+                // Open this menu
 
                 if (!wasOpen) {
 
@@ -1457,13 +1821,22 @@ function createActionMenu(task) {
                         "show"
                     );
 
+
                     trigger.setAttribute(
                         "aria-expanded",
                         "true"
                     );
+
+
+                    trigger.classList.add(
+                        "active"
+                    );
+
                 }
+
             }
         );
+
     }
 
 
@@ -1488,8 +1861,10 @@ function createActionMenu(task) {
                 closeAllActionMenus();
 
                 openReviewModal(task);
+
             }
         );
+
     }
 
 
@@ -1514,8 +1889,10 @@ function createActionMenu(task) {
                 closeAllActionMenus();
 
                 openEditTaskModal(task);
+
             }
         );
+
     }
 
 
@@ -1540,8 +1917,10 @@ function createActionMenu(task) {
                 closeAllActionMenus();
 
                 loadTaskHistory(task);
+
             }
         );
+
     }
 
 
@@ -1566,12 +1945,15 @@ function createActionMenu(task) {
                 closeAllActionMenus();
 
                 deleteTask(task);
+
             }
         );
+
     }
 
 
     return wrapper;
+
 }
 
 
@@ -1582,7 +1964,9 @@ function createActionMenu(task) {
 document.addEventListener(
     "click",
     () => {
+
         closeAllActionMenus();
+
     }
 );
 
@@ -1623,13 +2007,16 @@ async function loadTasks() {
                 "Project ID is missing from URL."
             );
 
+
             alert(
                 "No project selected."
             );
 
+
             window.location.href = "/";
 
             return;
+
         }
 
 
@@ -1672,6 +2059,7 @@ async function loadTasks() {
                 data.message ||
                 "Failed to load tasks."
             );
+
         }
 
 
@@ -1697,6 +2085,7 @@ async function loadTasks() {
         ) {
 
             tasks = data.data;
+
         }
 
 
@@ -1705,10 +2094,12 @@ async function loadTasks() {
             projectId
         );
 
+
         console.log(
             "Number of tasks found:",
             tasks.length
         );
+
 
         console.log(
             "Tasks:",
@@ -1725,15 +2116,18 @@ async function loadTasks() {
                 "taskTotal"
             );
 
+
         const taskNotStarted =
             document.getElementById(
                 "taskNotStarted"
             );
 
+
         const taskInProgress =
             document.getElementById(
                 "taskInProgress"
             );
+
 
         const taskCompleted =
             document.getElementById(
@@ -1745,6 +2139,7 @@ async function loadTasks() {
 
             taskTotal.textContent =
                 tasks.length;
+
         }
 
 
@@ -1756,6 +2151,7 @@ async function loadTasks() {
                         task.status ===
                         "Not Started"
                 ).length;
+
         }
 
 
@@ -1767,6 +2163,7 @@ async function loadTasks() {
                         task.status ===
                         "In Progress"
                 ).length;
+
         }
 
 
@@ -1778,6 +2175,7 @@ async function loadTasks() {
                         task.status ===
                         "Completed"
                 ).length;
+
         }
 
 
@@ -1798,6 +2196,7 @@ async function loadTasks() {
             );
 
             return;
+
         }
 
 
@@ -1812,13 +2211,16 @@ async function loadTasks() {
 
             table.innerHTML = `
                 <tr>
+
                     <td colspan="8">
                         No tasks found for this project.
                     </td>
+
                 </tr>
             `;
 
             return;
+
         }
 
 
@@ -1829,7 +2231,9 @@ async function loadTasks() {
         tasks.forEach(task => {
 
             const row =
-                document.createElement("tr");
+                document.createElement(
+                    "tr"
+                );
 
 
             const statusClass =
@@ -1841,6 +2245,7 @@ async function loadTasks() {
             row.innerHTML = `
 
                 <!-- TASK -->
+
                 <td>
                     ${escapeHtml(
                         task.task_activity || "-"
@@ -1849,6 +2254,7 @@ async function loadTasks() {
 
 
                 <!-- PROCEDURE STAGE -->
+
                 <td>
                     ${escapeHtml(
                         task.procedure_stage || "-"
@@ -1857,16 +2263,22 @@ async function loadTasks() {
 
 
                 <!-- STATUS -->
+
                 <td>
-                    <span class="status ${statusClass}">
+
+                    <span
+                        class="status ${statusClass}"
+                    >
                         ${escapeHtml(
                             task.status || "-"
                         )}
                     </span>
+
                 </td>
 
 
                 <!-- PRIORITY -->
+
                 <td>
                     ${escapeHtml(
                         task.priority || "-"
@@ -1875,6 +2287,7 @@ async function loadTasks() {
 
 
                 <!-- RESPONSIBLE PERSON -->
+
                 <td>
                     ${escapeHtml(
                         task.responsible_person || "-"
@@ -1883,6 +2296,7 @@ async function loadTasks() {
 
 
                 <!-- DUE DATE -->
+
                 <td>
                     ${escapeHtml(
                         formatDate(
@@ -1893,6 +2307,7 @@ async function loadTasks() {
 
 
                 <!-- PERCENT COMPLETE -->
+
                 <td>
                     ${escapeHtml(
                         task.percent_complete ?? 0
@@ -1901,6 +2316,7 @@ async function loadTasks() {
 
 
                 <!-- ACTIONS -->
+
                 <td class="task-actions"></td>
 
             `;
@@ -1919,16 +2335,21 @@ async function loadTasks() {
             if (actionsCell) {
 
                 const actionMenu =
-                    createActionMenu(task);
+                    createActionMenu(
+                        task
+                    );
 
 
                 actionsCell.appendChild(
                     actionMenu
                 );
+
             }
 
 
-            table.appendChild(row);
+            table.appendChild(
+                row
+            );
 
         });
 
@@ -1938,15 +2359,18 @@ async function loadTasks() {
             "========================================"
         );
 
+
         console.error(
             "LOAD TASKS ERROR:",
             error
         );
 
+
         console.error(
             "Project ID:",
             projectId
         );
+
 
         console.error(
             "========================================"
@@ -1957,7 +2381,9 @@ async function loadTasks() {
             "Error loading tasks: " +
             error.message
         );
+
     }
+
 }
 
 
@@ -1985,60 +2411,72 @@ if (taskForm) {
                         "procedureStage"
                     ).trim(),
 
+
                 task_activity:
                     getValue(
                         "taskActivity"
                     ).trim(),
+
 
                 status:
                     getValue(
                         "taskStatus"
                     ),
 
+
                 schedule_status:
                     getValue(
                         "scheduleStatus"
                     ),
+
 
                 priority:
                     getValue(
                         "taskPriority"
                     ),
 
+
                 responsible_person:
                     getValue(
                         "responsiblePerson"
                     ).trim(),
+
 
                 role:
                     getValue(
                         "taskRole"
                     ),
 
+
                 stakeholder_end_user:
                     getValue(
                         "stakeholderEndUser"
                     ).trim(),
+
 
                 start_date:
                     getValue(
                         "startDate"
                     ) || null,
 
+
                 due_date:
                     getValue(
                         "dueDate"
                     ) || null,
+
 
                 deliverable_expected_output:
                     getValue(
                         "deliverableExpectedOutput"
                     ).trim(),
 
+
                 evidence_applicability:
                     getValue(
                         "evidenceApplicability"
                     ),
+
 
                 percent_complete:
                     Number(
@@ -2046,6 +2484,7 @@ if (taskForm) {
                             "percentComplete"
                         ) || 0
                     )
+
             };
 
 
@@ -2074,6 +2513,7 @@ if (taskForm) {
                         editingTaskId
                     )}`;
 
+
                 method =
                     "PUT";
 
@@ -2084,8 +2524,10 @@ if (taskForm) {
                         projectId
                     )}/tasks`;
 
+
                 method =
                     "POST";
+
             }
 
 
@@ -2141,6 +2583,7 @@ if (taskForm) {
                                 : "Failed to create task."
                         )
                     );
+
                 }
 
 
@@ -2182,9 +2625,12 @@ if (taskForm) {
                     "Error: " +
                     error.message
                 );
+
             }
+
         }
     );
+
 }
 
 
@@ -2212,6 +2658,7 @@ if (reviewForm) {
                 );
 
                 return;
+
             }
 
 
@@ -2226,20 +2673,24 @@ if (reviewForm) {
                         "reviewedVerifiedBy"
                     ).trim(),
 
+
                 review_result:
                     getValue(
                         "reviewResult"
                     ),
+
 
                 review_date:
                     getValue(
                         "reviewDate"
                     ) || null,
 
+
                 remarks:
                     getValue(
                         "reviewRemarks"
                     ).trim()
+
             };
 
 
@@ -2256,6 +2707,7 @@ if (reviewForm) {
                 );
 
                 return;
+
             }
 
 
@@ -2268,6 +2720,7 @@ if (reviewForm) {
                 );
 
                 return;
+
             }
 
 
@@ -2280,6 +2733,7 @@ if (reviewForm) {
                 );
 
                 return;
+
             }
 
 
@@ -2326,6 +2780,7 @@ if (reviewForm) {
                         result.error ||
                         "Failed to submit review."
                     );
+
                 }
 
 
@@ -2355,9 +2810,12 @@ if (reviewForm) {
                     "Error: " +
                     error.message
                 );
+
             }
+
         }
     );
+
 }
 
 
@@ -2368,6 +2826,8 @@ if (reviewForm) {
 document.addEventListener(
     "DOMContentLoaded",
     () => {
+
         loadTasks();
+
     }
 );
