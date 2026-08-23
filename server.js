@@ -833,35 +833,21 @@ app.post(
 
 // ============================================================
 // UPDATE TASK
+// EVERY SUCCESSFUL UPDATE CREATES ONE HISTORY TRANSACTION
 // ============================================================
 
 app.put(
     "/api/tasks/:taskId",
     async (req, res) => {
-
         try {
-
-            const { taskId } =
-                req.params;
+            const { taskId } = req.params;
 
             console.log(
                 "=============================================="
             );
-
-            console.log(
-                "UPDATE TASK"
-            );
-
-            console.log(
-                "Task ID:",
-                taskId
-            );
-
-            console.log(
-                "Request body:",
-                req.body
-            );
-
+            console.log("UPDATE TASK");
+            console.log("Task ID:", taskId);
+            console.log("Request body:", req.body);
             console.log(
                 "=============================================="
             );
@@ -876,14 +862,10 @@ app.put(
             } = await supabase
                 .from("tasks")
                 .select("*")
-                .eq(
-                    "task_id",
-                    taskId
-                )
+                .eq("task_id", taskId)
                 .single();
 
             if (oldTaskError) {
-
                 console.error(
                     "GET OLD TASK ERROR:",
                     oldTaskError
@@ -891,10 +873,13 @@ app.put(
 
                 return res.status(404).json({
                     success: false,
-                    error:
-                        "Task not found."
+                    error: "Task not found."
                 });
             }
+
+            // ----------------------------------------------------
+            // GET UPDATED VALUES
+            // ----------------------------------------------------
 
             const {
                 procedure_stage,
@@ -913,11 +898,14 @@ app.put(
                 percent_complete
             } = req.body;
 
+            // ----------------------------------------------------
+            // VALIDATE TASK ACTIVITY
+            // ----------------------------------------------------
+
             if (
                 !task_activity ||
                 !task_activity.trim()
             ) {
-
                 return res.status(400).json({
                     success: false,
                     error:
@@ -925,8 +913,11 @@ app.put(
                 });
             }
 
-            const taskData = {
+            // ----------------------------------------------------
+            // PREPARE UPDATED TASK DATA
+            // ----------------------------------------------------
 
+            const taskData = {
                 procedure_stage:
                     procedure_stage || null,
 
@@ -990,15 +981,11 @@ app.put(
             } = await supabase
                 .from("tasks")
                 .update(taskData)
-                .eq(
-                    "task_id",
-                    taskId
-                )
+                .eq("task_id", taskId)
                 .select()
                 .single();
 
             if (error) {
-
                 console.error(
                     "SUPABASE TASK UPDATE ERROR:",
                     error
@@ -1014,12 +1001,11 @@ app.put(
             }
 
             // ----------------------------------------------------
-            // DETERMINE CHANGES
+            // DETERMINE WHAT CHANGED
             // ----------------------------------------------------
 
             const statusChanged =
-                oldTask.status !==
-                data.status;
+                oldTask.status !== data.status;
 
             const percentChanged =
                 Number(
@@ -1039,118 +1025,275 @@ app.put(
                     null
                 );
 
+            const taskActivityChanged =
+                (
+                    oldTask.task_activity ||
+                    null
+                ) !==
+                (
+                    data.task_activity ||
+                    null
+                );
+
+            const procedureStageChanged =
+                (
+                    oldTask.procedure_stage ||
+                    null
+                ) !==
+                (
+                    data.procedure_stage ||
+                    null
+                );
+
+            const scheduleStatusChanged =
+                (
+                    oldTask.schedule_status ||
+                    null
+                ) !==
+                (
+                    data.schedule_status ||
+                    null
+                );
+
+            const priorityChanged =
+                (
+                    oldTask.priority ||
+                    null
+                ) !==
+                (
+                    data.priority ||
+                    null
+                );
+
+            const roleChanged =
+                (
+                    oldTask.role ||
+                    null
+                ) !==
+                (
+                    data.role ||
+                    null
+                );
+
+            const stakeholderChanged =
+                (
+                    oldTask.stakeholder_end_user ||
+                    null
+                ) !==
+                (
+                    data.stakeholder_end_user ||
+                    null
+                );
+
+            const startDateChanged =
+                (
+                    oldTask.start_date ||
+                    null
+                ) !==
+                (
+                    data.start_date ||
+                    null
+                );
+
+            const dueDateChanged =
+                (
+                    oldTask.due_date ||
+                    null
+                ) !==
+                (
+                    data.due_date ||
+                    null
+                );
+
+            const completionDateChanged =
+                (
+                    oldTask.completion_date ||
+                    null
+                ) !==
+                (
+                    data.completion_date ||
+                    null
+                );
+
+            const deliverableChanged =
+                (
+                    oldTask.deliverable_expected_output ||
+                    null
+                ) !==
+                (
+                    data.deliverable_expected_output ||
+                    null
+                );
+
+            const evidenceChanged =
+                (
+                    oldTask.evidence_applicability ||
+                    null
+                ) !==
+                (
+                    data.evidence_applicability ||
+                    null
+                );
+
             // ----------------------------------------------------
-            // RECORD HISTORY
+            // DETERMINE HISTORY ACTION
             // ----------------------------------------------------
+            // IMPORTANT:
+            // Every successful update creates ONE history record.
+            // ----------------------------------------------------
+
+            let action = "Updated";
 
             if (
-                statusChanged ||
-                percentChanged ||
-                responsibleChanged
+                statusChanged &&
+                percentChanged
             ) {
-
-                let action =
-                    "Updated";
-
-                if (
-                    statusChanged &&
-                    percentChanged
-                ) {
-
-                    action =
-                        "Status and Progress Updated";
-
-                } else if (statusChanged) {
-
-                    action =
-                        "Status Updated";
-
-                } else if (percentChanged) {
-
-                    action =
-                        "Progress Updated";
-
-                } else if (responsibleChanged) {
-
-                    action =
-                        "Responsible Person Updated";
-                }
-
-                const historyResult =
-                    await createTaskHistory({
-
-                        taskId:
-                            data.task_id,
-
-                        projectId:
-                            data.project_id,
-
-                        action:
-                            action,
-
-                        oldStatus:
-                            oldTask.status,
-
-                        newStatus:
-                            data.status,
-
-                        oldPercentComplete:
-                            oldTask.percent_complete,
-
-                        newPercentComplete:
-                            data.percent_complete,
-
-                        oldResponsiblePerson:
-                            oldTask.responsible_person,
-
-                        newResponsiblePerson:
-                            data.responsible_person,
-
-                        remarks:
-                            "Task information updated",
-
-                        changedBy:
-                            data.responsible_person ||
-                            "System"
-                    });
-
-                if (!historyResult.success) {
-
-                    console.error(
-                        "TASK UPDATED BUT HISTORY FAILED:",
-                        historyResult.error
-                    );
-
-                    return res.status(500).json({
-
-                        success: false,
-
-                        error:
-                            "Task was updated, but the history record could not be saved.",
-
-                        historyError:
-                            historyResult.error?.message ||
-                            "Unknown history error.",
-
-                        task:
-                            data
-                    });
-                }
+                action =
+                    "Status and Progress Updated";
+            } else if (statusChanged) {
+                action =
+                    "Status Updated";
+            } else if (percentChanged) {
+                action =
+                    "Progress Updated";
+            } else if (responsibleChanged) {
+                action =
+                    "Responsible Person Updated";
+            } else if (taskActivityChanged) {
+                action =
+                    "Task Activity Updated";
+            } else if (procedureStageChanged) {
+                action =
+                    "Procedure Stage Updated";
+            } else if (scheduleStatusChanged) {
+                action =
+                    "Schedule Status Updated";
+            } else if (priorityChanged) {
+                action =
+                    "Priority Updated";
+            } else if (roleChanged) {
+                action =
+                    "Role Updated";
+            } else if (stakeholderChanged) {
+                action =
+                    "Stakeholder / End-user Updated";
+            } else if (startDateChanged) {
+                action =
+                    "Start Date Updated";
+            } else if (dueDateChanged) {
+                action =
+                    "Due Date Updated";
+            } else if (completionDateChanged) {
+                action =
+                    "Completion Date Updated";
+            } else if (deliverableChanged) {
+                action =
+                    "Deliverable / Expected Output Updated";
+            } else if (evidenceChanged) {
+                action =
+                    "Evidence Applicability Updated";
             }
 
-            res.json({
+            // ----------------------------------------------------
+            // CREATE ONE HISTORY RECORD
+            // ----------------------------------------------------
+            // No condition here.
+            // A successful task update ALWAYS creates history.
+            // ----------------------------------------------------
 
+            const historyResult =
+                await createTaskHistory({
+                    taskId:
+                        data.task_id,
+
+                    projectId:
+                        data.project_id,
+
+                    action:
+                        action,
+
+                    oldStatus:
+                        oldTask.status,
+
+                    newStatus:
+                        data.status,
+
+                    oldPercentComplete:
+                        oldTask.percent_complete,
+
+                    newPercentComplete:
+                        data.percent_complete,
+
+                    oldResponsiblePerson:
+                        oldTask.responsible_person,
+
+                    newResponsiblePerson:
+                        data.responsible_person,
+
+                    remarks:
+                        "Task information updated",
+
+                    changedBy:
+                        data.responsible_person ||
+                        oldTask.responsible_person ||
+                        "System"
+                });
+
+            // ----------------------------------------------------
+            // DO NOT SILENTLY IGNORE HISTORY FAILURE
+            // ----------------------------------------------------
+
+            if (!historyResult.success) {
+                console.error(
+                    "TASK UPDATED BUT HISTORY FAILED:",
+                    historyResult.error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Task was updated, but the history record could not be saved.",
+
+                    historyError:
+                        historyResult.error?.message ||
+                        "Unknown history error.",
+
+                    task:
+                        data
+                });
+            }
+
+            // ----------------------------------------------------
+            // SUCCESS
+            // ----------------------------------------------------
+
+            console.log(
+                "Task updated successfully:",
+                data
+            );
+
+            console.log(
+                "History transaction recorded:",
+                action
+            );
+
+            res.json({
                 success: true,
 
                 message:
                     "Task updated successfully.",
 
                 task:
-                    data
+                    data,
+
+                historyRecorded:
+                    true,
+
+                historyAction:
+                    action
             });
 
         } catch (error) {
-
             console.error(
                 "Update task error:",
                 error
