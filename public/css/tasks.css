@@ -440,96 +440,161 @@
    OTHER ACTION BUTTONS ARE HIDDEN UNTIL HOVER
    ============================================================ */
 
+/* ============================================================
+   TASK ACTION DROPDOWN
+   ============================================================ */
+
 .task-actions {
     position: relative;
     width: 100%;
-    min-width: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    flex-wrap: nowrap;
+    min-width: 120px;
+    padding: 0 !important;
+    overflow: visible !important;
     white-space: nowrap;
 }
 
+.task-action-wrapper {
+    position: relative;
+    display: inline-block;
+    width: auto;
+}
 
 /* ============================================================
-   ACTION BUTTONS
+   ACTIONS TRIGGER BUTTON
    ============================================================ */
 
-.task-actions .btn {
-    flex: 0 0 auto;
+.task-action-trigger {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    height: 34px;
-    padding: 7px 11px;
-    border: none;
+    justify-content: space-between;
+    gap: 8px;
+
+    min-width: 105px;
+    height: 36px;
+
+    padding: 8px 12px;
+
+    border: 1px solid #cfd6df;
     border-radius: 7px;
+
+    background: #ffffff;
+    color: #253858;
+
     font-family: inherit;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    line-height: 1;
-    white-space: nowrap;
+
     cursor: pointer;
+
     transition:
         background 0.2s ease,
-        transform 0.15s ease,
+        border-color 0.2s ease,
         box-shadow 0.2s ease;
 }
 
-
-/* ============================================================
-   MENU BUTTON
-   THE FIRST BUTTON IS THE ⋮ BUTTON
-   ============================================================ */
-
-.task-actions .btn:first-child {
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    flex: 0 0 36px;
-    border-radius: 8px;
-    background: #f1f3f5;
-    color: #374151;
-    font-size: 20px;
-    line-height: 1;
-    z-index: 5;
+.task-action-trigger:hover,
+.task-action-trigger.active {
+    background: #f6fbf7;
+    border-color: #2e7d32;
+    color: #2e7d32;
 }
 
-.task-actions .btn:first-child:hover {
-    background: #e5e7eb;
+.task-action-arrow {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.task-action-trigger.active .task-action-arrow {
+    transform: rotate(180deg);
 }
 
 
 /* ============================================================
-   HIDE ALL ACTION BUTTONS EXCEPT MENU
+   DROPDOWN MENU
    ============================================================ */
 
-.task-actions .btn:not(:first-child) {
+.task-action-menu {
+    position: absolute;
+
+    top: calc(100% + 5px);
+    right: 0;
+
+    width: 155px;
+
     display: none;
+
+    padding: 5px;
+
+    background: #ffffff;
+
+    border: 1px solid #dfe4eb;
+    border-radius: 8px;
+
+    box-shadow:
+        0 8px 20px rgba(23, 43, 77, 0.15);
+
+    z-index: 9999;
+}
+
+
+/* SHOW MENU */
+
+.task-action-menu.show {
+    display: block;
 }
 
 
 /* ============================================================
-   SHOW ACTION MENU ON HOVER
+   MENU ITEMS
    ============================================================ */
 
-.task-actions:hover .btn:not(:first-child) {
+.task-action-item {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 9px 10px;
+
+    border: none;
+    border-radius: 6px;
+
+    background: transparent;
+    color: #253858;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.task-action-item:hover {
+    background: #f4f7f9;
+}
+
+
+/* ============================================================
+   ICONS
+   ============================================================ */
+
+.task-action-icon {
+    width: 20px;
+
     display: inline-flex;
-}
+    align-items: center;
+    justify-content: center;
 
+    flex-shrink: 0;
 
-/* ============================================================
-   ACTION BUTTON HOVER
-   ============================================================ */
-
-.task-actions .btn:hover {
-    transform: translateY(-1px);
-}
-
-.task-actions .btn:active {
-    transform: translateY(0);
+    font-size: 14px;
 }
 
 
@@ -537,13 +602,8 @@
    REVIEW
    ============================================================ */
 
-.task-actions .btn-review {
+.task-action-item.review-action:hover {
     background: #f3f4f6;
-    color: #374151;
-}
-
-.task-actions .btn-review:hover {
-    background: #e5e7eb;
 }
 
 
@@ -551,13 +611,12 @@
    EDIT
    ============================================================ */
 
-.task-actions .btn-edit {
-    background: #e8f5e9;
+.task-action-item.edit-action {
     color: #2e7d32;
 }
 
-.task-actions .btn-edit:hover {
-    background: #d2ecd5;
+.task-action-item.edit-action:hover {
+    background: #e8f5e9;
 }
 
 
@@ -565,13 +624,12 @@
    HISTORY
    ============================================================ */
 
-.task-actions .btn-history {
-    background: #eff6ff;
+.task-action-item.history-action {
     color: #2563eb;
 }
 
-.task-actions .btn-history:hover {
-    background: #dbeafe;
+.task-action-item.history-action:hover {
+    background: #eff6ff;
 }
 
 
@@ -579,24 +637,25 @@
    DELETE
    ============================================================ */
 
-.task-actions .btn-danger {
-    background: #fee2e2;
+.task-action-item.delete-action {
     color: #dc2626;
 }
 
-.task-actions .btn-danger:hover {
-    background: #fecaca;
+.task-action-item.delete-action:hover {
+    background: #fee2e2;
 }
 
 
 /* ============================================================
-   ACTION BUTTON ICONS
+   DIVIDER
    ============================================================ */
 
-.task-actions .btn i,
-.task-actions .btn span,
-.task-actions .btn .icon {
-    flex-shrink: 0;
+.task-action-divider {
+    height: 1px;
+
+    margin: 4px 6px;
+
+    background: #e5e7eb;
 }
 
 
