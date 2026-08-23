@@ -1,9 +1,15 @@
 // ============================================================
+// STS - PROJECT TASKS JAVASCRIPT
+// ============================================================
+
+
+// ============================================================
 // GET PROJECT ID FROM URL
 // ============================================================
 
 const urlParams = new URLSearchParams(window.location.search);
 const projectId = urlParams.get("project_id");
+
 
 // ============================================================
 // CHECK PROJECT ID
@@ -24,6 +30,7 @@ const newTaskBtn = document.getElementById("newTaskBtn");
 const closeTaskModal = document.getElementById("closeTaskModal");
 const cancelTaskBtn = document.getElementById("cancelTaskBtn");
 const taskForm = document.getElementById("taskForm");
+
 const taskModalTitle = document.getElementById("taskModalTitle");
 const taskModalSubtitle = document.getElementById("taskModalSubtitle");
 const taskSubmitBtn = document.getElementById("taskSubmitBtn");
@@ -34,6 +41,20 @@ const taskSubmitBtn = document.getElementById("taskSubmitBtn");
 // ============================================================
 
 let editingTaskId = null;
+
+
+// ============================================================
+// REVIEW STATE
+// ============================================================
+
+let currentReviewTaskId = null;
+
+
+// ============================================================
+// HISTORY STATE
+// ============================================================
+
+let currentHistoryTaskId = null;
 
 
 // ============================================================
@@ -101,26 +122,82 @@ function formatDate(dateValue) {
 
 
 // ============================================================
+// HELPER - FORMAT HISTORY DATE
+// ============================================================
+
+function formatHistoryDate(dateValue) {
+    if (!dateValue) {
+        return "-";
+    }
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+        return String(dateValue);
+    }
+
+    return date.toLocaleString();
+}
+
+
+// ============================================================
+// HELPER - STATUS CLASS
+// ============================================================
+
+function getStatusClass(status) {
+
+    switch (status) {
+
+        case "In Progress":
+            return "status-active";
+
+        case "Completed":
+            return "status-completed";
+
+        case "Not Started":
+            return "status-pending";
+
+        case "On Hold":
+            return "status-pending";
+
+        default:
+            return "status-pending";
+    }
+}
+
+
+// ============================================================
 // OPEN NEW TASK MODAL
 // ============================================================
 
 if (newTaskBtn) {
+
     newTaskBtn.addEventListener("click", () => {
 
         editingTaskId = null;
 
-        taskForm.reset();
+        if (taskForm) {
+            taskForm.reset();
+        }
 
         setValue("percentComplete", 0);
 
-        taskModalTitle.textContent = "New Task";
+        if (taskModalTitle) {
+            taskModalTitle.textContent = "New Task";
+        }
 
-        taskModalSubtitle.textContent =
-            "Add a task to this project.";
+        if (taskModalSubtitle) {
+            taskModalSubtitle.textContent =
+                "Add a task to this project.";
+        }
 
-        taskSubmitBtn.textContent = "Create Task";
+        if (taskSubmitBtn) {
+            taskSubmitBtn.textContent = "Create Task";
+        }
 
-        taskModal.classList.add("show");
+        if (taskModal) {
+            taskModal.classList.add("show");
+        }
     });
 }
 
@@ -174,7 +251,7 @@ if (cancelTaskBtn) {
 
 
 // ============================================================
-// CLOSE TASK MODAL WHEN CLICKING OUTSIDE
+// CLOSE TASK MODAL OUTSIDE CLICK
 // ============================================================
 
 if (taskModal) {
@@ -186,7 +263,6 @@ if (taskModal) {
         }
 
     });
-
 }
 
 
@@ -205,12 +281,18 @@ function openEditTaskModal(task) {
     // MODAL HEADER
     // --------------------------------------------------------
 
-    taskModalTitle.textContent = "Edit Task";
+    if (taskModalTitle) {
+        taskModalTitle.textContent = "Edit Task";
+    }
 
-    taskModalSubtitle.textContent =
-        "Update the information for this task.";
+    if (taskModalSubtitle) {
+        taskModalSubtitle.textContent =
+            "Update the information for this task.";
+    }
 
-    taskSubmitBtn.textContent = "Update Task";
+    if (taskSubmitBtn) {
+        taskSubmitBtn.textContent = "Update Task";
+    }
 
 
     // --------------------------------------------------------
@@ -307,23 +389,26 @@ function openEditTaskModal(task) {
     // OPEN MODAL
     // --------------------------------------------------------
 
-    taskModal.classList.add("show");
+    if (taskModal) {
+        taskModal.classList.add("show");
+    }
 }
 
 
 // ============================================================
-// REVIEW MODAL
+// REVIEW MODAL ELEMENTS
 // ============================================================
 
 const reviewModal = document.getElementById("reviewModal");
+
 const closeReviewModalBtn =
     document.getElementById("closeReviewModal");
+
 const cancelReviewBtn =
     document.getElementById("cancelReviewBtn");
+
 const reviewForm =
     document.getElementById("reviewForm");
-
-let currentReviewTaskId = null;
 
 
 // ============================================================
@@ -339,6 +424,10 @@ function closeReviewModal() {
     reviewModal.classList.remove("show");
 
     currentReviewTaskId = null;
+
+    if (reviewForm) {
+        reviewForm.reset();
+    }
 }
 
 
@@ -347,6 +436,7 @@ function closeReviewModal() {
 // ============================================================
 
 if (closeReviewModalBtn) {
+
     closeReviewModalBtn.addEventListener(
         "click",
         closeReviewModal
@@ -354,6 +444,7 @@ if (closeReviewModalBtn) {
 }
 
 if (cancelReviewBtn) {
+
     cancelReviewBtn.addEventListener(
         "click",
         closeReviewModal
@@ -374,7 +465,6 @@ if (reviewModal) {
         }
 
     });
-
 }
 
 
@@ -410,26 +500,35 @@ function openReviewModal(task) {
 
 
     if (reviewTaskName) {
+
         reviewTaskName.textContent =
             task.task_activity || "-";
     }
 
+
     if (reviewResponsiblePerson) {
+
         reviewResponsiblePerson.textContent =
             task.responsible_person || "-";
     }
 
+
     if (reviewStatus) {
+
         reviewStatus.textContent =
             task.status || "-";
     }
 
+
     if (reviewPercentComplete) {
+
         reviewPercentComplete.textContent =
             `${task.percent_complete ?? 0}%`;
     }
 
+
     if (reviewExpectedOutput) {
+
         reviewExpectedOutput.textContent =
             task.deliverable_expected_output || "-";
     }
@@ -464,12 +563,14 @@ function openReviewModal(task) {
     // OPEN MODAL
     // --------------------------------------------------------
 
-    reviewModal.classList.add("show");
+    if (reviewModal) {
+        reviewModal.classList.add("show");
+    }
 }
 
 
 // ============================================================
-// TASK HISTORY MODAL
+// HISTORY MODAL ELEMENTS
 // ============================================================
 
 const historyModal =
@@ -496,8 +597,6 @@ const historyCurrentPercent =
 const taskHistoryTable =
     document.getElementById("taskHistoryTable");
 
-let currentHistoryTaskId = null;
-
 
 // ============================================================
 // CLOSE HISTORY MODAL
@@ -522,7 +621,6 @@ function closeHistoryModal() {
                 </td>
             </tr>
         `;
-
     }
 }
 
@@ -537,8 +635,8 @@ if (closeHistoryModalBtn) {
         "click",
         closeHistoryModal
     );
-
 }
+
 
 if (cancelHistoryBtn) {
 
@@ -546,7 +644,6 @@ if (cancelHistoryBtn) {
         "click",
         closeHistoryModal
     );
-
 }
 
 
@@ -563,7 +660,6 @@ if (historyModal) {
         }
 
     });
-
 }
 
 
@@ -574,8 +670,14 @@ if (historyModal) {
 async function loadTaskHistory(task) {
 
     if (!task || !task.task_id) {
+
+        console.error(
+            "Cannot load history. Task ID is missing."
+        );
+
         return;
     }
+
 
     currentHistoryTaskId = task.task_id;
 
@@ -589,7 +691,6 @@ async function loadTaskHistory(task) {
         historyTaskName.textContent =
             task.task_activity ||
             "Activity history and changes";
-
     }
 
 
@@ -597,7 +698,6 @@ async function loadTaskHistory(task) {
 
         historyTaskTitle.textContent =
             task.task_activity || "-";
-
     }
 
 
@@ -605,7 +705,6 @@ async function loadTaskHistory(task) {
 
         historyCurrentStatus.textContent =
             task.status || "-";
-
     }
 
 
@@ -613,7 +712,6 @@ async function loadTaskHistory(task) {
 
         historyCurrentPercent.textContent =
             `${task.percent_complete ?? 0}%`;
-
     }
 
 
@@ -630,11 +728,16 @@ async function loadTaskHistory(task) {
                 </td>
             </tr>
         `;
-
     }
 
 
-    historyModal.classList.add("show");
+    // --------------------------------------------------------
+    // OPEN MODAL
+    // --------------------------------------------------------
+
+    if (historyModal) {
+        historyModal.classList.add("show");
+    }
 
 
     // --------------------------------------------------------
@@ -650,7 +753,6 @@ async function loadTaskHistory(task) {
 
         const result = await response.json();
 
-
         console.log(
             "Task history response:",
             result
@@ -663,12 +765,13 @@ async function loadTaskHistory(task) {
                 result.error ||
                 "Failed to load task history."
             );
-
         }
 
 
         const history =
-            result.history || [];
+            Array.isArray(result.history)
+                ? result.history
+                : [];
 
 
         // ----------------------------------------------------
@@ -687,7 +790,6 @@ async function loadTaskHistory(task) {
                         </td>
                     </tr>
                 `;
-
             }
 
             return;
@@ -716,23 +818,19 @@ async function loadTaskHistory(task) {
 
 
                     const oldStatus =
-                        item.old_status ??
-                        "-";
+                        item.old_status ?? "-";
 
 
                     const newStatus =
-                        item.new_status ??
-                        "-";
+                        item.new_status ?? "-";
 
 
                     const oldPercent =
-                        item.old_percent_complete ??
-                        0;
+                        item.old_percent_complete ?? 0;
 
 
                     const newPercent =
-                        item.new_percent_complete ??
-                        0;
+                        item.new_percent_complete ?? 0;
 
 
                     const responsiblePerson =
@@ -772,9 +870,9 @@ async function loadTaskHistory(task) {
                             </td>
 
                             <td>
-                                ${oldPercent}%
+                                ${escapeHtml(oldPercent)}%
                                 →
-                                ${newPercent}%
+                                ${escapeHtml(newPercent)}%
                             </td>
 
                             <td>
@@ -793,12 +891,9 @@ async function loadTaskHistory(task) {
 
                         </tr>
                     `;
-
                 })
                 .join("");
-
         }
-
 
     } catch (error) {
 
@@ -818,62 +913,8 @@ async function loadTaskHistory(task) {
                     </td>
                 </tr>
             `;
-
         }
-
     }
-
-}
-
-
-// ============================================================
-// FORMAT HISTORY DATE
-// ============================================================
-
-function formatHistoryDate(dateValue) {
-
-    if (!dateValue) {
-        return "-";
-    }
-
-
-    const date =
-        new Date(dateValue);
-
-
-    if (Number.isNaN(date.getTime())) {
-        return String(dateValue);
-    }
-
-
-    return date.toLocaleString();
-}
-
-
-// ============================================================
-// GET STATUS CSS CLASS
-// ============================================================
-
-function getStatusClass(status) {
-
-    switch (status) {
-
-        case "In Progress":
-            return "status-active";
-
-        case "Completed":
-            return "status-completed";
-
-        case "Not Started":
-            return "status-pending";
-
-        case "On Hold":
-            return "status-pending";
-
-        default:
-            return "status-pending";
-    }
-
 }
 
 
@@ -911,7 +952,6 @@ async function loadTasks() {
                 data.error ||
                 "Failed to load tasks."
             );
-
         }
 
 
@@ -942,7 +982,6 @@ async function loadTasks() {
 
             taskTotal.textContent =
                 tasks.length;
-
         }
 
 
@@ -953,7 +992,6 @@ async function loadTasks() {
                     task =>
                         task.status === "Not Started"
                 ).length;
-
         }
 
 
@@ -964,7 +1002,6 @@ async function loadTasks() {
                     task =>
                         task.status === "In Progress"
                 ).length;
-
         }
 
 
@@ -975,7 +1012,6 @@ async function loadTasks() {
                     task =>
                         task.status === "Completed"
                 ).length;
-
         }
 
 
@@ -994,7 +1030,6 @@ async function loadTasks() {
             );
 
             return;
-
         }
 
 
@@ -1036,7 +1071,6 @@ async function loadTasks() {
             row.innerHTML = `
 
                 <!-- TASK -->
-
                 <td>
                     ${escapeHtml(
                         task.task_activity || "-"
@@ -1045,7 +1079,6 @@ async function loadTasks() {
 
 
                 <!-- PROCEDURE STAGE -->
-
                 <td>
                     ${escapeHtml(
                         task.procedure_stage || "-"
@@ -1054,7 +1087,6 @@ async function loadTasks() {
 
 
                 <!-- STATUS -->
-
                 <td>
 
                     <span
@@ -1070,7 +1102,6 @@ async function loadTasks() {
 
 
                 <!-- PRIORITY -->
-
                 <td>
                     ${escapeHtml(
                         task.priority || "-"
@@ -1079,7 +1110,6 @@ async function loadTasks() {
 
 
                 <!-- RESPONSIBLE PERSON -->
-
                 <td>
                     ${escapeHtml(
                         task.responsible_person || "-"
@@ -1088,7 +1118,6 @@ async function loadTasks() {
 
 
                 <!-- DUE DATE -->
-
                 <td>
                     ${escapeHtml(
                         formatDate(task.due_date)
@@ -1097,45 +1126,52 @@ async function loadTasks() {
 
 
                 <!-- PERCENT COMPLETE -->
-
                 <td>
-                    ${task.percent_complete ?? 0}%
+                    ${escapeHtml(
+                        task.percent_complete ?? 0
+                    )}%
                 </td>
 
 
                 <!-- ACTIONS -->
-
                 <td class="task-actions">
 
                     <button
                         type="button"
                         class="btn btn-primary review-task-btn">
+
                         Review
+
                     </button>
 
 
                     <button
                         type="button"
                         class="btn btn-secondary edit-task-btn">
+
                         Edit
+
                     </button>
 
 
                     <button
                         type="button"
                         class="btn btn-secondary history-task-btn">
+
                         History
+
                     </button>
 
 
                     <button
                         type="button"
                         class="btn btn-danger delete-task-btn">
+
                         Delete
+
                     </button>
 
                 </td>
-
             `;
 
 
@@ -1157,10 +1193,11 @@ async function loadTasks() {
                 reviewBtn.addEventListener(
                     "click",
                     () => {
+
                         openReviewModal(task);
+
                     }
                 );
-
             }
 
 
@@ -1179,10 +1216,11 @@ async function loadTasks() {
                 editBtn.addEventListener(
                     "click",
                     () => {
+
                         openEditTaskModal(task);
+
                     }
                 );
-
             }
 
 
@@ -1201,10 +1239,11 @@ async function loadTasks() {
                 historyBtn.addEventListener(
                     "click",
                     () => {
+
                         loadTaskHistory(task);
+
                     }
                 );
-
             }
 
 
@@ -1256,7 +1295,6 @@ async function loadTasks() {
                                     result.error ||
                                     "Failed to delete task."
                                 );
-
                             }
 
 
@@ -1266,7 +1304,6 @@ async function loadTasks() {
 
 
                             await loadTasks();
-
 
                         } catch (error) {
 
@@ -1280,16 +1317,12 @@ async function loadTasks() {
                                 "Error: " +
                                 error.message
                             );
-
                         }
-
                     }
                 );
-
             }
 
         });
-
 
     } catch (error) {
 
@@ -1303,9 +1336,7 @@ async function loadTasks() {
             "Error loading tasks: " +
             error.message
         );
-
     }
-
 }
 
 
@@ -1372,7 +1403,6 @@ if (taskForm) {
                     Number(
                         getValue("percentComplete") || 0
                     )
-
             };
 
 
@@ -1409,7 +1439,6 @@ if (taskForm) {
 
                 method =
                     "POST";
-
             }
 
 
@@ -1463,7 +1492,6 @@ if (taskForm) {
                                 : "Failed to create task."
                         )
                     );
-
                 }
 
 
@@ -1505,12 +1533,9 @@ if (taskForm) {
                     "Error: " +
                     error.message
                 );
-
             }
-
         }
     );
-
 }
 
 
@@ -1566,7 +1591,6 @@ if (reviewForm) {
                     getValue(
                         "reviewRemarks"
                     ).trim()
-
             };
 
 
@@ -1651,7 +1675,6 @@ if (reviewForm) {
                         result.error ||
                         "Failed to submit review."
                     );
-
                 }
 
 
@@ -1664,14 +1687,15 @@ if (reviewForm) {
                 );
 
 
-                reviewForm.reset();
+                if (reviewForm) {
+                    reviewForm.reset();
+                }
 
 
                 closeReviewModal();
 
 
                 await loadTasks();
-
 
             } catch (error) {
 
@@ -1685,12 +1709,9 @@ if (reviewForm) {
                     "Error: " +
                     error.message
                 );
-
             }
-
         }
     );
-
 }
 
 
@@ -1698,4 +1719,11 @@ if (reviewForm) {
 // INITIAL LOAD
 // ============================================================
 
-loadTasks();
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        loadTasks();
+
+    }
+);
