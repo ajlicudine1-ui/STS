@@ -144,9 +144,7 @@ function formatHistoryDate(dateValue) {
 // ============================================================
 
 function getStatusClass(status) {
-
     switch (status) {
-
         case "In Progress":
             return "status-active";
 
@@ -170,15 +168,22 @@ function getStatusClass(status) {
 // ============================================================
 
 function closeAllActionMenus() {
-
     document
         .querySelectorAll(".task-action-menu.show")
         .forEach(menu => {
-
             menu.classList.remove("show");
 
-        });
+            const trigger = menu
+                .parentElement
+                ?.querySelector(".task-action-trigger");
 
+            if (trigger) {
+                trigger.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+            }
+        });
 }
 
 
@@ -187,7 +192,6 @@ function closeAllActionMenus() {
 // ============================================================
 
 if (newTaskBtn) {
-
     newTaskBtn.addEventListener("click", () => {
 
         editingTaskId = null;
@@ -214,9 +218,7 @@ if (newTaskBtn) {
         if (taskModal) {
             taskModal.classList.add("show");
         }
-
     });
-
 }
 
 
@@ -260,21 +262,17 @@ function closeModal() {
 // ============================================================
 
 if (closeTaskModal) {
-
     closeTaskModal.addEventListener(
         "click",
         closeModal
     );
-
 }
 
 if (cancelTaskBtn) {
-
     cancelTaskBtn.addEventListener(
         "click",
         closeModal
     );
-
 }
 
 
@@ -291,7 +289,6 @@ if (taskModal) {
         }
 
     });
-
 }
 
 
@@ -301,9 +298,17 @@ if (taskModal) {
 
 function openEditTaskModal(task) {
 
-    console.log("Opening task for edit:", task);
+    console.log(
+        "Opening task for edit:",
+        task
+    );
 
     editingTaskId = task.task_id;
+
+
+    // --------------------------------------------------------
+    // MODAL HEADER
+    // --------------------------------------------------------
 
     if (taskModalTitle) {
         taskModalTitle.textContent = "Edit Task";
@@ -319,7 +324,9 @@ function openEditTaskModal(task) {
     }
 
 
+    // --------------------------------------------------------
     // BASIC INFORMATION
+    // --------------------------------------------------------
 
     setValue(
         "taskActivity",
@@ -337,7 +344,9 @@ function openEditTaskModal(task) {
     );
 
 
+    // --------------------------------------------------------
     // ASSIGNMENT & SCHEDULE
+    // --------------------------------------------------------
 
     setValue(
         "taskPriority",
@@ -365,7 +374,9 @@ function openEditTaskModal(task) {
     );
 
 
+    // --------------------------------------------------------
     // DATES
+    // --------------------------------------------------------
 
     setValue(
         "startDate",
@@ -378,7 +389,9 @@ function openEditTaskModal(task) {
     );
 
 
+    // --------------------------------------------------------
     // PROGRESS
+    // --------------------------------------------------------
 
     setValue(
         "percentComplete",
@@ -386,7 +399,9 @@ function openEditTaskModal(task) {
     );
 
 
+    // --------------------------------------------------------
     // ADDITIONAL DETAILS
+    // --------------------------------------------------------
 
     setValue(
         "deliverableExpectedOutput",
@@ -399,7 +414,9 @@ function openEditTaskModal(task) {
     );
 
 
+    // --------------------------------------------------------
     // OPEN MODAL
+    // --------------------------------------------------------
 
     if (taskModal) {
         taskModal.classList.add("show");
@@ -449,21 +466,17 @@ function closeReviewModal() {
 // ============================================================
 
 if (closeReviewModalBtn) {
-
     closeReviewModalBtn.addEventListener(
         "click",
         closeReviewModal
     );
-
 }
 
 if (cancelReviewBtn) {
-
     cancelReviewBtn.addEventListener(
         "click",
         closeReviewModal
     );
-
 }
 
 
@@ -480,7 +493,6 @@ if (reviewModal) {
         }
 
     });
-
 }
 
 
@@ -490,68 +502,69 @@ if (reviewModal) {
 
 function openReviewModal(task) {
 
-    console.log("Opening review:", task);
+    console.log(
+        "Opening review:",
+        task
+    );
 
     currentReviewTaskId = task.task_id;
 
+
+    // --------------------------------------------------------
+    // REVIEW INFORMATION
+    // --------------------------------------------------------
 
     const reviewTaskName =
         document.getElementById("reviewTaskName");
 
     const reviewResponsiblePerson =
-        document.getElementById("reviewResponsiblePerson");
+        document.getElementById(
+            "reviewResponsiblePerson"
+        );
 
     const reviewStatus =
         document.getElementById("reviewStatus");
 
     const reviewPercentComplete =
-        document.getElementById("reviewPercentComplete");
+        document.getElementById(
+            "reviewPercentComplete"
+        );
 
     const reviewExpectedOutput =
-        document.getElementById("reviewExpectedOutput");
+        document.getElementById(
+            "reviewExpectedOutput"
+        );
 
 
     if (reviewTaskName) {
-
         reviewTaskName.textContent =
             task.task_activity || "-";
-
     }
-
 
     if (reviewResponsiblePerson) {
-
         reviewResponsiblePerson.textContent =
             task.responsible_person || "-";
-
     }
-
 
     if (reviewStatus) {
-
         reviewStatus.textContent =
             task.status || "-";
-
     }
-
 
     if (reviewPercentComplete) {
-
         reviewPercentComplete.textContent =
             `${task.percent_complete ?? 0}%`;
-
     }
-
 
     if (reviewExpectedOutput) {
-
         reviewExpectedOutput.textContent =
             task.deliverable_expected_output || "-";
-
     }
 
 
+    // --------------------------------------------------------
     // EXISTING REVIEW DATA
+    // --------------------------------------------------------
 
     setValue(
         "reviewedVerifiedBy",
@@ -574,7 +587,9 @@ function openReviewModal(task) {
     );
 
 
+    // --------------------------------------------------------
     // OPEN MODAL
+    // --------------------------------------------------------
 
     if (reviewModal) {
         reviewModal.classList.add("show");
@@ -611,10 +626,14 @@ const historyProgressBar =
     document.getElementById("historyProgressBar");
 
 const historyTransactionCount =
-    document.getElementById("historyTransactionCount");
+    document.getElementById(
+        "historyTransactionCount"
+    );
 
 const taskHistoryTable =
-    document.getElementById("taskHistoryTable");
+    document.getElementById(
+        "taskHistoryTable"
+    );
 
 
 // ============================================================
@@ -640,7 +659,6 @@ function closeHistoryModal() {
                 </td>
             </tr>
         `;
-
     }
 
     if (historyTransactionCount) {
@@ -654,21 +672,17 @@ function closeHistoryModal() {
 // ============================================================
 
 if (closeHistoryModalBtn) {
-
     closeHistoryModalBtn.addEventListener(
         "click",
         closeHistoryModal
     );
-
 }
 
 if (cancelHistoryBtn) {
-
     cancelHistoryBtn.addEventListener(
         "click",
         closeHistoryModal
     );
-
 }
 
 
@@ -678,14 +692,16 @@ if (cancelHistoryBtn) {
 
 if (historyModal) {
 
-    historyModal.addEventListener("click", event => {
+    historyModal.addEventListener(
+        "click",
+        event => {
 
-        if (event.target === historyModal) {
-            closeHistoryModal();
+            if (event.target === historyModal) {
+                closeHistoryModal();
+            }
+
         }
-
-    });
-
+    );
 }
 
 
@@ -707,12 +723,14 @@ async function loadTaskHistory(task) {
     currentHistoryTaskId = task.task_id;
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // CURRENT TASK INFORMATION
-    // ========================================================
+    // --------------------------------------------------------
 
     const currentPercent =
-        Number(task.percent_complete ?? 0);
+        Number(
+            task.percent_complete ?? 0
+        );
 
 
     if (historyTaskName) {
@@ -720,7 +738,6 @@ async function loadTaskHistory(task) {
         historyTaskName.textContent =
             task.task_activity ||
             "Activity history and changes";
-
     }
 
 
@@ -728,7 +745,6 @@ async function loadTaskHistory(task) {
 
         historyTaskTitle.textContent =
             task.task_activity || "-";
-
     }
 
 
@@ -746,7 +762,6 @@ async function loadTaskHistory(task) {
         historyCurrentStatus.classList.add(
             getStatusClass(task.status)
         );
-
     }
 
 
@@ -754,7 +769,6 @@ async function loadTaskHistory(task) {
 
         historyCurrentPercent.textContent =
             `${currentPercent}%`;
-
     }
 
 
@@ -765,7 +779,6 @@ async function loadTaskHistory(task) {
                 Math.max(currentPercent, 0),
                 100
             )}%`;
-
     }
 
 
@@ -774,16 +787,15 @@ async function loadTaskHistory(task) {
     }
 
 
-    // ========================================================
-    // LOADING
-    // ========================================================
+    // --------------------------------------------------------
+    // LOADING STATE
+    // --------------------------------------------------------
 
     if (taskHistoryTable) {
 
         taskHistoryTable.innerHTML = `
             <tr>
                 <td colspan="7">
-
                     <div class="history-empty">
 
                         <div class="history-empty-icon">
@@ -799,26 +811,24 @@ async function loadTaskHistory(task) {
                         </span>
 
                     </div>
-
                 </td>
             </tr>
         `;
-
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // OPEN MODAL
-    // ========================================================
+    // --------------------------------------------------------
 
     if (historyModal) {
         historyModal.classList.add("show");
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // FETCH HISTORY
-    // ========================================================
+    // --------------------------------------------------------
 
     try {
 
@@ -829,7 +839,8 @@ async function loadTaskHistory(task) {
         );
 
 
-        const result = await response.json();
+        const result =
+            await response.json();
 
 
         console.log(
@@ -844,7 +855,6 @@ async function loadTaskHistory(task) {
                 result.error ||
                 "Failed to load task history."
             );
-
         }
 
 
@@ -854,21 +864,20 @@ async function loadTaskHistory(task) {
                 : [];
 
 
-        // ====================================================
+        // ----------------------------------------------------
         // TRANSACTION COUNT
-        // ====================================================
+        // ----------------------------------------------------
 
         if (historyTransactionCount) {
 
             historyTransactionCount.textContent =
                 history.length;
-
         }
 
 
-        // ====================================================
+        // ----------------------------------------------------
         // NO HISTORY
-        // ====================================================
+        // ----------------------------------------------------
 
         if (history.length === 0) {
 
@@ -897,23 +906,24 @@ async function loadTaskHistory(task) {
                         </td>
                     </tr>
                 `;
-
             }
 
             return;
         }
 
 
-        // ====================================================
+        // ----------------------------------------------------
         // DISPLAY HISTORY
-        // ====================================================
+        // ----------------------------------------------------
 
         if (taskHistoryTable) {
 
             taskHistoryTable.innerHTML = history
                 .map(item => {
 
+                    // ----------------------------------------
                     // DATE
+                    // ----------------------------------------
 
                     const changedAt =
                         item.changed_at ||
@@ -961,20 +971,22 @@ async function loadTaskHistory(task) {
 
                             dateMain =
                                 String(changedAt);
-
                         }
-
                     }
 
 
+                    // ----------------------------------------
                     // ACTION
+                    // ----------------------------------------
 
                     const rawAction =
                         item.action ||
                         "Task Updated";
 
                     const actionLower =
-                        String(rawAction).toLowerCase();
+                        String(
+                            rawAction
+                        ).toLowerCase();
 
                     let actionClass =
                         "updated";
@@ -984,24 +996,28 @@ async function loadTaskHistory(task) {
                         actionLower.includes("creat")
                     ) {
 
-                        actionClass = "created";
+                        actionClass =
+                            "created";
 
                     } else if (
                         actionLower.includes("review")
                     ) {
 
-                        actionClass = "reviewed";
+                        actionClass =
+                            "reviewed";
 
                     } else if (
                         actionLower.includes("update")
                     ) {
 
-                        actionClass = "updated";
-
+                        actionClass =
+                            "updated";
                     }
 
 
+                    // ----------------------------------------
                     // STATUS
+                    // ----------------------------------------
 
                     const oldStatus =
                         item.old_status ?? "-";
@@ -1012,11 +1028,14 @@ async function loadTaskHistory(task) {
                         "-";
 
 
+                    // ----------------------------------------
                     // PROGRESS
+                    // ----------------------------------------
 
                     const oldPercent =
                         Number(
-                            item.old_percent_complete ?? 0
+                            item.old_percent_complete ??
+                            0
                         );
 
                     const newPercent =
@@ -1026,14 +1045,20 @@ async function loadTaskHistory(task) {
                             0
                         );
 
+
                     const safeNewPercent =
                         Math.min(
-                            Math.max(newPercent, 0),
+                            Math.max(
+                                newPercent,
+                                0
+                            ),
                             100
                         );
 
 
+                    // ----------------------------------------
                     // RESPONSIBLE PERSON
+                    // ----------------------------------------
 
                     const responsiblePerson =
                         item.responsible_person ||
@@ -1041,13 +1066,17 @@ async function loadTaskHistory(task) {
                         "-";
 
 
+                    // ----------------------------------------
                     // REMARKS
+                    // ----------------------------------------
 
                     const remarks =
                         item.remarks || "-";
 
 
+                    // ----------------------------------------
                     // CHANGED BY
+                    // ----------------------------------------
 
                     const changedBy =
                         item.changed_by ||
@@ -1055,13 +1084,14 @@ async function loadTaskHistory(task) {
                         "-";
 
 
-                    // RETURN ROW
+                    // ----------------------------------------
+                    // RETURN HISTORY ROW
+                    // ----------------------------------------
 
                     return `
                         <tr>
 
                             <td>
-
                                 <div class="history-date">
 
                                     <span class="history-date-main">
@@ -1079,17 +1109,15 @@ async function loadTaskHistory(task) {
                                     }
 
                                 </div>
-
                             </td>
 
 
                             <td>
 
                                 <span
-                                    class="history-action ${actionClass}">
-
+                                    class="history-action ${actionClass}"
+                                >
                                     ${escapeHtml(rawAction)}
-
                                 </span>
 
                             </td>
@@ -1100,10 +1128,9 @@ async function loadTaskHistory(task) {
                                 <div class="history-status-change">
 
                                     <span
-                                        class="status ${getStatusClass(oldStatus)}">
-
+                                        class="status ${getStatusClass(oldStatus)}"
+                                    >
                                         ${escapeHtml(oldStatus)}
-
                                     </span>
 
                                     <span class="history-arrow">
@@ -1111,10 +1138,9 @@ async function loadTaskHistory(task) {
                                     </span>
 
                                     <span
-                                        class="status ${getStatusClass(newStatus)}">
-
+                                        class="status ${getStatusClass(newStatus)}"
+                                    >
                                         ${escapeHtml(newStatus)}
-
                                     </span>
 
                                 </div>
@@ -1127,22 +1153,21 @@ async function loadTaskHistory(task) {
                                 <div class="history-row-progress">
 
                                     <span
-                                        class="history-row-progress-value">
-
+                                        class="history-row-progress-value"
+                                    >
                                         ${escapeHtml(oldPercent)}%
                                         →
                                         ${escapeHtml(newPercent)}%
-
                                     </span>
 
                                     <div
-                                        class="history-row-progress-track">
+                                        class="history-row-progress-track"
+                                    >
 
                                         <div
                                             class="history-row-progress-fill"
-                                            style="width: ${safeNewPercent}%">
-
-                                        </div>
+                                            style="width: ${safeNewPercent}%"
+                                        ></div>
 
                                     </div>
 
@@ -1179,10 +1204,8 @@ async function loadTaskHistory(task) {
 
                         </tr>
                     `;
-
                 })
                 .join("");
-
         }
 
     } catch (error) {
@@ -1210,7 +1233,9 @@ async function loadTaskHistory(task) {
                             </strong>
 
                             <span>
-                                ${escapeHtml(error.message)}
+                                ${escapeHtml(
+                                    error.message
+                                )}
                             </span>
 
                         </div>
@@ -1218,9 +1243,7 @@ async function loadTaskHistory(task) {
                     </td>
                 </tr>
             `;
-
         }
-
     }
 }
 
@@ -1241,9 +1264,10 @@ async function deleteTask(task) {
     }
 
 
-    const confirmed = confirm(
-        `Are you sure you want to delete "${task.task_activity || "this task"}"?`
-    );
+    const confirmed =
+        confirm(
+            `Are you sure you want to delete "${task.task_activity || "this task"}"?`
+        );
 
 
     if (!confirmed) {
@@ -1253,14 +1277,15 @@ async function deleteTask(task) {
 
     try {
 
-        const response = await fetch(
-            `/api/tasks/${encodeURIComponent(
-                task.task_id
-            )}`,
-            {
-                method: "DELETE"
-            }
-        );
+        const response =
+            await fetch(
+                `/api/tasks/${encodeURIComponent(
+                    task.task_id
+                )}`,
+                {
+                    method: "DELETE"
+                }
+            );
 
 
         const result =
@@ -1273,7 +1298,6 @@ async function deleteTask(task) {
                 result.error ||
                 "Failed to delete task."
             );
-
         }
 
 
@@ -1296,7 +1320,6 @@ async function deleteTask(task) {
             "Error: " +
             error.message
         );
-
     }
 }
 
@@ -1315,7 +1338,6 @@ function createActionMenu(task) {
 
 
     wrapper.innerHTML = `
-
         <button
             type="button"
             class="task-action-trigger"
@@ -1393,7 +1415,6 @@ function createActionMenu(task) {
             </button>
 
         </div>
-
     `;
 
 
@@ -1412,33 +1433,38 @@ function createActionMenu(task) {
     // THREE DOT BUTTON
     // ========================================================
 
-    trigger.addEventListener(
-        "click",
-        event => {
+    if (trigger && menu) {
 
-            event.stopPropagation();
+        trigger.addEventListener(
+            "click",
+            event => {
 
-
-            const wasOpen =
-                menu.classList.contains("show");
+                event.stopPropagation();
 
 
-            closeAllActionMenus();
+                const wasOpen =
+                    menu.classList.contains(
+                        "show"
+                    );
 
 
-            if (!wasOpen) {
+                closeAllActionMenus();
 
-                menu.classList.add("show");
 
-                trigger.setAttribute(
-                    "aria-expanded",
-                    "true"
-                );
+                if (!wasOpen) {
 
+                    menu.classList.add(
+                        "show"
+                    );
+
+                    trigger.setAttribute(
+                        "aria-expanded",
+                        "true"
+                    );
+                }
             }
-
-        }
-    );
+        );
+    }
 
 
     // ========================================================
@@ -1451,18 +1477,20 @@ function createActionMenu(task) {
         );
 
 
-    reviewAction.addEventListener(
-        "click",
-        event => {
+    if (reviewAction) {
 
-            event.stopPropagation();
+        reviewAction.addEventListener(
+            "click",
+            event => {
 
-            closeAllActionMenus();
+                event.stopPropagation();
 
-            openReviewModal(task);
+                closeAllActionMenus();
 
-        }
-    );
+                openReviewModal(task);
+            }
+        );
+    }
 
 
     // ========================================================
@@ -1475,18 +1503,20 @@ function createActionMenu(task) {
         );
 
 
-    editAction.addEventListener(
-        "click",
-        event => {
+    if (editAction) {
 
-            event.stopPropagation();
+        editAction.addEventListener(
+            "click",
+            event => {
 
-            closeAllActionMenus();
+                event.stopPropagation();
 
-            openEditTaskModal(task);
+                closeAllActionMenus();
 
-        }
-    );
+                openEditTaskModal(task);
+            }
+        );
+    }
 
 
     // ========================================================
@@ -1499,18 +1529,20 @@ function createActionMenu(task) {
         );
 
 
-    historyAction.addEventListener(
-        "click",
-        event => {
+    if (historyAction) {
 
-            event.stopPropagation();
+        historyAction.addEventListener(
+            "click",
+            event => {
 
-            closeAllActionMenus();
+                event.stopPropagation();
 
-            loadTaskHistory(task);
+                closeAllActionMenus();
 
-        }
-    );
+                loadTaskHistory(task);
+            }
+        );
+    }
 
 
     // ========================================================
@@ -1523,18 +1555,20 @@ function createActionMenu(task) {
         );
 
 
-    deleteAction.addEventListener(
-        "click",
-        event => {
+    if (deleteAction) {
 
-            event.stopPropagation();
+        deleteAction.addEventListener(
+            "click",
+            event => {
 
-            closeAllActionMenus();
+                event.stopPropagation();
 
-            deleteTask(task);
+                closeAllActionMenus();
 
-        }
-    );
+                deleteTask(task);
+            }
+        );
+    }
 
 
     return wrapper;
@@ -1548,9 +1582,7 @@ function createActionMenu(task) {
 document.addEventListener(
     "click",
     () => {
-
         closeAllActionMenus();
-
     }
 );
 
@@ -1563,15 +1595,27 @@ async function loadTasks() {
 
     try {
 
-        console.log("========================================");
-        console.log("LOADING TASKS");
-        console.log("Project ID:", projectId);
-        console.log("========================================");
+        console.log(
+            "========================================"
+        );
+
+        console.log(
+            "LOADING TASKS"
+        );
+
+        console.log(
+            "Project ID:",
+            projectId
+        );
+
+        console.log(
+            "========================================"
+        );
 
 
-        // ====================================================
+        // ----------------------------------------------------
         // CHECK PROJECT ID
-        // ====================================================
+        // ----------------------------------------------------
 
         if (!projectId) {
 
@@ -1589,15 +1633,16 @@ async function loadTasks() {
         }
 
 
-        // ====================================================
+        // ----------------------------------------------------
         // FETCH TASKS
-        // ====================================================
+        // ----------------------------------------------------
 
-        const response = await fetch(
-            `/api/projects/${encodeURIComponent(
-                projectId
-            )}/tasks`
-        );
+        const response =
+            await fetch(
+                `/api/projects/${encodeURIComponent(
+                    projectId
+                )}/tasks`
+            );
 
 
         console.log(
@@ -1616,9 +1661,9 @@ async function loadTasks() {
         );
 
 
-        // ====================================================
+        // ----------------------------------------------------
         // CHECK SERVER RESPONSE
-        // ====================================================
+        // ----------------------------------------------------
 
         if (!response.ok) {
 
@@ -1627,13 +1672,12 @@ async function loadTasks() {
                 data.message ||
                 "Failed to load tasks."
             );
-
         }
 
 
-        // ====================================================
+        // ----------------------------------------------------
         // SUPPORT MULTIPLE RESPONSE FORMATS
-        // ====================================================
+        // ----------------------------------------------------
 
         let tasks = [];
 
@@ -1653,7 +1697,6 @@ async function loadTasks() {
         ) {
 
             tasks = data.data;
-
         }
 
 
@@ -1673,9 +1716,9 @@ async function loadTasks() {
         );
 
 
-        // ====================================================
+        // ----------------------------------------------------
         // UPDATE STATISTICS
-        // ====================================================
+        // ----------------------------------------------------
 
         const taskTotal =
             document.getElementById(
@@ -1702,7 +1745,6 @@ async function loadTasks() {
 
             taskTotal.textContent =
                 tasks.length;
-
         }
 
 
@@ -1711,9 +1753,9 @@ async function loadTasks() {
             taskNotStarted.textContent =
                 tasks.filter(
                     task =>
-                        task.status === "Not Started"
+                        task.status ===
+                        "Not Started"
                 ).length;
-
         }
 
 
@@ -1722,9 +1764,9 @@ async function loadTasks() {
             taskInProgress.textContent =
                 tasks.filter(
                     task =>
-                        task.status === "In Progress"
+                        task.status ===
+                        "In Progress"
                 ).length;
-
         }
 
 
@@ -1733,15 +1775,15 @@ async function loadTasks() {
             taskCompleted.textContent =
                 tasks.filter(
                     task =>
-                        task.status === "Completed"
+                        task.status ===
+                        "Completed"
                 ).length;
-
         }
 
 
-        // ====================================================
+        // ----------------------------------------------------
         // TASK TABLE
-        // ====================================================
+        // ----------------------------------------------------
 
         const table =
             document.getElementById(
@@ -1762,19 +1804,17 @@ async function loadTasks() {
         table.innerHTML = "";
 
 
-        // ====================================================
+        // ----------------------------------------------------
         // NO TASKS
-        // ====================================================
+        // ----------------------------------------------------
 
         if (tasks.length === 0) {
 
             table.innerHTML = `
                 <tr>
-
                     <td colspan="8">
                         No tasks found for this project.
                     </td>
-
                 </tr>
             `;
 
@@ -1782,9 +1822,9 @@ async function loadTasks() {
         }
 
 
-        // ====================================================
+        // ----------------------------------------------------
         // DISPLAY TASKS
-        // ====================================================
+        // ----------------------------------------------------
 
         tasks.forEach(task => {
 
@@ -1801,100 +1841,74 @@ async function loadTasks() {
             row.innerHTML = `
 
                 <!-- TASK -->
-
                 <td>
-
                     ${escapeHtml(
                         task.task_activity || "-"
                     )}
-
                 </td>
 
 
                 <!-- PROCEDURE STAGE -->
-
                 <td>
-
                     ${escapeHtml(
                         task.procedure_stage || "-"
                     )}
-
                 </td>
 
 
                 <!-- STATUS -->
-
                 <td>
-
                     <span class="status ${statusClass}">
-
                         ${escapeHtml(
                             task.status || "-"
                         )}
-
                     </span>
-
                 </td>
 
 
                 <!-- PRIORITY -->
-
                 <td>
-
                     ${escapeHtml(
                         task.priority || "-"
                     )}
-
                 </td>
 
 
                 <!-- RESPONSIBLE PERSON -->
-
                 <td>
-
                     ${escapeHtml(
                         task.responsible_person || "-"
                     )}
-
                 </td>
 
 
                 <!-- DUE DATE -->
-
                 <td>
-
                     ${escapeHtml(
                         formatDate(
                             task.due_date
                         )
                     )}
-
                 </td>
 
 
                 <!-- PERCENT COMPLETE -->
-
                 <td>
-
                     ${escapeHtml(
                         task.percent_complete ?? 0
                     )}%
-
                 </td>
 
 
                 <!-- ACTIONS -->
-
-                <td class="task-actions">
-
-                </td>
+                <td class="task-actions"></td>
 
             `;
 
 
-            // =================================================
+            // ------------------------------------------------
             // ADD ACTION MENU
-            // =================================================
+            // ------------------------------------------------
 
             const actionsCell =
                 row.querySelector(
@@ -1907,10 +1921,10 @@ async function loadTasks() {
                 const actionMenu =
                     createActionMenu(task);
 
+
                 actionsCell.appendChild(
                     actionMenu
                 );
-
             }
 
 
@@ -1943,7 +1957,6 @@ async function loadTasks() {
             "Error loading tasks: " +
             error.message
         );
-
     }
 }
 
@@ -1961,9 +1974,9 @@ if (taskForm) {
             event.preventDefault();
 
 
-            // ==================================================
+            // ------------------------------------------------
             // COLLECT FORM DATA
-            // ==================================================
+            // ------------------------------------------------
 
             const taskData = {
 
@@ -2033,7 +2046,6 @@ if (taskForm) {
                             "percentComplete"
                         ) || 0
                     )
-
             };
 
 
@@ -2043,9 +2055,9 @@ if (taskForm) {
             );
 
 
-            // ==================================================
+            // ------------------------------------------------
             // DETERMINE CREATE OR UPDATE
-            // ==================================================
+            // ------------------------------------------------
 
             const isEditing =
                 editingTaskId !== null;
@@ -2074,7 +2086,6 @@ if (taskForm) {
 
                 method =
                     "POST";
-
             }
 
 
@@ -2085,9 +2096,9 @@ if (taskForm) {
             );
 
 
-            // ==================================================
+            // ------------------------------------------------
             // SEND REQUEST
-            // ==================================================
+            // ------------------------------------------------
 
             try {
 
@@ -2130,13 +2141,12 @@ if (taskForm) {
                                 : "Failed to create task."
                         )
                     );
-
                 }
 
 
-                // =================================================
+                // ------------------------------------------------
                 // SUCCESS
-                // =================================================
+                // ------------------------------------------------
 
                 alert(
                     isEditing
@@ -2145,16 +2155,16 @@ if (taskForm) {
                 );
 
 
-                // =================================================
+                // ------------------------------------------------
                 // CLOSE MODAL
-                // =================================================
+                // ------------------------------------------------
 
                 closeModal();
 
 
-                // =================================================
+                // ------------------------------------------------
                 // REFRESH TASKS
-                // =================================================
+                // ------------------------------------------------
 
                 await loadTasks();
 
@@ -2172,12 +2182,9 @@ if (taskForm) {
                     "Error: " +
                     error.message
                 );
-
             }
-
         }
     );
-
 }
 
 
@@ -2194,9 +2201,9 @@ if (reviewForm) {
             event.preventDefault();
 
 
-            // ==================================================
+            // ------------------------------------------------
             // CHECK TASK
-            // ==================================================
+            // ------------------------------------------------
 
             if (!currentReviewTaskId) {
 
@@ -2208,9 +2215,9 @@ if (reviewForm) {
             }
 
 
-            // ==================================================
+            // ------------------------------------------------
             // COLLECT REVIEW DATA
-            // ==================================================
+            // ------------------------------------------------
 
             const reviewData = {
 
@@ -2233,13 +2240,12 @@ if (reviewForm) {
                     getValue(
                         "reviewRemarks"
                     ).trim()
-
             };
 
 
-            // ==================================================
+            // ------------------------------------------------
             // VALIDATION
-            // ==================================================
+            // ------------------------------------------------
 
             if (
                 !reviewData.reviewed_verified_by
@@ -2277,9 +2283,9 @@ if (reviewForm) {
             }
 
 
-            // ==================================================
+            // ------------------------------------------------
             // SEND REVIEW
-            // ==================================================
+            // ------------------------------------------------
 
             try {
 
@@ -2320,13 +2326,12 @@ if (reviewForm) {
                         result.error ||
                         "Failed to submit review."
                     );
-
                 }
 
 
-                // =================================================
+                // ------------------------------------------------
                 // SUCCESS
-                // =================================================
+                // ------------------------------------------------
 
                 alert(
                     "Task review submitted successfully!"
@@ -2350,12 +2355,9 @@ if (reviewForm) {
                     "Error: " +
                     error.message
                 );
-
             }
-
         }
     );
-
 }
 
 
@@ -2366,8 +2368,6 @@ if (reviewForm) {
 document.addEventListener(
     "DOMContentLoaded",
     () => {
-
         loadTasks();
-
     }
 );
