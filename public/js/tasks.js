@@ -71,6 +71,7 @@ function getElement(id) {
 // ============================================================
 
 function setValue(id, value) {
+
     const element = getElement(id);
 
     if (element) {
@@ -84,6 +85,7 @@ function setValue(id, value) {
 // ============================================================
 
 function getValue(id) {
+
     const element = getElement(id);
 
     return element ? element.value : "";
@@ -95,6 +97,7 @@ function getValue(id) {
 // ============================================================
 
 function escapeHtml(value) {
+
     if (value === null || value === undefined) {
         return "";
     }
@@ -113,6 +116,7 @@ function escapeHtml(value) {
 // ============================================================
 
 function formatDate(dateValue) {
+
     if (!dateValue) {
         return "-";
     }
@@ -126,6 +130,7 @@ function formatDate(dateValue) {
 // ============================================================
 
 function formatHistoryDate(dateValue) {
+
     if (!dateValue) {
         return "-";
     }
@@ -276,11 +281,6 @@ function openEditTaskModal(task) {
 
     editingTaskId = task.task_id;
 
-
-    // --------------------------------------------------------
-    // MODAL HEADER
-    // --------------------------------------------------------
-
     if (taskModalTitle) {
         taskModalTitle.textContent = "Edit Task";
     }
@@ -295,9 +295,7 @@ function openEditTaskModal(task) {
     }
 
 
-    // --------------------------------------------------------
     // BASIC INFORMATION
-    // --------------------------------------------------------
 
     setValue(
         "taskActivity",
@@ -315,9 +313,7 @@ function openEditTaskModal(task) {
     );
 
 
-    // --------------------------------------------------------
     // ASSIGNMENT & SCHEDULE
-    // --------------------------------------------------------
 
     setValue(
         "taskPriority",
@@ -345,9 +341,7 @@ function openEditTaskModal(task) {
     );
 
 
-    // --------------------------------------------------------
     // DATES
-    // --------------------------------------------------------
 
     setValue(
         "startDate",
@@ -360,9 +354,7 @@ function openEditTaskModal(task) {
     );
 
 
-    // --------------------------------------------------------
     // PROGRESS
-    // --------------------------------------------------------
 
     setValue(
         "percentComplete",
@@ -370,9 +362,7 @@ function openEditTaskModal(task) {
     );
 
 
-    // --------------------------------------------------------
     // ADDITIONAL DETAILS
-    // --------------------------------------------------------
 
     setValue(
         "deliverableExpectedOutput",
@@ -385,9 +375,7 @@ function openEditTaskModal(task) {
     );
 
 
-    // --------------------------------------------------------
     // OPEN MODAL
-    // --------------------------------------------------------
 
     if (taskModal) {
         taskModal.classList.add("show");
@@ -396,10 +384,11 @@ function openEditTaskModal(task) {
 
 
 // ============================================================
-// REVIEW MODAL ELEMENTS
+// REVIEW MODAL
 // ============================================================
 
-const reviewModal = document.getElementById("reviewModal");
+const reviewModal =
+    document.getElementById("reviewModal");
 
 const closeReviewModalBtn =
     document.getElementById("closeReviewModal");
@@ -453,7 +442,7 @@ if (cancelReviewBtn) {
 
 
 // ============================================================
-// CLOSE REVIEW MODAL OUTSIDE CLICK
+// REVIEW OUTSIDE CLICK
 // ============================================================
 
 if (reviewModal) {
@@ -478,10 +467,6 @@ function openReviewModal(task) {
 
     currentReviewTaskId = task.task_id;
 
-
-    // --------------------------------------------------------
-    // TASK INFORMATION
-    // --------------------------------------------------------
 
     const reviewTaskName =
         document.getElementById("reviewTaskName");
@@ -534,9 +519,7 @@ function openReviewModal(task) {
     }
 
 
-    // --------------------------------------------------------
     // EXISTING REVIEW DATA
-    // --------------------------------------------------------
 
     setValue(
         "reviewedVerifiedBy",
@@ -559,9 +542,7 @@ function openReviewModal(task) {
     );
 
 
-    // --------------------------------------------------------
     // OPEN MODAL
-    // --------------------------------------------------------
 
     if (reviewModal) {
         reviewModal.classList.add("show");
@@ -570,7 +551,7 @@ function openReviewModal(task) {
 
 
 // ============================================================
-// HISTORY MODAL ELEMENTS
+// HISTORY MODAL
 // ============================================================
 
 const historyModal =
@@ -603,6 +584,7 @@ const historyTransactionCount =
 const taskHistoryTable =
     document.getElementById("taskHistoryTable");
 
+
 // ============================================================
 // CLOSE HISTORY MODAL
 // ============================================================
@@ -627,6 +609,10 @@ function closeHistoryModal() {
             </tr>
         `;
     }
+
+    if (historyTransactionCount) {
+        historyTransactionCount.textContent = "0";
+    }
 }
 
 
@@ -642,7 +628,6 @@ if (closeHistoryModalBtn) {
     );
 }
 
-
 if (cancelHistoryBtn) {
 
     cancelHistoryBtn.addEventListener(
@@ -653,7 +638,7 @@ if (cancelHistoryBtn) {
 
 
 // ============================================================
-// CLOSE HISTORY MODAL OUTSIDE CLICK
+// HISTORY OUTSIDE CLICK
 // ============================================================
 
 if (historyModal) {
@@ -682,7 +667,6 @@ async function loadTaskHistory(task) {
 
         return;
     }
-
 
     currentHistoryTaskId = task.task_id;
 
@@ -715,14 +699,12 @@ async function loadTaskHistory(task) {
         historyCurrentStatus.textContent =
             task.status || "-";
 
-        // Remove previous status classes
         historyCurrentStatus.classList.remove(
             "status-active",
             "status-completed",
             "status-pending"
         );
 
-        // Apply current status class
         historyCurrentStatus.classList.add(
             getStatusClass(task.status)
         );
@@ -739,13 +721,12 @@ async function loadTaskHistory(task) {
     if (historyProgressBar) {
 
         historyProgressBar.style.width =
-            `${Math.min(Math.max(currentPercent, 0), 100)}%`;
+            `${Math.min(
+                Math.max(currentPercent, 0),
+                100
+            )}%`;
     }
 
-
-    // ========================================================
-    // RESET TRANSACTION COUNT
-    // ========================================================
 
     if (historyTransactionCount) {
 
@@ -755,15 +736,13 @@ async function loadTaskHistory(task) {
 
 
     // ========================================================
-    // SHOW LOADING
+    // LOADING
     // ========================================================
 
     if (taskHistoryTable) {
 
         taskHistoryTable.innerHTML = `
-
             <tr>
-
                 <td colspan="7">
 
                     <div class="history-empty">
@@ -783,9 +762,7 @@ async function loadTaskHistory(task) {
                     </div>
 
                 </td>
-
             </tr>
-
         `;
     }
 
@@ -795,7 +772,6 @@ async function loadTaskHistory(task) {
     // ========================================================
 
     if (historyModal) {
-
         historyModal.classList.add("show");
     }
 
@@ -807,13 +783,13 @@ async function loadTaskHistory(task) {
     try {
 
         const response = await fetch(
-            `/api/tasks/${task.task_id}/history`
+            `/api/tasks/${encodeURIComponent(
+                task.task_id
+            )}/history`
         );
 
 
-        const result =
-            await response.json();
-
+        const result = await response.json();
 
         console.log(
             "Task history response:",
@@ -856,9 +832,7 @@ async function loadTaskHistory(task) {
             if (taskHistoryTable) {
 
                 taskHistoryTable.innerHTML = `
-
                     <tr>
-
                         <td colspan="7">
 
                             <div class="history-empty">
@@ -878,9 +852,7 @@ async function loadTaskHistory(task) {
                             </div>
 
                         </td>
-
                     </tr>
-
                 `;
             }
 
@@ -895,12 +867,9 @@ async function loadTaskHistory(task) {
         if (taskHistoryTable) {
 
             taskHistoryTable.innerHTML = history
-
                 .map((item) => {
 
-                    // ========================================
                     // DATE
-                    // ========================================
 
                     const changedAt =
                         item.changed_at ||
@@ -908,67 +877,58 @@ async function loadTaskHistory(task) {
                         item.date ||
                         null;
 
-
-                    const dateObject =
-                        changedAt
-                            ? new Date(changedAt)
-                            : null;
-
-
                     let dateMain = "-";
                     let dateTime = "";
 
+                    if (changedAt) {
 
-                    if (
-                        dateObject &&
-                        !Number.isNaN(
-                            dateObject.getTime()
-                        )
-                    ) {
+                        const dateObject =
+                            new Date(changedAt);
 
-                        dateMain =
-                            dateObject.toLocaleDateString(
-                                undefined,
-                                {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric"
-                                }
-                            );
+                        if (
+                            !Number.isNaN(
+                                dateObject.getTime()
+                            )
+                        ) {
 
+                            dateMain =
+                                dateObject.toLocaleDateString(
+                                    undefined,
+                                    {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric"
+                                    }
+                                );
 
-                        dateTime =
-                            dateObject.toLocaleTimeString(
-                                undefined,
-                                {
-                                    hour: "2-digit",
-                                    minute: "2-digit"
-                                }
-                            );
+                            dateTime =
+                                dateObject.toLocaleTimeString(
+                                    undefined,
+                                    {
+                                        hour: "2-digit",
+                                        minute: "2-digit"
+                                    }
+                                );
 
-                    } else if (changedAt) {
+                        } else {
 
-                        dateMain =
-                            String(changedAt);
+                            dateMain =
+                                String(changedAt);
+                        }
                     }
 
 
-                    // ========================================
                     // ACTION
-                    // ========================================
 
                     const rawAction =
                         item.action ||
                         "Task Updated";
 
-
                     const actionLower =
                         String(rawAction).toLowerCase();
 
-
                     let actionClass =
                         "updated";
-
 
                     if (
                         actionLower.includes("creat")
@@ -990,13 +950,10 @@ async function loadTaskHistory(task) {
                     }
 
 
-                    // ========================================
                     // STATUS
-                    // ========================================
 
                     const oldStatus =
                         item.old_status ?? "-";
-
 
                     const newStatus =
                         item.new_status ??
@@ -1004,21 +961,12 @@ async function loadTaskHistory(task) {
                         "-";
 
 
-                    const newStatusClass =
-                        getStatusClass(
-                            newStatus
-                        );
-
-
-                    // ========================================
-                    // PERCENT COMPLETE
-                    // ========================================
+                    // PROGRESS
 
                     const oldPercent =
                         Number(
                             item.old_percent_complete ?? 0
                         );
-
 
                     const newPercent =
                         Number(
@@ -1027,20 +975,14 @@ async function loadTaskHistory(task) {
                             0
                         );
 
-
                     const safeNewPercent =
                         Math.min(
-                            Math.max(
-                                newPercent,
-                                0
-                            ),
+                            Math.max(newPercent, 0),
                             100
                         );
 
 
-                    // ========================================
                     // RESPONSIBLE PERSON
-                    // ========================================
 
                     const responsiblePerson =
                         item.responsible_person ||
@@ -1048,18 +990,13 @@ async function loadTaskHistory(task) {
                         "-";
 
 
-                    // ========================================
                     // REMARKS
-                    // ========================================
 
                     const remarks =
-                        item.remarks ||
-                        "-";
+                        item.remarks || "-";
 
 
-                    // ========================================
                     // CHANGED BY
-                    // ========================================
 
                     const changedBy =
                         item.changed_by ||
@@ -1067,12 +1004,9 @@ async function loadTaskHistory(task) {
                         "-";
 
 
-                    // ========================================
                     // RETURN ROW
-                    // ========================================
 
                     return `
-
                         <tr>
 
                             <!-- DATE / TIME -->
@@ -1146,7 +1080,9 @@ async function loadTaskHistory(task) {
                                     </span>
 
                                     <span
-                                        class="status ${newStatusClass}">
+                                        class="status ${getStatusClass(
+                                            newStatus
+                                        )}">
 
                                         ${escapeHtml(
                                             newStatus
@@ -1239,11 +1175,9 @@ async function loadTaskHistory(task) {
                             </td>
 
                         </tr>
-
                     `;
 
                 })
-
                 .join("");
         }
 
@@ -1258,9 +1192,7 @@ async function loadTaskHistory(task) {
         if (taskHistoryTable) {
 
             taskHistoryTable.innerHTML = `
-
                 <tr>
-
                     <td colspan="7">
 
                         <div class="history-empty">
@@ -1282,249 +1214,11 @@ async function loadTaskHistory(task) {
                         </div>
 
                     </td>
-
                 </tr>
-
             `;
         }
     }
 }
-
-
-    // --------------------------------------------------------
-    // UPDATE HISTORY HEADER
-    // --------------------------------------------------------
-
-    if (historyTaskName) {
-
-        historyTaskName.textContent =
-            task.task_activity ||
-            "Activity history and changes";
-    }
-
-
-    if (historyTaskTitle) {
-
-        historyTaskTitle.textContent =
-            task.task_activity || "-";
-    }
-
-
-    if (historyCurrentStatus) {
-
-        historyCurrentStatus.textContent =
-            task.status || "-";
-    }
-
-
-    if (historyCurrentPercent) {
-
-        historyCurrentPercent.textContent =
-            `${task.percent_complete ?? 0}%`;
-    }
-
-
-    // --------------------------------------------------------
-    // SHOW LOADING
-    // --------------------------------------------------------
-
-    if (taskHistoryTable) {
-
-        taskHistoryTable.innerHTML = `
-            <tr>
-                <td colspan="7">
-                    Loading history...
-                </td>
-            </tr>
-        `;
-    }
-
-
-    // --------------------------------------------------------
-    // OPEN MODAL
-    // --------------------------------------------------------
-
-    if (historyModal) {
-        historyModal.classList.add("show");
-    }
-
-
-    // --------------------------------------------------------
-    // FETCH HISTORY
-    // --------------------------------------------------------
-
-    try {
-
-        const response = await fetch(
-            `/api/tasks/${task.task_id}/history`
-        );
-
-
-        const result = await response.json();
-
-        console.log(
-            "Task history response:",
-            result
-        );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                result.error ||
-                "Failed to load task history."
-            );
-        }
-
-
-        const history =
-            Array.isArray(result.history)
-                ? result.history
-                : [];
-
-
-        // ----------------------------------------------------
-        // NO HISTORY
-        // ----------------------------------------------------
-
-        if (history.length === 0) {
-
-            if (taskHistoryTable) {
-
-                taskHistoryTable.innerHTML = `
-                    <tr>
-                        <td colspan="7">
-                            No changes have been recorded
-                            for this task yet.
-                        </td>
-                    </tr>
-                `;
-            }
-
-            return;
-        }
-
-
-        // ----------------------------------------------------
-        // DISPLAY HISTORY
-        // ----------------------------------------------------
-
-        if (taskHistoryTable) {
-
-            taskHistoryTable.innerHTML = history
-                .map((item) => {
-
-                    const changedAt =
-                        item.changed_at ||
-                        item.created_at ||
-                        item.date ||
-                        null;
-
-
-                    const action =
-                        item.action ||
-                        "Task Updated";
-
-
-                    const oldStatus =
-                        item.old_status ?? "-";
-
-
-                    const newStatus =
-                        item.new_status ?? "-";
-
-
-                    const oldPercent =
-                        item.old_percent_complete ?? 0;
-
-
-                    const newPercent =
-                        item.new_percent_complete ?? 0;
-
-
-                    const responsiblePerson =
-                        item.responsible_person ||
-                        item.new_responsible_person ||
-                        "-";
-
-
-                    const remarks =
-                        item.remarks ||
-                        "-";
-
-
-                    const changedBy =
-                        item.changed_by ||
-                        item.changed_by_name ||
-                        "-";
-
-
-                    return `
-                        <tr>
-
-                            <td>
-                                ${escapeHtml(
-                                    formatHistoryDate(changedAt)
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(action)}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(oldStatus)}
-                                →
-                                ${escapeHtml(newStatus)}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(oldPercent)}%
-                                →
-                                ${escapeHtml(newPercent)}%
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    responsiblePerson
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(remarks)}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(changedBy)}
-                            </td>
-
-                        </tr>
-                    `;
-                })
-                .join("");
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Load task history error:",
-            error
-        );
-
-
-        if (taskHistoryTable) {
-
-            taskHistoryTable.innerHTML = `
-                <tr>
-                    <td colspan="7">
-                        Failed to load history:
-                        ${escapeHtml(error.message)}
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
 
 
 // ============================================================
@@ -1535,14 +1229,44 @@ async function loadTasks() {
 
     try {
 
-        console.log(
-            "Loading tasks for project:",
-            projectId
+        console.log("========================================");
+        console.log("LOADING TASKS");
+        console.log("Project ID:", projectId);
+        console.log("========================================");
+
+
+        // ====================================================
+        // CHECK PROJECT ID
+        // ====================================================
+
+        if (!projectId) {
+
+            console.error(
+                "Project ID is missing from URL."
+            );
+
+            alert("No project selected.");
+
+            window.location.href = "/";
+
+            return;
+        }
+
+
+        // ====================================================
+        // FETCH TASKS
+        // ====================================================
+
+        const response = await fetch(
+            `/api/projects/${encodeURIComponent(
+                projectId
+            )}/tasks`
         );
 
 
-        const response = await fetch(
-            `/api/projects/${projectId}/tasks`
+        console.log(
+            "Tasks API status:",
+            response.status
         );
 
 
@@ -1550,24 +1274,59 @@ async function loadTasks() {
 
 
         console.log(
-            "Tasks response:",
+            "Tasks API response:",
             data
         );
 
+
+        // ====================================================
+        // CHECK SERVER RESPONSE
+        // ====================================================
 
         if (!response.ok) {
 
             throw new Error(
                 data.error ||
+                data.message ||
                 "Failed to load tasks."
             );
         }
 
 
-        const tasks =
-            Array.isArray(data.tasks)
-                ? data.tasks
-                : [];
+        // ====================================================
+        // SUPPORT MULTIPLE RESPONSE FORMATS
+        // ====================================================
+
+        let tasks = [];
+
+        if (Array.isArray(data)) {
+
+            tasks = data;
+
+        } else if (Array.isArray(data.tasks)) {
+
+            tasks = data.tasks;
+
+        } else if (Array.isArray(data.data)) {
+
+            tasks = data.data;
+        }
+
+
+        console.log(
+            "Project ID used:",
+            projectId
+        );
+
+        console.log(
+            "Number of tasks found:",
+            tasks.length
+        );
+
+        console.log(
+            "Tasks:",
+            tasks
+        );
 
 
         // ====================================================
@@ -1654,7 +1413,7 @@ async function loadTasks() {
             table.innerHTML = `
                 <tr>
                     <td colspan="8">
-                        No tasks found.
+                        No tasks found for this project.
                     </td>
                 </tr>
             `;
@@ -1667,7 +1426,7 @@ async function loadTasks() {
         // DISPLAY TASKS
         // ====================================================
 
-        tasks.forEach((task) => {
+        tasks.forEach(task => {
 
             const row =
                 document.createElement("tr");
@@ -1680,6 +1439,7 @@ async function loadTasks() {
             row.innerHTML = `
 
                 <!-- TASK -->
+
                 <td>
                     ${escapeHtml(
                         task.task_activity || "-"
@@ -1688,6 +1448,7 @@ async function loadTasks() {
 
 
                 <!-- PROCEDURE STAGE -->
+
                 <td>
                     ${escapeHtml(
                         task.procedure_stage || "-"
@@ -1696,10 +1457,10 @@ async function loadTasks() {
 
 
                 <!-- STATUS -->
+
                 <td>
 
-                    <span
-                        class="status ${statusClass}">
+                    <span class="status ${statusClass}">
 
                         ${escapeHtml(
                             task.status || "-"
@@ -1711,6 +1472,7 @@ async function loadTasks() {
 
 
                 <!-- PRIORITY -->
+
                 <td>
                     ${escapeHtml(
                         task.priority || "-"
@@ -1719,6 +1481,7 @@ async function loadTasks() {
 
 
                 <!-- RESPONSIBLE PERSON -->
+
                 <td>
                     ${escapeHtml(
                         task.responsible_person || "-"
@@ -1727,6 +1490,7 @@ async function loadTasks() {
 
 
                 <!-- DUE DATE -->
+
                 <td>
                     ${escapeHtml(
                         formatDate(task.due_date)
@@ -1735,6 +1499,7 @@ async function loadTasks() {
 
 
                 <!-- PERCENT COMPLETE -->
+
                 <td>
                     ${escapeHtml(
                         task.percent_complete ?? 0
@@ -1743,6 +1508,7 @@ async function loadTasks() {
 
 
                 <!-- ACTIONS -->
+
                 <td class="task-actions">
 
                     <button
@@ -1887,7 +1653,9 @@ async function loadTasks() {
 
                             const response =
                                 await fetch(
-                                    `/api/tasks/${task.task_id}`,
+                                    `/api/tasks/${encodeURIComponent(
+                                        task.task_id
+                                    )}`,
                                     {
                                         method: "DELETE"
                                     }
@@ -1936,8 +1704,21 @@ async function loadTasks() {
     } catch (error) {
 
         console.error(
-            "Load tasks error:",
+            "========================================"
+        );
+
+        console.error(
+            "LOAD TASKS ERROR:",
             error
+        );
+
+        console.error(
+            "Project ID:",
+            projectId
+        );
+
+        console.error(
+            "========================================"
         );
 
 
@@ -2036,7 +1817,9 @@ if (taskForm) {
             if (isEditing) {
 
                 url =
-                    `/api/tasks/${editingTaskId}`;
+                    `/api/tasks/${encodeURIComponent(
+                        editingTaskId
+                    )}`;
 
                 method =
                     "PUT";
@@ -2044,7 +1827,9 @@ if (taskForm) {
             } else {
 
                 url =
-                    `/api/projects/${projectId}/tasks`;
+                    `/api/projects/${encodeURIComponent(
+                        projectId
+                    )}/tasks`;
 
                 method =
                     "POST";
@@ -2076,7 +1861,9 @@ if (taskForm) {
                             },
 
                             body:
-                                JSON.stringify(taskData)
+                                JSON.stringify(
+                                    taskData
+                                )
                         }
                     );
 
@@ -2251,7 +2038,9 @@ if (reviewForm) {
 
                 const response =
                     await fetch(
-                        `/api/tasks/${currentReviewTaskId}/review`,
+                        `/api/tasks/${encodeURIComponent(
+                            currentReviewTaskId
+                        )}/review`,
                         {
                             method: "PUT",
 
@@ -2294,11 +2083,6 @@ if (reviewForm) {
                 alert(
                     "Task review submitted successfully!"
                 );
-
-
-                if (reviewForm) {
-                    reviewForm.reset();
-                }
 
 
                 closeReviewModal();
