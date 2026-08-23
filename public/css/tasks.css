@@ -516,7 +516,10 @@
 .task-action-menu {
     position: absolute;
 
-    top: calc(100% + 5px);
+    /* OPEN UPWARD */
+    bottom: calc(100% + 5px);
+    top: auto;
+
     right: 0;
 
     width: 155px;
@@ -533,11 +536,8 @@
     box-shadow:
         0 8px 20px rgba(23, 43, 77, 0.15);
 
-    z-index: 9999;
+    z-index: 99999;
 }
-
-
-/* SHOW MENU */
 
 .task-action-menu.show {
     display: block;
