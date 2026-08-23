@@ -1,9 +1,11 @@
 const express = require("express");
 const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
+
 require("dotenv").config();
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 
 // ============================================================
@@ -61,10 +63,6 @@ app.use(
 // ============================================================
 // TASK HISTORY HELPER
 // ============================================================
-// IMPORTANT:
-// This function ONLY inserts a history record.
-// Do NOT call createTaskHistory() from inside itself.
-// ============================================================
 
 async function createTaskHistory({
     taskId,
@@ -79,7 +77,16 @@ async function createTaskHistory({
     remarks = null,
     changedBy = "System"
 }) {
+
     try {
+
+        console.log("==============================================");
+        console.log("CREATING TASK HISTORY");
+        console.log("Task ID:", taskId);
+        console.log("Project ID:", projectId);
+        console.log("Action:", action);
+        console.log("==============================================");
+
         const historyData = {
             task_id: taskId,
             project_id: projectId,
@@ -94,6 +101,11 @@ async function createTaskHistory({
             changed_by: changedBy
         };
 
+        console.log(
+            "History data:",
+            historyData
+        );
+
         const {
             data,
             error
@@ -104,9 +116,37 @@ async function createTaskHistory({
             .single();
 
         if (error) {
+
             console.error(
-                "TASK HISTORY ERROR:",
-                error
+                "=============================================="
+            );
+
+            console.error(
+                "TASK HISTORY INSERT FAILED"
+            );
+
+            console.error(
+                "Message:",
+                error.message
+            );
+
+            console.error(
+                "Code:",
+                error.code
+            );
+
+            console.error(
+                "Details:",
+                error.details
+            );
+
+            console.error(
+                "Hint:",
+                error.hint
+            );
+
+            console.error(
+                "=============================================="
             );
 
             return {
@@ -116,7 +156,7 @@ async function createTaskHistory({
         }
 
         console.log(
-            "Task history recorded:",
+            "TASK HISTORY RECORDED SUCCESSFULLY:",
             data
         );
 
@@ -126,8 +166,9 @@ async function createTaskHistory({
         };
 
     } catch (error) {
+
         console.error(
-            "Create task history error:",
+            "CREATE TASK HISTORY ERROR:",
             error
         );
 
@@ -143,6 +184,7 @@ async function createTaskHistory({
 // ============================================================
 
 app.get("/", (req, res) => {
+
     res.sendFile(
         path.join(
             __dirname,
@@ -157,6 +199,7 @@ app.get("/", (req, res) => {
 // ============================================================
 
 app.get("/api/test", async (req, res) => {
+
     try {
 
         const {
@@ -168,6 +211,7 @@ app.get("/api/test", async (req, res) => {
             .limit(10);
 
         if (error) {
+
             console.error(
                 "Supabase test error:",
                 error
@@ -211,10 +255,6 @@ app.get("/api/dashboard", async (req, res) => {
 
     try {
 
-        // ----------------------------------------------------
-        // GET PROJECTS
-        // ----------------------------------------------------
-
         const {
             data: projects,
             error: projectsError
@@ -229,10 +269,6 @@ app.get("/api/dashboard", async (req, res) => {
             throw projectsError;
         }
 
-        // ----------------------------------------------------
-        // COUNT TASKS
-        // ----------------------------------------------------
-
         const {
             count: totalTasks,
             error: tasksError
@@ -246,10 +282,6 @@ app.get("/api/dashboard", async (req, res) => {
         if (tasksError) {
             throw tasksError;
         }
-
-        // ----------------------------------------------------
-        // PROJECT STATISTICS
-        // ----------------------------------------------------
 
         const totalProjects =
             projects.length;
@@ -267,10 +299,6 @@ app.get("/api/dashboard", async (req, res) => {
                     project.project_status ===
                     "Completed"
             ).length;
-
-        // ----------------------------------------------------
-        // RETURN DASHBOARD
-        // ----------------------------------------------------
 
         res.json({
             success: true,
@@ -324,10 +352,6 @@ app.post("/api/projects", async (req, res) => {
             date_closed
         } = req.body;
 
-        // ----------------------------------------------------
-        // VALIDATE PROJECT NAME
-        // ----------------------------------------------------
-
         if (
             !project_name ||
             !project_name.trim()
@@ -339,10 +363,6 @@ app.post("/api/projects", async (req, res) => {
                     "Project name is required."
             });
         }
-
-        // ----------------------------------------------------
-        // PREPARE PROJECT DATA
-        // ----------------------------------------------------
 
         const projectData = {
 
@@ -370,15 +390,6 @@ app.post("/api/projects", async (req, res) => {
                 date_closed || null
         };
 
-        console.log(
-            "Inserting project:",
-            projectData
-        );
-
-        // ----------------------------------------------------
-        // INSERT PROJECT
-        // ----------------------------------------------------
-
         const {
             data,
             error
@@ -391,27 +402,8 @@ app.post("/api/projects", async (req, res) => {
         if (error) {
 
             console.error(
-                "SUPABASE INSERT ERROR"
-            );
-
-            console.error(
-                "Message:",
-                error.message
-            );
-
-            console.error(
-                "Code:",
-                error.code
-            );
-
-            console.error(
-                "Details:",
-                error.details
-            );
-
-            console.error(
-                "Hint:",
-                error.hint
+                "SUPABASE INSERT ERROR:",
+                error
             );
 
             return res.status(500).json({
@@ -423,21 +415,20 @@ app.post("/api/projects", async (req, res) => {
             });
         }
 
-        // ----------------------------------------------------
-        // SUCCESS
-        // ----------------------------------------------------
-
         console.log(
-            "Project created successfully:"
+            "Project created successfully:",
+            data
         );
 
-        console.log(data);
-
         res.status(201).json({
+
             success: true,
+
             message:
                 "Project created successfully.",
-            project: data
+
+            project:
+                data
         });
 
     } catch (error) {
@@ -449,10 +440,7 @@ app.post("/api/projects", async (req, res) => {
 
         res.status(500).json({
             success: false,
-            error: error.message,
-            code: error.code,
-            details: error.details,
-            hint: error.hint
+            error: error.message
         });
     }
 });
@@ -469,23 +457,6 @@ app.get(
 
             const { projectId } =
                 req.params;
-
-            console.log(
-                "=============================================="
-            );
-
-            console.log(
-                "GET PROJECT TASKS"
-            );
-
-            console.log(
-                "Project ID:",
-                projectId
-            );
-
-            console.log(
-                "=============================================="
-            );
 
             const {
                 data,
@@ -591,9 +562,17 @@ app.get(
                 });
             }
 
+            console.log(
+                "History records found:",
+                data?.length || 0
+            );
+
             res.json({
+
                 success: true,
-                history: data || []
+
+                history:
+                    data || []
             });
 
         } catch (error) {
@@ -663,10 +642,6 @@ app.post(
                 percent_complete
             } = req.body;
 
-            // ----------------------------------------------------
-            // VALIDATE TASK
-            // ----------------------------------------------------
-
             if (
                 !task_activity ||
                 !task_activity.trim()
@@ -678,10 +653,6 @@ app.post(
                         "Task / Activity is required."
                 });
             }
-
-            // ----------------------------------------------------
-            // PREPARE TASK DATA
-            // ----------------------------------------------------
 
             const taskData = {
 
@@ -741,15 +712,6 @@ app.post(
                         : 0
             };
 
-            console.log(
-                "Inserting task:",
-                taskData
-            );
-
-            // ----------------------------------------------------
-            // INSERT TASK
-            // ----------------------------------------------------
-
             const {
                 data,
                 error
@@ -762,27 +724,8 @@ app.post(
             if (error) {
 
                 console.error(
-                    "SUPABASE TASK INSERT ERROR"
-                );
-
-                console.error(
-                    "Message:",
-                    error.message
-                );
-
-                console.error(
-                    "Code:",
-                    error.code
-                );
-
-                console.error(
-                    "Details:",
-                    error.details
-                );
-
-                console.error(
-                    "Hint:",
-                    error.hint
+                    "SUPABASE TASK INSERT ERROR:",
+                    error
                 );
 
                 return res.status(500).json({
@@ -795,7 +738,7 @@ app.post(
             }
 
             // ----------------------------------------------------
-            // RECORD CREATION IN HISTORY
+            // CREATE HISTORY RECORD
             // ----------------------------------------------------
 
             const historyResult =
@@ -810,20 +753,11 @@ app.post(
                     action:
                         "Created",
 
-                    oldStatus:
-                        null,
-
                     newStatus:
                         data.status,
 
-                    oldPercentComplete:
-                        null,
-
                     newPercentComplete:
                         data.percent_complete,
-
-                    oldResponsiblePerson:
-                        null,
 
                     newResponsiblePerson:
                         data.responsible_person,
@@ -836,22 +770,37 @@ app.post(
                         "System"
                 });
 
+            // ----------------------------------------------------
+            // DO NOT SILENTLY IGNORE HISTORY FAILURE
+            // ----------------------------------------------------
+
             if (!historyResult.success) {
 
                 console.error(
-                    "WARNING: Task created but history was not recorded."
+                    "TASK CREATED BUT HISTORY FAILED:",
+                    historyResult.error
                 );
+
+                return res.status(500).json({
+
+                    success: false,
+
+                    error:
+                        "Task was created, but the history record could not be saved.",
+
+                    historyError:
+                        historyResult.error?.message ||
+                        "Unknown history error.",
+
+                    task:
+                        data
+                });
             }
 
-            // ----------------------------------------------------
-            // SUCCESS
-            // ----------------------------------------------------
-
             console.log(
-                "Task created successfully:"
+                "Task created successfully:",
+                data
             );
-
-            console.log(data);
 
             res.status(201).json({
 
@@ -864,7 +813,7 @@ app.post(
                     data,
 
                 historyRecorded:
-                    historyResult.success
+                    true
             });
 
         } catch (error) {
@@ -918,7 +867,7 @@ app.put(
             );
 
             // ----------------------------------------------------
-            // GET CURRENT TASK FIRST
+            // GET OLD TASK
             // ----------------------------------------------------
 
             const {
@@ -947,10 +896,6 @@ app.put(
                 });
             }
 
-            // ----------------------------------------------------
-            // GET REQUEST DATA
-            // ----------------------------------------------------
-
             const {
                 procedure_stage,
                 task_activity,
@@ -968,10 +913,6 @@ app.put(
                 percent_complete
             } = req.body;
 
-            // ----------------------------------------------------
-            // VALIDATE TASK
-            // ----------------------------------------------------
-
             if (
                 !task_activity ||
                 !task_activity.trim()
@@ -983,10 +924,6 @@ app.put(
                         "Task / Activity is required."
                 });
             }
-
-            // ----------------------------------------------------
-            // PREPARE NEW TASK DATA
-            // ----------------------------------------------------
 
             const taskData = {
 
@@ -1077,11 +1014,12 @@ app.put(
             }
 
             // ----------------------------------------------------
-            // DETERMINE WHAT CHANGED
+            // DETERMINE CHANGES
             // ----------------------------------------------------
 
             const statusChanged =
-                oldTask.status !== data.status;
+                oldTask.status !==
+                data.status;
 
             const percentChanged =
                 Number(
@@ -1092,11 +1030,17 @@ app.put(
                 );
 
             const responsibleChanged =
-                (oldTask.responsible_person || null) !==
-                (data.responsible_person || null);
+                (
+                    oldTask.responsible_person ||
+                    null
+                ) !==
+                (
+                    data.responsible_person ||
+                    null
+                );
 
             // ----------------------------------------------------
-            // ONLY RECORD HISTORY IF TRACKED VALUES CHANGED
+            // RECORD HISTORY
             // ----------------------------------------------------
 
             if (
@@ -1105,12 +1049,14 @@ app.put(
                 responsibleChanged
             ) {
 
-                let action = "Updated";
+                let action =
+                    "Updated";
 
                 if (
                     statusChanged &&
                     percentChanged
                 ) {
+
                     action =
                         "Status and Progress Updated";
 
@@ -1171,14 +1117,26 @@ app.put(
                 if (!historyResult.success) {
 
                     console.error(
-                        "WARNING: Task updated but history was not recorded."
+                        "TASK UPDATED BUT HISTORY FAILED:",
+                        historyResult.error
                     );
+
+                    return res.status(500).json({
+
+                        success: false,
+
+                        error:
+                            "Task was updated, but the history record could not be saved.",
+
+                        historyError:
+                            historyResult.error?.message ||
+                            "Unknown history error.",
+
+                        task:
+                            data
+                    });
                 }
             }
-
-            // ----------------------------------------------------
-            // SUCCESS
-            // ----------------------------------------------------
 
             res.json({
 
@@ -1219,32 +1177,6 @@ app.put(
             const { taskId } =
                 req.params;
 
-            console.log(
-                "=============================================="
-            );
-
-            console.log(
-                "REVIEW TASK"
-            );
-
-            console.log(
-                "Task ID:",
-                taskId
-            );
-
-            console.log(
-                "Review data:",
-                req.body
-            );
-
-            console.log(
-                "=============================================="
-            );
-
-            // ----------------------------------------------------
-            // GET CURRENT TASK
-            // ----------------------------------------------------
-
             const {
                 data: oldTask,
                 error: oldTaskError
@@ -1271,20 +1203,12 @@ app.put(
                 });
             }
 
-            // ----------------------------------------------------
-            // REVIEW DATA
-            // ----------------------------------------------------
-
             const {
                 reviewed_verified_by,
                 review_result,
                 review_date,
                 remarks
             } = req.body;
-
-            // ----------------------------------------------------
-            // VALIDATE REVIEWER
-            // ----------------------------------------------------
 
             if (
                 !reviewed_verified_by ||
@@ -1297,10 +1221,6 @@ app.put(
                         "Reviewed / Verified By is required."
                 });
             }
-
-            // ----------------------------------------------------
-            // VALIDATE REVIEW RESULT
-            // ----------------------------------------------------
 
             const validResults = [
                 "Approved",
@@ -1322,10 +1242,6 @@ app.put(
                 });
             }
 
-            // ----------------------------------------------------
-            // VALIDATE REVIEW DATE
-            // ----------------------------------------------------
-
             if (!review_date) {
 
                 return res.status(400).json({
@@ -1334,10 +1250,6 @@ app.put(
                         "Review date is required."
                 });
             }
-
-            // ----------------------------------------------------
-            // PREPARE REVIEW DATA
-            // ----------------------------------------------------
 
             const reviewData = {
 
@@ -1356,15 +1268,6 @@ app.put(
                         : null
             };
 
-            console.log(
-                "Saving review:",
-                reviewData
-            );
-
-            // ----------------------------------------------------
-            // UPDATE REVIEW
-            // ----------------------------------------------------
-
             const {
                 data,
                 error
@@ -1381,27 +1284,8 @@ app.put(
             if (error) {
 
                 console.error(
-                    "SUPABASE TASK REVIEW ERROR"
-                );
-
-                console.error(
-                    "Message:",
-                    error.message
-                );
-
-                console.error(
-                    "Code:",
-                    error.code
-                );
-
-                console.error(
-                    "Details:",
-                    error.details
-                );
-
-                console.error(
-                    "Hint:",
-                    error.hint
+                    "SUPABASE TASK REVIEW ERROR:",
+                    error
                 );
 
                 return res.status(500).json({
@@ -1414,7 +1298,7 @@ app.put(
             }
 
             // ----------------------------------------------------
-            // RECORD REVIEW IN HISTORY
+            // RECORD REVIEW HISTORY
             // ----------------------------------------------------
 
             const historyResult =
@@ -1462,19 +1346,25 @@ app.put(
             if (!historyResult.success) {
 
                 console.error(
-                    "WARNING: Review saved but history was not recorded."
+                    "REVIEW SAVED BUT HISTORY FAILED:",
+                    historyResult.error
                 );
+
+                return res.status(500).json({
+
+                    success: false,
+
+                    error:
+                        "Review was saved, but the history record could not be saved.",
+
+                    historyError:
+                        historyResult.error?.message ||
+                        "Unknown history error.",
+
+                    task:
+                        data
+                });
             }
-
-            // ----------------------------------------------------
-            // SUCCESS
-            // ----------------------------------------------------
-
-            console.log(
-                "Task review saved successfully:"
-            );
-
-            console.log(data);
 
             res.json({
 
@@ -1487,7 +1377,7 @@ app.put(
                     data,
 
                 historyRecorded:
-                    historyResult.success
+                    true
             });
 
         } catch (error) {
@@ -1519,9 +1409,110 @@ app.delete(
                 req.params;
 
             console.log(
-                "Deleting task:",
+                "=============================================="
+            );
+
+            console.log(
+                "DELETE TASK"
+            );
+
+            console.log(
+                "Task ID:",
                 taskId
             );
+
+            console.log(
+                "=============================================="
+            );
+
+            // ----------------------------------------------------
+            // GET TASK BEFORE DELETE
+            // ----------------------------------------------------
+
+            const {
+                data: task,
+                error: taskError
+            } = await supabase
+                .from("tasks")
+                .select("*")
+                .eq(
+                    "task_id",
+                    taskId
+                )
+                .single();
+
+            if (taskError || !task) {
+
+                return res.status(404).json({
+
+                    success: false,
+
+                    error:
+                        "Task not found."
+                });
+            }
+
+            // ----------------------------------------------------
+            // RECORD DELETE HISTORY FIRST
+            // ----------------------------------------------------
+
+            const historyResult =
+                await createTaskHistory({
+
+                    taskId:
+                        task.task_id,
+
+                    projectId:
+                        task.project_id,
+
+                    action:
+                        "Deleted",
+
+                    oldStatus:
+                        task.status,
+
+                    newStatus:
+                        null,
+
+                    oldPercentComplete:
+                        task.percent_complete,
+
+                    newPercentComplete:
+                        null,
+
+                    oldResponsiblePerson:
+                        task.responsible_person,
+
+                    newResponsiblePerson:
+                        null,
+
+                    remarks:
+                        "Task deleted",
+
+                    changedBy:
+                        task.responsible_person ||
+                        "System"
+                });
+
+            if (!historyResult.success) {
+
+                console.error(
+                    "DELETE CANCELLED — HISTORY FAILED:",
+                    historyResult.error
+                );
+
+                return res.status(500).json({
+
+                    success: false,
+
+                    error:
+                        "Task was not deleted because its history could not be recorded.",
+
+                    historyError:
+                        historyResult.error?.message ||
+                        "Unknown history error."
+                });
+            }
 
             // ----------------------------------------------------
             // DELETE TASK
@@ -1558,7 +1549,10 @@ app.delete(
                 success: true,
 
                 message:
-                    "Task deleted successfully."
+                    "Task deleted successfully.",
+
+                historyRecorded:
+                    true
             });
 
         } catch (error) {
@@ -1579,9 +1573,6 @@ app.delete(
 // ============================================================
 // START SERVER
 // ============================================================
-
-// Only listen when running locally.
-// Vercel will use module.exports instead.
 
 if (require.main === module) {
 
