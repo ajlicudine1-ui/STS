@@ -30,7 +30,6 @@ const newTaskBtn = document.getElementById("newTaskBtn");
 const closeTaskModal = document.getElementById("closeTaskModal");
 const cancelTaskBtn = document.getElementById("cancelTaskBtn");
 const taskForm = document.getElementById("taskForm");
-
 const taskModalTitle = document.getElementById("taskModalTitle");
 const taskModalSubtitle = document.getElementById("taskModalSubtitle");
 const taskSubmitBtn = document.getElementById("taskSubmitBtn");
@@ -71,7 +70,6 @@ function getElement(id) {
 // ============================================================
 
 function setValue(id, value) {
-
     const element = getElement(id);
 
     if (element) {
@@ -85,7 +83,6 @@ function setValue(id, value) {
 // ============================================================
 
 function getValue(id) {
-
     const element = getElement(id);
 
     return element ? element.value : "";
@@ -97,7 +94,6 @@ function getValue(id) {
 // ============================================================
 
 function escapeHtml(value) {
-
     if (value === null || value === undefined) {
         return "";
     }
@@ -116,7 +112,6 @@ function escapeHtml(value) {
 // ============================================================
 
 function formatDate(dateValue) {
-
     if (!dateValue) {
         return "-";
     }
@@ -130,7 +125,6 @@ function formatDate(dateValue) {
 // ============================================================
 
 function formatHistoryDate(dateValue) {
-
     if (!dateValue) {
         return "-";
     }
@@ -172,6 +166,23 @@ function getStatusClass(status) {
 
 
 // ============================================================
+// CLOSE ALL ACTION MENUS
+// ============================================================
+
+function closeAllActionMenus() {
+
+    document
+        .querySelectorAll(".task-action-menu.show")
+        .forEach(menu => {
+
+            menu.classList.remove("show");
+
+        });
+
+}
+
+
+// ============================================================
 // OPEN NEW TASK MODAL
 // ============================================================
 
@@ -203,7 +214,9 @@ if (newTaskBtn) {
         if (taskModal) {
             taskModal.classList.add("show");
         }
+
     });
+
 }
 
 
@@ -247,11 +260,21 @@ function closeModal() {
 // ============================================================
 
 if (closeTaskModal) {
-    closeTaskModal.addEventListener("click", closeModal);
+
+    closeTaskModal.addEventListener(
+        "click",
+        closeModal
+    );
+
 }
 
 if (cancelTaskBtn) {
-    cancelTaskBtn.addEventListener("click", closeModal);
+
+    cancelTaskBtn.addEventListener(
+        "click",
+        closeModal
+    );
+
 }
 
 
@@ -261,13 +284,14 @@ if (cancelTaskBtn) {
 
 if (taskModal) {
 
-    taskModal.addEventListener("click", (event) => {
+    taskModal.addEventListener("click", event => {
 
         if (event.target === taskModal) {
             closeModal();
         }
 
     });
+
 }
 
 
@@ -430,6 +454,7 @@ if (closeReviewModalBtn) {
         "click",
         closeReviewModal
     );
+
 }
 
 if (cancelReviewBtn) {
@@ -438,6 +463,7 @@ if (cancelReviewBtn) {
         "click",
         closeReviewModal
     );
+
 }
 
 
@@ -447,13 +473,14 @@ if (cancelReviewBtn) {
 
 if (reviewModal) {
 
-    reviewModal.addEventListener("click", (event) => {
+    reviewModal.addEventListener("click", event => {
 
         if (event.target === reviewModal) {
             closeReviewModal();
         }
 
     });
+
 }
 
 
@@ -488,6 +515,7 @@ function openReviewModal(task) {
 
         reviewTaskName.textContent =
             task.task_activity || "-";
+
     }
 
 
@@ -495,6 +523,7 @@ function openReviewModal(task) {
 
         reviewResponsiblePerson.textContent =
             task.responsible_person || "-";
+
     }
 
 
@@ -502,6 +531,7 @@ function openReviewModal(task) {
 
         reviewStatus.textContent =
             task.status || "-";
+
     }
 
 
@@ -509,6 +539,7 @@ function openReviewModal(task) {
 
         reviewPercentComplete.textContent =
             `${task.percent_complete ?? 0}%`;
+
     }
 
 
@@ -516,6 +547,7 @@ function openReviewModal(task) {
 
         reviewExpectedOutput.textContent =
             task.deliverable_expected_output || "-";
+
     }
 
 
@@ -608,6 +640,7 @@ function closeHistoryModal() {
                 </td>
             </tr>
         `;
+
     }
 
     if (historyTransactionCount) {
@@ -626,6 +659,7 @@ if (closeHistoryModalBtn) {
         "click",
         closeHistoryModal
     );
+
 }
 
 if (cancelHistoryBtn) {
@@ -634,6 +668,7 @@ if (cancelHistoryBtn) {
         "click",
         closeHistoryModal
     );
+
 }
 
 
@@ -643,13 +678,14 @@ if (cancelHistoryBtn) {
 
 if (historyModal) {
 
-    historyModal.addEventListener("click", (event) => {
+    historyModal.addEventListener("click", event => {
 
         if (event.target === historyModal) {
             closeHistoryModal();
         }
 
     });
+
 }
 
 
@@ -684,6 +720,7 @@ async function loadTaskHistory(task) {
         historyTaskName.textContent =
             task.task_activity ||
             "Activity history and changes";
+
     }
 
 
@@ -691,6 +728,7 @@ async function loadTaskHistory(task) {
 
         historyTaskTitle.textContent =
             task.task_activity || "-";
+
     }
 
 
@@ -708,6 +746,7 @@ async function loadTaskHistory(task) {
         historyCurrentStatus.classList.add(
             getStatusClass(task.status)
         );
+
     }
 
 
@@ -715,6 +754,7 @@ async function loadTaskHistory(task) {
 
         historyCurrentPercent.textContent =
             `${currentPercent}%`;
+
     }
 
 
@@ -725,13 +765,12 @@ async function loadTaskHistory(task) {
                 Math.max(currentPercent, 0),
                 100
             )}%`;
+
     }
 
 
     if (historyTransactionCount) {
-
-        historyTransactionCount.textContent =
-            "0";
+        historyTransactionCount.textContent = "0";
     }
 
 
@@ -764,6 +803,7 @@ async function loadTaskHistory(task) {
                 </td>
             </tr>
         `;
+
     }
 
 
@@ -791,6 +831,7 @@ async function loadTaskHistory(task) {
 
         const result = await response.json();
 
+
         console.log(
             "Task history response:",
             result
@@ -803,6 +844,7 @@ async function loadTaskHistory(task) {
                 result.error ||
                 "Failed to load task history."
             );
+
         }
 
 
@@ -820,6 +862,7 @@ async function loadTaskHistory(task) {
 
             historyTransactionCount.textContent =
                 history.length;
+
         }
 
 
@@ -854,6 +897,7 @@ async function loadTaskHistory(task) {
                         </td>
                     </tr>
                 `;
+
             }
 
             return;
@@ -867,7 +911,7 @@ async function loadTaskHistory(task) {
         if (taskHistoryTable) {
 
             taskHistoryTable.innerHTML = history
-                .map((item) => {
+                .map(item => {
 
                     // DATE
 
@@ -880,10 +924,12 @@ async function loadTaskHistory(task) {
                     let dateMain = "-";
                     let dateTime = "";
 
+
                     if (changedAt) {
 
                         const dateObject =
                             new Date(changedAt);
+
 
                         if (
                             !Number.isNaN(
@@ -901,6 +947,7 @@ async function loadTaskHistory(task) {
                                     }
                                 );
 
+
                             dateTime =
                                 dateObject.toLocaleTimeString(
                                     undefined,
@@ -914,7 +961,9 @@ async function loadTaskHistory(task) {
 
                             dateMain =
                                 String(changedAt);
+
                         }
+
                     }
 
 
@@ -929,6 +978,7 @@ async function loadTaskHistory(task) {
 
                     let actionClass =
                         "updated";
+
 
                     if (
                         actionLower.includes("creat")
@@ -947,6 +997,7 @@ async function loadTaskHistory(task) {
                     ) {
 
                         actionClass = "updated";
+
                     }
 
 
@@ -1009,29 +1060,19 @@ async function loadTaskHistory(task) {
                     return `
                         <tr>
 
-                            <!-- DATE / TIME -->
-
                             <td>
 
                                 <div class="history-date">
 
                                     <span class="history-date-main">
-
-                                        ${escapeHtml(
-                                            dateMain
-                                        )}
-
+                                        ${escapeHtml(dateMain)}
                                     </span>
 
                                     ${
                                         dateTime
                                             ? `
                                                 <span class="history-date-time">
-
-                                                    ${escapeHtml(
-                                                        dateTime
-                                                    )}
-
+                                                    ${escapeHtml(dateTime)}
                                                 </span>
                                             `
                                             : ""
@@ -1042,36 +1083,26 @@ async function loadTaskHistory(task) {
                             </td>
 
 
-                            <!-- ACTION -->
-
                             <td>
 
                                 <span
                                     class="history-action ${actionClass}">
 
-                                    ${escapeHtml(
-                                        rawAction
-                                    )}
+                                    ${escapeHtml(rawAction)}
 
                                 </span>
 
                             </td>
 
 
-                            <!-- STATUS -->
-
                             <td>
 
                                 <div class="history-status-change">
 
                                     <span
-                                        class="status ${getStatusClass(
-                                            oldStatus
-                                        )}">
+                                        class="status ${getStatusClass(oldStatus)}">
 
-                                        ${escapeHtml(
-                                            oldStatus
-                                        )}
+                                        ${escapeHtml(oldStatus)}
 
                                     </span>
 
@@ -1080,13 +1111,9 @@ async function loadTaskHistory(task) {
                                     </span>
 
                                     <span
-                                        class="status ${getStatusClass(
-                                            newStatus
-                                        )}">
+                                        class="status ${getStatusClass(newStatus)}">
 
-                                        ${escapeHtml(
-                                            newStatus
-                                        )}
+                                        ${escapeHtml(newStatus)}
 
                                     </span>
 
@@ -1095,8 +1122,6 @@ async function loadTaskHistory(task) {
                             </td>
 
 
-                            <!-- PROGRESS -->
-
                             <td>
 
                                 <div class="history-row-progress">
@@ -1104,13 +1129,9 @@ async function loadTaskHistory(task) {
                                     <span
                                         class="history-row-progress-value">
 
-                                        ${escapeHtml(
-                                            oldPercent
-                                        )}%
+                                        ${escapeHtml(oldPercent)}%
                                         →
-                                        ${escapeHtml(
-                                            newPercent
-                                        )}%
+                                        ${escapeHtml(newPercent)}%
 
                                     </span>
 
@@ -1130,46 +1151,28 @@ async function loadTaskHistory(task) {
                             </td>
 
 
-                            <!-- RESPONSIBLE PERSON -->
-
                             <td>
 
                                 <span>
-
-                                    ${escapeHtml(
-                                        responsiblePerson
-                                    )}
-
+                                    ${escapeHtml(responsiblePerson)}
                                 </span>
 
                             </td>
 
 
-                            <!-- REMARKS -->
-
                             <td>
 
                                 <div class="history-remarks">
-
-                                    ${escapeHtml(
-                                        remarks
-                                    )}
-
+                                    ${escapeHtml(remarks)}
                                 </div>
 
                             </td>
 
 
-                            <!-- CHANGED BY -->
-
                             <td>
 
                                 <span class="history-changed-by">
-
-                                    ${escapeHtml(
-                                        changedBy
-                                    )}
-
+                                    ${escapeHtml(changedBy)}
                                 </span>
 
                             </td>
@@ -1179,6 +1182,7 @@ async function loadTaskHistory(task) {
 
                 })
                 .join("");
+
         }
 
     } catch (error) {
@@ -1206,9 +1210,7 @@ async function loadTaskHistory(task) {
                             </strong>
 
                             <span>
-                                ${escapeHtml(
-                                    error.message
-                                )}
+                                ${escapeHtml(error.message)}
                             </span>
 
                         </div>
@@ -1216,9 +1218,341 @@ async function loadTaskHistory(task) {
                     </td>
                 </tr>
             `;
+
         }
+
     }
 }
+
+
+// ============================================================
+// DELETE TASK
+// ============================================================
+
+async function deleteTask(task) {
+
+    if (!task || !task.task_id) {
+
+        console.error(
+            "Cannot delete task. Task ID is missing."
+        );
+
+        return;
+    }
+
+
+    const confirmed = confirm(
+        `Are you sure you want to delete "${task.task_activity || "this task"}"?`
+    );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(
+            `/api/tasks/${encodeURIComponent(
+                task.task_id
+            )}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.error ||
+                "Failed to delete task."
+            );
+
+        }
+
+
+        alert(
+            "Task deleted successfully!"
+        );
+
+
+        await loadTasks();
+
+    } catch (error) {
+
+        console.error(
+            "Delete task error:",
+            error
+        );
+
+
+        alert(
+            "Error: " +
+            error.message
+        );
+
+    }
+}
+
+
+// ============================================================
+// CREATE ACTION MENU
+// ============================================================
+
+function createActionMenu(task) {
+
+    const wrapper =
+        document.createElement("div");
+
+    wrapper.className =
+        "task-action-wrapper";
+
+
+    wrapper.innerHTML = `
+
+        <button
+            type="button"
+            class="task-action-trigger"
+            aria-label="Task actions"
+            aria-expanded="false"
+            title="Actions">
+
+            <span>⋮</span>
+
+        </button>
+
+
+        <div class="task-action-menu">
+
+            <button
+                type="button"
+                class="task-action-item review-action">
+
+                <span class="task-action-icon">
+                    ✓
+                </span>
+
+                <span>
+                    Review
+                </span>
+
+            </button>
+
+
+            <button
+                type="button"
+                class="task-action-item edit-action">
+
+                <span class="task-action-icon">
+                    ✎
+                </span>
+
+                <span>
+                    Edit
+                </span>
+
+            </button>
+
+
+            <button
+                type="button"
+                class="task-action-item history-action">
+
+                <span class="task-action-icon">
+                    ↻
+                </span>
+
+                <span>
+                    History
+                </span>
+
+            </button>
+
+
+            <div class="task-action-divider"></div>
+
+
+            <button
+                type="button"
+                class="task-action-item delete-action">
+
+                <span class="task-action-icon">
+                    🗑
+                </span>
+
+                <span>
+                    Delete
+                </span>
+
+            </button>
+
+        </div>
+
+    `;
+
+
+    const trigger =
+        wrapper.querySelector(
+            ".task-action-trigger"
+        );
+
+    const menu =
+        wrapper.querySelector(
+            ".task-action-menu"
+        );
+
+
+    // ========================================================
+    // THREE DOT BUTTON
+    // ========================================================
+
+    trigger.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+
+            const wasOpen =
+                menu.classList.contains("show");
+
+
+            closeAllActionMenus();
+
+
+            if (!wasOpen) {
+
+                menu.classList.add("show");
+
+                trigger.setAttribute(
+                    "aria-expanded",
+                    "true"
+                );
+
+            }
+
+        }
+    );
+
+
+    // ========================================================
+    // REVIEW
+    // ========================================================
+
+    const reviewAction =
+        wrapper.querySelector(
+            ".review-action"
+        );
+
+
+    reviewAction.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            closeAllActionMenus();
+
+            openReviewModal(task);
+
+        }
+    );
+
+
+    // ========================================================
+    // EDIT
+    // ========================================================
+
+    const editAction =
+        wrapper.querySelector(
+            ".edit-action"
+        );
+
+
+    editAction.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            closeAllActionMenus();
+
+            openEditTaskModal(task);
+
+        }
+    );
+
+
+    // ========================================================
+    // HISTORY
+    // ========================================================
+
+    const historyAction =
+        wrapper.querySelector(
+            ".history-action"
+        );
+
+
+    historyAction.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            closeAllActionMenus();
+
+            loadTaskHistory(task);
+
+        }
+    );
+
+
+    // ========================================================
+    // DELETE
+    // ========================================================
+
+    const deleteAction =
+        wrapper.querySelector(
+            ".delete-action"
+        );
+
+
+    deleteAction.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            closeAllActionMenus();
+
+            deleteTask(task);
+
+        }
+    );
+
+
+    return wrapper;
+}
+
+
+// ============================================================
+// CLOSE ACTION MENU WHEN CLICKING ANYWHERE ELSE
+// ============================================================
+
+document.addEventListener(
+    "click",
+    () => {
+
+        closeAllActionMenus();
+
+    }
+);
 
 
 // ============================================================
@@ -1245,7 +1579,9 @@ async function loadTasks() {
                 "Project ID is missing from URL."
             );
 
-            alert("No project selected.");
+            alert(
+                "No project selected."
+            );
 
             window.location.href = "/";
 
@@ -1270,7 +1606,8 @@ async function loadTasks() {
         );
 
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
 
         console.log(
@@ -1290,6 +1627,7 @@ async function loadTasks() {
                 data.message ||
                 "Failed to load tasks."
             );
+
         }
 
 
@@ -1299,17 +1637,23 @@ async function loadTasks() {
 
         let tasks = [];
 
+
         if (Array.isArray(data)) {
 
             tasks = data;
 
-        } else if (Array.isArray(data.tasks)) {
+        } else if (
+            Array.isArray(data.tasks)
+        ) {
 
             tasks = data.tasks;
 
-        } else if (Array.isArray(data.data)) {
+        } else if (
+            Array.isArray(data.data)
+        ) {
 
             tasks = data.data;
+
         }
 
 
@@ -1334,22 +1678,31 @@ async function loadTasks() {
         // ====================================================
 
         const taskTotal =
-            document.getElementById("taskTotal");
+            document.getElementById(
+                "taskTotal"
+            );
 
         const taskNotStarted =
-            document.getElementById("taskNotStarted");
+            document.getElementById(
+                "taskNotStarted"
+            );
 
         const taskInProgress =
-            document.getElementById("taskInProgress");
+            document.getElementById(
+                "taskInProgress"
+            );
 
         const taskCompleted =
-            document.getElementById("taskCompleted");
+            document.getElementById(
+                "taskCompleted"
+            );
 
 
         if (taskTotal) {
 
             taskTotal.textContent =
                 tasks.length;
+
         }
 
 
@@ -1360,6 +1713,7 @@ async function loadTasks() {
                     task =>
                         task.status === "Not Started"
                 ).length;
+
         }
 
 
@@ -1370,6 +1724,7 @@ async function loadTasks() {
                     task =>
                         task.status === "In Progress"
                 ).length;
+
         }
 
 
@@ -1380,6 +1735,7 @@ async function loadTasks() {
                     task =>
                         task.status === "Completed"
                 ).length;
+
         }
 
 
@@ -1388,7 +1744,9 @@ async function loadTasks() {
         // ====================================================
 
         const table =
-            document.getElementById("tasksTable");
+            document.getElementById(
+                "tasksTable"
+            );
 
 
         if (!table) {
@@ -1412,9 +1770,11 @@ async function loadTasks() {
 
             table.innerHTML = `
                 <tr>
+
                     <td colspan="8">
                         No tasks found for this project.
                     </td>
+
                 </tr>
             `;
 
@@ -1433,7 +1793,9 @@ async function loadTasks() {
 
 
             const statusClass =
-                getStatusClass(task.status);
+                getStatusClass(
+                    task.status
+                );
 
 
             row.innerHTML = `
@@ -1441,18 +1803,22 @@ async function loadTasks() {
                 <!-- TASK -->
 
                 <td>
+
                     ${escapeHtml(
                         task.task_activity || "-"
                     )}
+
                 </td>
 
 
                 <!-- PROCEDURE STAGE -->
 
                 <td>
+
                     ${escapeHtml(
                         task.procedure_stage || "-"
                     )}
+
                 </td>
 
 
@@ -1474,36 +1840,46 @@ async function loadTasks() {
                 <!-- PRIORITY -->
 
                 <td>
+
                     ${escapeHtml(
                         task.priority || "-"
                     )}
+
                 </td>
 
 
                 <!-- RESPONSIBLE PERSON -->
 
                 <td>
+
                     ${escapeHtml(
                         task.responsible_person || "-"
                     )}
+
                 </td>
 
 
                 <!-- DUE DATE -->
 
                 <td>
+
                     ${escapeHtml(
-                        formatDate(task.due_date)
+                        formatDate(
+                            task.due_date
+                        )
                     )}
+
                 </td>
 
 
                 <!-- PERCENT COMPLETE -->
 
                 <td>
+
                     ${escapeHtml(
                         task.percent_complete ?? 0
                     )}%
+
                 </td>
 
 
@@ -1511,193 +1887,34 @@ async function loadTasks() {
 
                 <td class="task-actions">
 
-                    <button
-                        type="button"
-                        class="btn btn-primary review-task-btn">
-
-                        Review
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary edit-task-btn">
-
-                        Edit
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary history-task-btn">
-
-                        History
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="btn btn-danger delete-task-btn">
-
-                        Delete
-
-                    </button>
-
                 </td>
+
             `;
 
 
+            // =================================================
+            // ADD ACTION MENU
+            // =================================================
+
+            const actionsCell =
+                row.querySelector(
+                    ".task-actions"
+                );
+
+
+            if (actionsCell) {
+
+                const actionMenu =
+                    createActionMenu(task);
+
+                actionsCell.appendChild(
+                    actionMenu
+                );
+
+            }
+
+
             table.appendChild(row);
-
-
-            // =================================================
-            // REVIEW BUTTON
-            // =================================================
-
-            const reviewBtn =
-                row.querySelector(
-                    ".review-task-btn"
-                );
-
-
-            if (reviewBtn) {
-
-                reviewBtn.addEventListener(
-                    "click",
-                    () => {
-
-                        openReviewModal(task);
-
-                    }
-                );
-            }
-
-
-            // =================================================
-            // EDIT BUTTON
-            // =================================================
-
-            const editBtn =
-                row.querySelector(
-                    ".edit-task-btn"
-                );
-
-
-            if (editBtn) {
-
-                editBtn.addEventListener(
-                    "click",
-                    () => {
-
-                        openEditTaskModal(task);
-
-                    }
-                );
-            }
-
-
-            // =================================================
-            // HISTORY BUTTON
-            // =================================================
-
-            const historyBtn =
-                row.querySelector(
-                    ".history-task-btn"
-                );
-
-
-            if (historyBtn) {
-
-                historyBtn.addEventListener(
-                    "click",
-                    () => {
-
-                        loadTaskHistory(task);
-
-                    }
-                );
-            }
-
-
-            // =================================================
-            // DELETE BUTTON
-            // =================================================
-
-            const deleteBtn =
-                row.querySelector(
-                    ".delete-task-btn"
-                );
-
-
-            if (deleteBtn) {
-
-                deleteBtn.addEventListener(
-                    "click",
-                    async () => {
-
-                        const confirmed =
-                            confirm(
-                                "Are you sure you want to delete this task?"
-                            );
-
-
-                        if (!confirmed) {
-                            return;
-                        }
-
-
-                        try {
-
-                            const response =
-                                await fetch(
-                                    `/api/tasks/${encodeURIComponent(
-                                        task.task_id
-                                    )}`,
-                                    {
-                                        method: "DELETE"
-                                    }
-                                );
-
-
-                            const result =
-                                await response.json();
-
-
-                            if (!response.ok) {
-
-                                throw new Error(
-                                    result.error ||
-                                    "Failed to delete task."
-                                );
-                            }
-
-
-                            alert(
-                                "Task deleted successfully!"
-                            );
-
-
-                            await loadTasks();
-
-                        } catch (error) {
-
-                            console.error(
-                                "Delete task error:",
-                                error
-                            );
-
-
-                            alert(
-                                "Error: " +
-                                error.message
-                            );
-                        }
-                    }
-                );
-            }
 
         });
 
@@ -1726,6 +1943,7 @@ async function loadTasks() {
             "Error loading tasks: " +
             error.message
         );
+
     }
 }
 
@@ -1738,7 +1956,7 @@ if (taskForm) {
 
     taskForm.addEventListener(
         "submit",
-        async (event) => {
+        async event => {
 
             event.preventDefault();
 
@@ -1750,34 +1968,54 @@ if (taskForm) {
             const taskData = {
 
                 procedure_stage:
-                    getValue("procedureStage").trim(),
+                    getValue(
+                        "procedureStage"
+                    ).trim(),
 
                 task_activity:
-                    getValue("taskActivity").trim(),
+                    getValue(
+                        "taskActivity"
+                    ).trim(),
 
                 status:
-                    getValue("taskStatus"),
+                    getValue(
+                        "taskStatus"
+                    ),
 
                 schedule_status:
-                    getValue("scheduleStatus"),
+                    getValue(
+                        "scheduleStatus"
+                    ),
 
                 priority:
-                    getValue("taskPriority"),
+                    getValue(
+                        "taskPriority"
+                    ),
 
                 responsible_person:
-                    getValue("responsiblePerson").trim(),
+                    getValue(
+                        "responsiblePerson"
+                    ).trim(),
 
                 role:
-                    getValue("taskRole"),
+                    getValue(
+                        "taskRole"
+                    ),
 
                 stakeholder_end_user:
-                    getValue("stakeholderEndUser").trim(),
+                    getValue(
+                        "stakeholderEndUser"
+                    ).trim(),
 
                 start_date:
-                    getValue("startDate") || null,
+                    getValue(
+                        "startDate"
+                    ) || null,
 
                 due_date:
-                    getValue("dueDate") || null,
+                    getValue(
+                        "dueDate"
+                    ) || null,
 
                 deliverable_expected_output:
                     getValue(
@@ -1791,8 +2029,11 @@ if (taskForm) {
 
                 percent_complete:
                     Number(
-                        getValue("percentComplete") || 0
+                        getValue(
+                            "percentComplete"
+                        ) || 0
                     )
+
             };
 
 
@@ -1833,6 +2074,7 @@ if (taskForm) {
 
                 method =
                     "POST";
+
             }
 
 
@@ -1888,6 +2130,7 @@ if (taskForm) {
                                 : "Failed to create task."
                         )
                     );
+
                 }
 
 
@@ -1929,9 +2172,12 @@ if (taskForm) {
                     "Error: " +
                     error.message
                 );
+
             }
+
         }
     );
+
 }
 
 
@@ -1943,7 +2189,7 @@ if (reviewForm) {
 
     reviewForm.addEventListener(
         "submit",
-        async (event) => {
+        async event => {
 
             event.preventDefault();
 
@@ -1987,6 +2233,7 @@ if (reviewForm) {
                     getValue(
                         "reviewRemarks"
                     ).trim()
+
             };
 
 
@@ -2073,6 +2320,7 @@ if (reviewForm) {
                         result.error ||
                         "Failed to submit review."
                     );
+
                 }
 
 
@@ -2102,9 +2350,12 @@ if (reviewForm) {
                     "Error: " +
                     error.message
                 );
+
             }
+
         }
     );
+
 }
 
 
