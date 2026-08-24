@@ -1,74 +1,45 @@
 /* ============================================================
-   DASHBOARD STATISTICS
+   PROJECT PAGE
    ============================================================ */
 
-.stats {
-    display: grid;
 
-    grid-template-columns: repeat(4, 1fr);
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
 
-    gap: 18px;
-
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
     margin-bottom: 30px;
-}
-
-.card {
-    background: white;
-
-    border-radius: 12px;
-
-    padding: 22px;
-
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-
-    border-top: 3px solid #2e7d32;
-}
-
-.card-title {
-    color: #6b7280;
-
-    font-size: 14px;
-
-    margin-bottom: 10px;
-}
-
-.card-value {
-    color: #2e7d32;
-
-    font-size: 30px;
-
-    font-weight: bold;
 }
 
 
 /* ============================================================
-   PROJECT CONTENT
+   PROJECT STATISTICS
    ============================================================ */
 
-.content-card {
-    background: white;
-
-    border-radius: 12px;
-
-    padding: 24px;
-
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
 }
 
-.content-header {
-    display: flex;
 
-    justify-content: space-between;
+/* ============================================================
+   PROJECT TABLE CONTAINER
+   ============================================================ */
 
-    align-items: center;
+.table-container {
+    width: 100%;
+    max-width: 100%;
 
-    margin-bottom: 20px;
-}
+    overflow-x: auto;
+    overflow-y: visible;
 
-.content-header h2 {
-    font-size: 20px;
-
-    color: #1f2937;
+    position: relative;
 }
 
 
@@ -76,94 +47,957 @@
    PROJECT TABLE
    ============================================================ */
 
-.table-container {
-    overflow-x: auto;
-}
-
-table {
+.table-container table {
     width: 100%;
+    min-width: 900px;
 
     border-collapse: collapse;
+    table-layout: fixed;
+
+    background: #ffffff;
 }
 
-th,
-td {
-    padding: 14px 12px;
+
+/* ============================================================
+   TABLE CELLS
+   ============================================================ */
+
+.table-container th,
+.table-container td {
+    padding: 15px 14px;
 
     text-align: left;
+    vertical-align: middle;
 
     border-bottom: 1px solid #e5e7eb;
 }
 
-th {
-    font-size: 13px;
+
+.table-container th {
+    background: #f9fafb;
 
     color: #6b7280;
 
-    background: #f9fafb;
+    font-size: 13px;
+    font-weight: 700;
+
+    white-space: nowrap;
 }
 
-td {
+
+.table-container td {
+    color: #374151;
+
     font-size: 14px;
 }
 
 
 /* ============================================================
-   TABLE GREEN ACCENT
+   COLUMN WIDTHS
    ============================================================ */
 
-table tbody tr:hover {
-    background: #f1f8f2;
+
+/* PROJECT NAME */
+
+.table-container th:nth-child(1),
+.table-container td:nth-child(1) {
+    width: 30%;
 }
 
-table tbody tr:hover td {
-    border-bottom-color: #c8e6c9;
+
+/* OWNER */
+
+.table-container th:nth-child(2),
+.table-container td:nth-child(2) {
+    width: 20%;
+}
+
+
+/* STATUS */
+
+.table-container th:nth-child(3),
+.table-container td:nth-child(3) {
+    width: 16%;
+}
+
+
+/* DATE OPENED */
+
+.table-container th:nth-child(4),
+.table-container td:nth-child(4) {
+    width: 16%;
+}
+
+
+/* ACTIONS */
+
+.table-container th:nth-child(5),
+.table-container td:nth-child(5) {
+    width: 18%;
+
+    min-width: 170px;
+
+    overflow: visible;
 }
 
 
 /* ============================================================
-   NEW PROJECT MODAL
+   TABLE ROWS
+   ============================================================ */
+
+.table-container tbody tr {
+    transition:
+        background 0.15s ease;
+}
+
+
+.table-container tbody tr:hover {
+    background: #f8fbf8;
+}
+
+
+.table-container tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* ============================================================
+   PROJECT STATUS BADGES
+   ============================================================ */
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 6px 11px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+
+/* ACTIVE */
+
+.status-active {
+    background: #d9f7e8;
+    color: #147a43;
+}
+
+
+/* COMPLETED */
+
+.status-completed {
+    background: #d9f7e8;
+    color: #147a43;
+}
+
+
+/* NOT STARTED / ON HOLD */
+
+.status-pending {
+    background: #fff1d6;
+    color: #946200;
+}
+
+
+/* ============================================================
+   PROJECT ACTIONS CELL
+   ============================================================ */
+
+.project-actions {
+    position: relative;
+
+    overflow: visible !important;
+
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   PROJECT ACTION WRAPPER
+   ============================================================ */
+
+.project-action-wrapper {
+    position: relative;
+
+    display: inline-block;
+}
+
+
+/* ============================================================
+   ACTION TRIGGER BUTTON
+   ============================================================ */
+
+.project-action-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 8px;
+
+    min-width: 110px;
+    height: 36px;
+
+    padding: 8px 12px;
+
+    border: 1px solid #cfd6df;
+    border-radius: 7px;
+
+    background: #ffffff;
+
+    color: #253858;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.project-action-trigger:hover,
+.project-action-trigger.active {
+    background: #f6fbf7;
+
+    border-color: #2e7d32;
+
+    color: #2e7d32;
+}
+
+
+/* ============================================================
+   ACTION ARROW
+   ============================================================ */
+
+.project-action-arrow {
+    font-size: 12px;
+
+    transition:
+        transform 0.2s ease;
+}
+
+
+.project-action-trigger.active
+.project-action-arrow {
+    transform: rotate(180deg);
+}
+
+
+/* ============================================================
+   ACTION DROPDOWN MENU
+   ============================================================ */
+
+.project-action-menu {
+    position: absolute;
+
+    top: calc(100% + 6px);
+    right: 0;
+
+    width: 180px;
+
+    display: none;
+
+    padding: 5px;
+
+    background: #ffffff;
+
+    border: 1px solid #dfe4eb;
+    border-radius: 8px;
+
+    box-shadow:
+        0 8px 22px rgba(23, 43, 77, 0.16);
+
+    z-index: 99999;
+}
+
+
+.project-action-menu.show {
+    display: block;
+}
+
+
+/* ============================================================
+   ACTION MENU ITEMS
+   ============================================================ */
+
+.project-action-item {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 9px 10px;
+
+    border: none;
+    border-radius: 6px;
+
+    background: transparent;
+
+    color: #253858;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+
+.project-action-item:hover {
+    background: #f4f7f9;
+}
+
+
+/* ============================================================
+   ACTION ICONS
+   ============================================================ */
+
+.project-action-icon {
+    width: 20px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    font-size: 14px;
+}
+
+
+/* ============================================================
+   OPEN PROJECT
+   ============================================================ */
+
+.open-project-action {
+    color: #2563eb;
+}
+
+
+.open-project-action:hover {
+    background: #eff6ff;
+}
+
+
+/* ============================================================
+   OPEN SYSTEM
+   ============================================================ */
+
+.system-project-action {
+    color: #2e7d32;
+}
+
+
+.system-project-action:hover {
+    background: #e8f5e9;
+}
+
+
+/* ============================================================
+   EDIT PROJECT
+   ============================================================ */
+
+.edit-project-action {
+    color: #2e7d32;
+}
+
+
+.edit-project-action:hover {
+    background: #e8f5e9;
+}
+
+
+/* ============================================================
+   DELETE PROJECT
+   ============================================================ */
+
+.delete-project-action {
+    color: #dc2626;
+}
+
+
+.delete-project-action:hover {
+    background: #fee2e2;
+}
+
+
+/* ============================================================
+   ACTION DIVIDER
+   ============================================================ */
+
+.project-action-divider {
+    height: 1px;
+
+    margin: 4px 6px;
+
+    background: #e5e7eb;
+}
+
+
+/* ============================================================
+   EMPTY PROJECT TABLE
+   ============================================================ */
+
+.table-container td[colspan] {
+    padding: 40px 20px;
+
+    text-align: center;
+
+    color: #6b7280;
+}
+
+
+/* ============================================================
+   PROJECT MODAL
    ============================================================ */
 
 #projectModal .modal-content {
-    max-width: 650px;
+    width: 100%;
+    max-width: 700px;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    padding: 28px;
+
+    background: #ffffff;
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 15px 45px rgba(9, 30, 66, 0.22);
 }
 
 
 /* ============================================================
-   DASHBOARD RESPONSIVE
+   MODAL HEADER
+   ============================================================ */
+
+#projectModal .modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 25px;
+}
+
+
+#projectModal .modal-header h2 {
+    margin: 0;
+
+    color: #172b4d;
+
+    font-size: 24px;
+    font-weight: 700;
+}
+
+
+#projectModal .modal-header p {
+    margin: 5px 0 0;
+
+    color: #6b7280;
+
+    font-size: 14px;
+}
+
+
+/* ============================================================
+   PROJECT FORM
+   ============================================================ */
+
+#projectModal .form-group {
+    margin-bottom: 18px;
+}
+
+
+#projectModal .form-group label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #1b5e20;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+#projectModal .form-group input,
+#projectModal .form-group select,
+#projectModal .form-group textarea {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 11px 12px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    color: #374151;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+/* ============================================================
+   FORM FOCUS
+   ============================================================ */
+
+#projectModal .form-group input:focus,
+#projectModal .form-group select:focus,
+#projectModal .form-group textarea:focus {
+    border-color: #2e7d32;
+
+    box-shadow:
+        0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+
+/* ============================================================
+   TEXTAREA
+   ============================================================ */
+
+#projectModal textarea {
+    resize: vertical;
+}
+
+
+/* ============================================================
+   TWO COLUMN FORM ROW
+   ============================================================ */
+
+#projectModal .form-row {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 15px;
+}
+
+
+/* ============================================================
+   FORM ACTIONS
+   ============================================================ */
+
+#projectModal .form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 25px;
+    padding-top: 18px;
+
+    border-top: 1px solid #e5e7eb;
+}
+
+
+/* ============================================================
+   MODAL BUTTONS
+   ============================================================ */
+
+#projectModal .form-actions .btn {
+    min-width: 110px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 10px 16px;
+
+    border: none;
+    border-radius: 8px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+/* ============================================================
+   RESPONSIVE - TABLET
    ============================================================ */
 
 @media (max-width: 1000px) {
 
     .stats {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
     }
-}
 
 
-@media (max-width: 700px) {
-
-    .stats {
-        grid-template-columns: 1fr;
+    .table-container table {
+        min-width: 850px;
     }
+
 }
 
 
 /* ============================================================
-   DASHBOARD HEADER
+   RESPONSIVE - MOBILE
    ============================================================ */
 
-.dashboard-header {
-    display: flex;
+@media (max-width: 700px) {
 
-    justify-content: space-between;
+    .dashboard-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
 
-    align-items: center;
 
-    margin-bottom: 30px;
+    .dashboard-header .btn {
+        width: 100%;
+    }
+
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+
+    #projectModal .modal-content {
+        width: 100%;
+
+        max-width: 100%;
+        max-height: 92vh;
+
+        padding: 20px;
+    }
+
+
+    #projectModal .form-row {
+        grid-template-columns: 1fr;
+    }
+
+
+    #projectModal .form-actions {
+        flex-direction: column-reverse;
+    }
+
+
+    #projectModal .form-actions .btn {
+        width: 100%;
+    }
+
+
+    .table-container {
+        width: 100%;
+
+        overflow-x: auto;
+    }
+
+
+    .table-container table {
+        min-width: 820px;
+    }
+
 }
 
-.dashboard-header .header {
-    margin-bottom: 0;
+/* ============================================================
+   PROJECT ACTION DROPDOWN - FINAL OVERRIDE
+   ============================================================ */
+
+td.project-actions {
+    position: relative !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
 }
+
+
+/* Wrapper */
+.project-action-wrapper {
+    position: relative !important;
+    display: inline-block !important;
+}
+
+
+/* Actions Button */
+.project-action-trigger {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    width: 130px !important;
+    height: 42px !important;
+
+    padding: 0 14px !important;
+
+    background: #ffffff !important;
+
+    border: 1.5px solid #1b4332 !important;
+    border-radius: 9px !important;
+
+    color: #1b5e20 !important;
+
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+
+    cursor: pointer !important;
+
+    box-shadow: none !important;
+}
+
+
+/* Actions Button Hover */
+.project-action-trigger:hover,
+.project-action-trigger.active {
+    background: #f1f8f2 !important;
+    border-color: #2e7d32 !important;
+    color: #1b5e20 !important;
+}
+
+
+/* Arrow */
+.project-action-arrow {
+    display: inline-block !important;
+
+    margin-left: 10px !important;
+
+    color: #2e7d32 !important;
+
+    font-size: 11px !important;
+
+    transition: transform 0.2s ease !important;
+}
+
+
+.project-action-trigger.active .project-action-arrow {
+    transform: rotate(180deg) !important;
+}
+
+
+/* ============================================================
+   DROPDOWN
+   ============================================================ */
+
+.project-action-menu {
+    position: absolute !important;
+
+    top: calc(100% + 6px) !important;
+    right: 0 !important;
+
+    z-index: 99999 !important;
+
+    display: none !important;
+
+    width: 190px !important;
+
+    padding: 7px !important;
+
+    background: #ffffff !important;
+
+    border: 1px solid #e1e5ea !important;
+    border-radius: 10px !important;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.14) !important;
+
+    white-space: normal !important;
+}
+
+
+/* Show dropdown */
+.project-action-menu.show {
+    display: block !important;
+}
+
+
+/* ============================================================
+   DROPDOWN ITEMS
+   ============================================================ */
+
+.project-action-menu .project-action-item {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+
+    display: flex !important;
+    align-items: center !important;
+
+    width: 100% !important;
+
+    gap: 10px !important;
+
+    margin: 0 !important;
+    padding: 10px 11px !important;
+
+    background: transparent !important;
+
+    border: 0 !important;
+    border-radius: 7px !important;
+
+    color: #334155 !important;
+
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+
+    text-align: left !important;
+    text-decoration: none !important;
+
+    cursor: pointer !important;
+
+    box-shadow: none !important;
+
+    white-space: nowrap !important;
+}
+
+
+/* Normal hover */
+.project-action-menu .project-action-item:hover {
+    background: #f3f6f4 !important;
+}
+
+
+/* ============================================================
+   ICON
+   ============================================================ */
+
+.project-action-menu .project-action-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    flex: 0 0 20px !important;
+
+    width: 20px !important;
+    height: 20px !important;
+
+    font-size: 15px !important;
+}
+
+
+/* ============================================================
+   VIEW TASKS
+   ============================================================ */
+
+.project-action-menu .view-project-tasks {
+    color: #334155 !important;
+}
+
+.project-action-menu .view-project-tasks:hover {
+    background: #f1f5f9 !important;
+}
+
+
+/* ============================================================
+   OPEN SYSTEM
+   ============================================================ */
+
+.project-action-menu .open-project-system {
+    color: #2e7d32 !important;
+}
+
+.project-action-menu .open-project-system:hover {
+    background: #edf7ee !important;
+}
+
+
+/* ============================================================
+   EDIT
+   ============================================================ */
+
+.project-action-menu .edit-project-action {
+    color: #2e7d32 !important;
+}
+
+.project-action-menu .edit-project-action:hover {
+    background: #edf7ee !important;
+}
+
+
+/* ============================================================
+   DIVIDER
+   ============================================================ */
+
+.project-action-divider {
+    display: block !important;
+
+    width: calc(100% - 12px) !important;
+    height: 1px !important;
+
+    margin: 6px !important;
+
+    background: #e5e7eb !important;
+}
+
+
+/* ============================================================
+   DELETE
+   ============================================================ */
+
+.project-action-menu .delete-project-action {
+    color: #dc2626 !important;
+}
+
+.project-action-menu .delete-project-action:hover {
+    background: #fef2f2 !important;
+    color: #dc2626 !important;
+}
+
+
+/* ============================================================
+   KEEP TABLE/DROPDOWN VISIBLE
+   ============================================================ */
+
+.content-card,
+.table-container,
+.table-container table,
+.table-container tbody,
+.table-container tr,
+.table-container td {
+    overflow: visible;
+}
+
+
+/* Keep horizontal scrolling when necessary */
+.table-container {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+}
+
