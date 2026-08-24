@@ -345,7 +345,6 @@ app.post("/api/projects", async (req, res) => {
 
         const {
             project_name,
-            project_folder_link,
             project_owner,
             project_status,
             date_opened,
@@ -369,10 +368,11 @@ app.post("/api/projects", async (req, res) => {
             project_name:
                 project_name.trim(),
 
-            project_folder_link:
-                project_folder_link
-                    ? project_folder_link.trim()
-                    : null,
+            system_url_link:
+                document
+                    .getElementById("systemUrlLink")
+                    .value
+                    .trim(),
 
             project_owner:
                 project_owner
