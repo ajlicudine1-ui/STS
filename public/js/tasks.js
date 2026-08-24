@@ -1249,6 +1249,14 @@ async function loadTaskHistory(task) {
                             }
 
                         }
+                            // ------------------------------------
+
+                            const taskActivity =
+                                item.task_activity ||
+                                item.new_task_activity ||
+                                task.task_activity ||
+                                "-";
+
 
 
                         // ------------------------------------

@@ -1206,10 +1206,9 @@
 
 .history-table {
     width: 100%;
-    min-width: 1000px;
-    border-collapse: separate;
-    border-spacing: 0;
+    min-width: 1250px;
     table-layout: fixed;
+    border-collapse: collapse;
 }
 
 
@@ -1217,41 +1216,60 @@
    HISTORY COLUMN WIDTHS
    ============================================================ */
 
+/* DATE / TIME */
 .history-table th:nth-child(1),
 .history-table td:nth-child(1) {
-    width: 15%;
-}
-
-.history-table th:nth-child(2),
-.history-table td:nth-child(2) {
-    width: 11%;
-}
-
-.history-table th:nth-child(3),
-.history-table td:nth-child(3) {
     width: 12%;
 }
 
-.history-table th:nth-child(4),
-.history-table td:nth-child(4) {
-    width: 13%;
-}
 
-.history-table th:nth-child(5),
-.history-table td:nth-child(5) {
+/* TASK / ACTIVITY */
+.history-table th:nth-child(2),
+.history-table td:nth-child(2) {
     width: 16%;
 }
 
-.history-table th:nth-child(6),
-.history-table td:nth-child(6) {
-    width: 20%;
+
+/* ACTION */
+.history-table th:nth-child(3),
+.history-table td:nth-child(3) {
+    width: 11%;
 }
 
-.history-table th:nth-child(7),
-.history-table td:nth-child(7) {
+
+/* STATUS */
+.history-table th:nth-child(4),
+.history-table td:nth-child(4) {
+    width: 16%;
+}
+
+
+/* PROGRESS */
+.history-table th:nth-child(5),
+.history-table td:nth-child(5) {
     width: 13%;
 }
 
+
+/* RESPONSIBLE PERSON */
+.history-table th:nth-child(6),
+.history-table td:nth-child(6) {
+    width: 13%;
+}
+
+
+/* REMARKS */
+.history-table th:nth-child(7),
+.history-table td:nth-child(7) {
+    width: 12%;
+}
+
+
+/* CHANGED BY */
+.history-table th:nth-child(8),
+.history-table td:nth-child(8) {
+    width: 10%;
+}
 
 /* ============================================================
    HISTORY TABLE HEADER
