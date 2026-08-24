@@ -311,14 +311,32 @@
 }
 
 .table-container th {
-    padding: 15px 14px;
+    padding: 15px 12px;
     text-align: left;
     vertical-align: middle;
     color: #60738d;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
+    line-height: 1.25;
     border-bottom: 1px solid #dfe4eb;
+    white-space: normal;
+}
+
+.tasks-table th:nth-child(5),
+.tasks-table th:nth-child(6),
+.tasks-table th:nth-child(7),
+.tasks-table th:nth-child(8) {
     white-space: nowrap;
+}
+
+.tasks-table th:nth-child(7),
+.tasks-table td:nth-child(7) {
+    text-align: center;
+}
+
+.tasks-table th:nth-child(8),
+.tasks-table td:nth-child(8) {
+    text-align: center;
 }
 
 
@@ -350,12 +368,12 @@
 
 .tasks-table th:nth-child(1),
 .tasks-table td:nth-child(1) {
-    width: 18%;
+    width: 19%;
 }
 
 .tasks-table th:nth-child(2),
 .tasks-table td:nth-child(2) {
-    width: 12%;
+    width: 13%;
 }
 
 .tasks-table th:nth-child(3),
@@ -365,22 +383,27 @@
 
 .tasks-table th:nth-child(4),
 .tasks-table td:nth-child(4) {
-    width: 10%;
+    width: 9%;
 }
 
 .tasks-table th:nth-child(5),
 .tasks-table td:nth-child(5) {
-    width: 11%;
+    width: 14%;
 }
 
 .tasks-table th:nth-child(6),
 .tasks-table td:nth-child(6) {
-    width: 10%;
+    width: 11%;
 }
 
 .tasks-table th:nth-child(7),
 .tasks-table td:nth-child(7) {
-    width: 7%;
+    width: 10%;
+}
+
+.tasks-table th:nth-child(8),
+.tasks-table td:nth-child(8) {
+    width: 14%;
 }
 
 
@@ -390,7 +413,7 @@
 
 .tasks-table th:last-child,
 .tasks-table td:last-child {
-    width: 22%;
+    width: 14%;
     min-width: 180px;
     padding: 10px 12px;
     vertical-align: middle;
