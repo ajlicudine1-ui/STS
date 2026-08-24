@@ -831,4 +831,112 @@
         overflow-x: auto;
     }
 
+    /* ============================================================
+   DASHBOARD STATISTICS CARDS
+   ============================================================ */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-top: 3px solid #2e7d32;
+}
+
+.card-title {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.card-value {
+    color: #2e7d32;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+
+/* ============================================================
+   PROJECT CONTENT CARD
+   ============================================================ */
+
+.content-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+
+/* ============================================================
+   PROJECT CONTENT HEADER
+   ============================================================ */
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.content-header h2 {
+    font-size: 20px;
+    color: #1f2937;
+}
+
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+
+.table-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.table-container table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.table-container th,
+.table-container td {
+    padding: 14px 12px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.table-container th {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f9fafb;
+    white-space: nowrap;
+}
+
+.table-container td {
+    font-size: 14px;
+    color: #374151;
+}
+
+.table-container tbody tr:hover {
+    background: #f1f8f2;
+}
+
+.table-container tbody tr:last-child td {
+    border-bottom: none;
+}
+
 }
