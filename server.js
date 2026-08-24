@@ -345,11 +345,13 @@ app.post("/api/projects", async (req, res) => {
 
         const {
             project_name,
+            system_url_link,
             project_owner,
             project_status,
             date_opened,
             date_closed
         } = req.body;
+
 
         if (
             !project_name ||
@@ -361,7 +363,9 @@ app.post("/api/projects", async (req, res) => {
                 error:
                     "Project name is required."
             });
+
         }
+
 
         const projectData = {
 
@@ -369,10 +373,9 @@ app.post("/api/projects", async (req, res) => {
                 project_name.trim(),
 
             system_url_link:
-                document
-                    .getElementById("systemUrlLink")
-                    .value
-                    .trim(),
+                system_url_link
+                    ? system_url_link.trim()
+                    : null,
 
             project_owner:
                 project_owner
@@ -388,7 +391,9 @@ app.post("/api/projects", async (req, res) => {
 
             date_closed:
                 date_closed || null
+
         };
+
 
         const {
             data,
@@ -398,6 +403,7 @@ app.post("/api/projects", async (req, res) => {
             .insert([projectData])
             .select()
             .single();
+
 
         if (error) {
 
@@ -413,12 +419,15 @@ app.post("/api/projects", async (req, res) => {
                 details: error.details,
                 hint: error.hint
             });
+
         }
+
 
         console.log(
             "Project created successfully:",
             data
         );
+
 
         res.status(201).json({
 
@@ -429,6 +438,7 @@ app.post("/api/projects", async (req, res) => {
 
             project:
                 data
+
         });
 
     } catch (error) {
@@ -442,8 +452,250 @@ app.post("/api/projects", async (req, res) => {
             success: false,
             error: error.message
         });
+
     }
+
 });
+
+
+// ============================================================
+// UPDATE PROJECT
+// ============================================================
+
+app.put(
+    "/api/projects/:projectId",
+    async (req, res) => {
+
+        try {
+
+            const { projectId } =
+                req.params;
+
+
+            const {
+                project_name,
+                system_url_link,
+                project_owner,
+                project_status,
+                date_opened,
+                date_closed
+            } = req.body;
+
+
+            if (
+                !project_name ||
+                !project_name.trim()
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Project name is required."
+                });
+
+            }
+
+
+            const projectData = {
+
+                project_name:
+                    project_name.trim(),
+
+                system_url_link:
+                    system_url_link
+                        ? system_url_link.trim()
+                        : null,
+
+                project_owner:
+                    project_owner
+                        ? project_owner.trim()
+                        : null,
+
+                project_status:
+                    project_status ||
+                    "Not Started",
+
+                date_opened:
+                    date_opened || null,
+
+                date_closed:
+                    date_closed || null
+
+            };
+
+
+            const {
+                data,
+                error
+            } = await supabase
+                .from("projects")
+                .update(projectData)
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .select()
+                .single();
+
+
+            if (error) {
+
+                console.error(
+                    "SUPABASE PROJECT UPDATE ERROR:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: error.message,
+                    code: error.code,
+                    details: error.details,
+                    hint: error.hint
+                });
+
+            }
+
+
+            if (!data) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Project not found."
+                });
+
+            }
+
+
+            res.json({
+
+                success: true,
+
+                message:
+                    "Project updated successfully.",
+
+                project:
+                    data
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Update project error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// DELETE PROJECT
+// ============================================================
+
+app.delete(
+    "/api/projects/:projectId",
+    async (req, res) => {
+
+        try {
+
+            const { projectId } =
+                req.params;
+
+
+            const {
+                data: project,
+                error: projectError
+            } = await supabase
+                .from("projects")
+                .select("*")
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .single();
+
+
+            if (
+                projectError ||
+                !project
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Project not found."
+                });
+
+            }
+
+
+            const {
+                error
+            } = await supabase
+                .from("projects")
+                .delete()
+                .eq(
+                    "project_id",
+                    projectId
+                );
+
+
+            if (error) {
+
+                console.error(
+                    "SUPABASE PROJECT DELETE ERROR:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: error.message,
+                    code: error.code,
+                    details: error.details,
+                    hint: error.hint
+                });
+
+            }
+
+
+            res.json({
+
+                success: true,
+
+                message:
+                    "Project deleted successfully.",
+
+                project:
+                    project
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Delete project error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+
+        }
+
+    }
+);
+
 
 // ============================================================
 // GET TASKS FOR A PROJECT
