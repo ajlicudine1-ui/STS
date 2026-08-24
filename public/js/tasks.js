@@ -1191,7 +1191,7 @@ async function loadTaskHistory(task) {
                     .map(item => {
 
                         // ------------------------------------
-                        // DATE
+                        // DATE / TIME
                         // ------------------------------------
 
                         const changedAt =
@@ -1249,14 +1249,17 @@ async function loadTaskHistory(task) {
                             }
 
                         }
-                            // ------------------------------------
 
-                            const taskActivity =
-                                item.task_activity ||
-                                item.new_task_activity ||
-                                task.task_activity ||
-                                "-";
 
+                        // ------------------------------------
+                        // TASK / ACTIVITY
+                        // ------------------------------------
+
+                        const taskActivity =
+                            item.task_activity ||
+                            item.new_task_activity ||
+                            task.task_activity ||
+                            "-";
 
 
                         // ------------------------------------
@@ -1358,6 +1361,7 @@ async function loadTaskHistory(task) {
                         const responsiblePerson =
                             item.responsible_person ||
                             item.new_responsible_person ||
+                            task.responsible_person ||
                             "-";
 
 
@@ -1366,17 +1370,8 @@ async function loadTaskHistory(task) {
                         // ------------------------------------
 
                         const remarks =
-                            item.remarks || "-";
-
-
-                        // ------------------------------------
-                        // CHANGED BY
-                        // ------------------------------------
-
-                        const changedBy =
-                            item.changed_by ||
-                            item.changed_by_name ||
-                            "-";
+                            item.remarks ||
+                            "Task information updated";
 
 
                         // ------------------------------------
@@ -1386,6 +1381,7 @@ async function loadTaskHistory(task) {
                         return `
                             <tr>
 
+                                <!-- DATE / TIME -->
                                 <td>
 
                                     <div class="history-date">
@@ -1413,6 +1409,19 @@ async function loadTaskHistory(task) {
                                 </td>
 
 
+                                <!-- TASK / ACTIVITY -->
+                                <td>
+
+                                    <div class="history-task-activity">
+                                        ${escapeHtml(
+                                            taskActivity
+                                        )}
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ACTION -->
                                 <td>
 
                                     <span
@@ -1426,6 +1435,7 @@ async function loadTaskHistory(task) {
                                 </td>
 
 
+                                <!-- STATUS -->
                                 <td>
 
                                     <div class="history-status-change">
@@ -1459,6 +1469,7 @@ async function loadTaskHistory(task) {
                                 </td>
 
 
+                                <!-- PROGRESS -->
                                 <td>
 
                                     <div class="history-row-progress">
@@ -1494,9 +1505,10 @@ async function loadTaskHistory(task) {
                                 </td>
 
 
+                                <!-- RESPONSIBLE PERSON -->
                                 <td>
 
-                                    <span>
+                                    <span class="history-responsible-person">
                                         ${escapeHtml(
                                             responsiblePerson
                                         )}
@@ -1505,6 +1517,7 @@ async function loadTaskHistory(task) {
                                 </td>
 
 
+                                <!-- REMARKS -->
                                 <td>
 
                                     <div class="history-remarks">
@@ -1512,17 +1525,6 @@ async function loadTaskHistory(task) {
                                             remarks
                                         )}
                                     </div>
-
-                                </td>
-
-
-                                <td>
-
-                                    <span class="history-changed-by">
-                                        ${escapeHtml(
-                                            changedBy
-                                        )}
-                                    </span>
 
                                 </td>
 
