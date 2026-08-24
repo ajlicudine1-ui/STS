@@ -19,46 +19,271 @@ body {
    SIDEBAR
    ============================================================ */
 
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
 .sidebar {
     position: fixed;
     left: 0;
     top: 0;
-    width: 240px;
+
+    width: 250px;
     height: 100vh;
 
-    /* GREEN SIDEBAR */
-    background: #2e7d32;
+    background: #ffffff;
+    color: #172b4d;
 
-    color: white;
-    padding: 24px 16px;
+    border-right: 1px solid #e7ebf0;
+
+    padding: 26px 20px;
+
     z-index: 9999;
+
+    box-shadow:
+        2px 0 8px rgba(23, 43, 77, 0.03);
 }
 
-.logo {
-    font-size: 22px;
-    font-weight: bold;
-    margin-bottom: 35px;
+
+/* ============================================================
+   BRAND
+   ============================================================ */
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    min-height: 72px;
+
+    margin-bottom: 48px;
+    padding: 0 10px;
 }
+
+
+.sidebar-logo-mark {
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: #eef3e8;
+    color: #556b35;
+
+    font-size: 15px;
+    font-weight: 800;
+}
+
+
+.sidebar-brand-text {
+    color: #172b4d;
+
+    font-size: 24px;
+    font-weight: 800;
+
+    letter-spacing: -0.5px;
+}
+
+
+/* ============================================================
+   SECTION LABEL
+   ============================================================ */
+
+.sidebar-section-label {
+    margin-bottom: 16px;
+    padding-left: 14px;
+
+    color: #94a3b8;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    letter-spacing: 2px;
+}
+
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 
 .nav-item {
-    display: block;
-    padding: 12px 14px;
-    margin-bottom: 6px;
-    border-radius: 8px;
+    width: 100%;
+    min-height: 54px;
 
-    color: #e8f5e9;
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 0 18px;
+
+    border-radius: 16px;
+
+    color: #64748b;
     text-decoration: none;
+
+    font-size: 15px;
+    font-weight: 600;
+
     cursor: pointer;
 
     transition:
         background 0.2s ease,
-        color 0.2s ease;
+        color 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
 }
 
-.nav-item:hover,
+
+/* ============================================================
+   NAV ICON
+   ============================================================ */
+
+.nav-icon {
+    width: 26px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    color: #91a4bf;
+
+    font-size: 22px;
+    line-height: 1;
+}
+
+
+/* ============================================================
+   NAV TEXT
+   ============================================================ */
+
+.nav-text {
+    flex: 1;
+}
+
+
+/* ============================================================
+   NAV HOVER
+   ============================================================ */
+
+.nav-item:hover {
+    background: #f5f7f2;
+
+    color: #526832;
+
+    transform: translateX(2px);
+}
+
+
+.nav-item:hover .nav-icon {
+    color: #526832;
+}
+
+
+/* ============================================================
+   ACTIVE NAV ITEM
+   ============================================================ */
+
 .nav-item.active {
-    background: #1b5e20;
-    color: white;
+    background: #556b35;
+
+    color: #ffffff;
+
+    box-shadow:
+        0 8px 18px rgba(85, 107, 53, 0.22);
+}
+
+
+.nav-item.active .nav-icon {
+    color: #ffffff;
+}
+
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+
+.main {
+    margin-left: 250px;
+
+    min-height: 100vh;
+
+    padding: 30px;
+
+    position: relative;
+    z-index: 1;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 800px) {
+
+    .sidebar {
+        width: 220px;
+
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+
+    .main {
+        margin-left: 220px;
+    }
+
+
+    .nav-item {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .sidebar {
+        position: relative;
+
+        width: 100%;
+        height: auto;
+
+        border-right: none;
+        border-bottom: 1px solid #e7ebf0;
+    }
+
+
+    .sidebar-brand {
+        margin-bottom: 22px;
+    }
+
+
+    .sidebar-nav {
+        gap: 6px;
+    }
+
+
+    .main {
+        margin-left: 0;
+
+        padding: 20px;
+    }
+
 }
 
 
