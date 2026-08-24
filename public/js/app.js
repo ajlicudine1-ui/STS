@@ -159,16 +159,24 @@ function closeAllProjectActionMenus() {
         .forEach(menu => {
 
             menu.classList.remove(
-                "show"
+                "show",
+                "project-action-menu-portal"
             );
 
 
+            menu.style.left = "";
+            menu.style.top = "";
+            menu.style.right = "";
+            menu.style.bottom = "";
+            menu.style.visibility = "";
+
+
             const trigger =
-                menu
-                    .parentElement
-                    ?.querySelector(
-                        ".project-action-trigger"
-                    );
+                menu._projectActionTrigger;
+
+
+            const wrapper =
+                menu._projectActionWrapper;
 
 
             if (trigger) {
@@ -184,12 +192,188 @@ function closeAllProjectActionMenus() {
 
             }
 
+
+            /*
+                Put the menu back inside its original wrapper
+                after closing. When open, it is temporarily moved
+                to <body> so table/container overflow cannot clip it.
+            */
+
+            if (
+                wrapper &&
+                menu.parentElement !== wrapper
+            ) {
+
+                wrapper.appendChild(
+                    menu
+                );
+
+            }
+
         });
 
 }
 
 
 // ============================================================
+// POSITION PROJECT ACTION MENU
+// ============================================================
+
+function openProjectActionMenu(
+    trigger,
+    menu
+) {
+
+    if (
+        !trigger ||
+        !menu
+    ) {
+
+        return;
+
+    }
+
+
+    const triggerRect =
+        trigger.getBoundingClientRect();
+
+
+    /*
+        Move the dropdown outside the scrollable table.
+        This prevents .table-container from cutting off
+        the menu at the top or bottom.
+    */
+
+    document.body.appendChild(
+        menu
+    );
+
+
+    menu.classList.add(
+        "project-action-menu-portal",
+        "show"
+    );
+
+
+    menu.style.visibility =
+        "hidden";
+
+    menu.style.left =
+        "0px";
+
+    menu.style.top =
+        "0px";
+
+    menu.style.right =
+        "auto";
+
+    menu.style.bottom =
+        "auto";
+
+
+    const menuWidth =
+        menu.offsetWidth;
+
+    const menuHeight =
+        menu.offsetHeight;
+
+
+    const viewportPadding =
+        10;
+
+    const gap =
+        6;
+
+
+    /*
+        Align the menu to the right side of the
+        Actions button, but keep it inside the screen.
+    */
+
+    let left =
+        triggerRect.right -
+        menuWidth;
+
+
+    left =
+        Math.max(
+            viewportPadding,
+            Math.min(
+                left,
+                window.innerWidth -
+                menuWidth -
+                viewportPadding
+            )
+        );
+
+
+    /*
+        Normally open downward.
+        If there is not enough room, automatically
+        open upward so every action stays visible.
+    */
+
+    let top =
+        triggerRect.bottom +
+        gap;
+
+
+    if (
+        top +
+        menuHeight >
+        window.innerHeight -
+        viewportPadding
+    ) {
+
+        top =
+            triggerRect.top -
+            menuHeight -
+            gap;
+
+    }
+
+
+    /*
+        Final viewport safety check.
+    */
+
+    top =
+        Math.max(
+            viewportPadding,
+            Math.min(
+                top,
+                window.innerHeight -
+                menuHeight -
+                viewportPadding
+            )
+        );
+
+
+    menu.style.left =
+        `${left}px`;
+
+    menu.style.top =
+        `${top}px`;
+
+    menu.style.visibility =
+        "visible";
+
+
+    trigger.classList.add(
+        "active"
+    );
+
+
+    trigger.setAttribute(
+        "aria-expanded",
+        "true"
+    );
+
+}
+
+
+// ============================================================
+
 // CREATE PROJECT ACTION MENU
 // ============================================================
 
@@ -311,6 +495,22 @@ function createProjectActionMenu(project) {
         );
 
 
+    /*
+        Keep references so the dropdown can temporarily
+        move to <body> without losing its original wrapper.
+    */
+
+    if (menu) {
+
+        menu._projectActionWrapper =
+            wrapper;
+
+        menu._projectActionTrigger =
+            trigger;
+
+    }
+
+
     // --------------------------------------------------------
     // TOGGLE MENU
     // --------------------------------------------------------
@@ -338,17 +538,9 @@ function createProjectActionMenu(project) {
 
                 if (!wasOpen) {
 
-                    menu.classList.add(
-                        "show"
-                    );
-
-                    trigger.classList.add(
-                        "active"
-                    );
-
-                    trigger.setAttribute(
-                        "aria-expanded",
-                        "true"
+                    openProjectActionMenu(
+                        trigger,
+                        menu
                     );
 
                 }
@@ -539,6 +731,25 @@ document.addEventListener(
         closeAllProjectActionMenus();
 
     }
+);
+
+
+/*
+    If the page/table scrolls or the browser is resized,
+    close the floating menu so it can never remain detached
+    from its Actions button.
+*/
+
+window.addEventListener(
+    "resize",
+    closeAllProjectActionMenus
+);
+
+
+window.addEventListener(
+    "scroll",
+    closeAllProjectActionMenus,
+    true
 );
 
 
