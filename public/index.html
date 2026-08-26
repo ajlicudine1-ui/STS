@@ -139,179 +139,170 @@
 
         <form id="projectForm">
 
-            <!-- PROJECT NAME -->
+    <!-- PROJECT ID -->
+        <div class="form-group">
+            <label for="projectId">
+                Project ID
+            </label>
 
-            <div class="form-group">
-
-                <label for="projectName">
-                    Project Name *
-                </label>
-
-                <input
-                    type="text"
-                    id="projectName"
-                    required
-                    placeholder="Enter project name"
-                >
-
-            </div>
+            <input
+                type="text"
+                id="projectId"
+                placeholder="Automatically generated"
+                readonly
+            >
+        </div>
 
 
-            <!-- PROJECT LINK -->
+        <!-- SYSTEM / APPLICATION NAME -->
+        <div class="form-group">
+            <label for="projectName">
+                System / Application Name *
+            </label>
 
-            <div class="form-group">
-
-                <label for="projectLink">
-                    Project Link
-                </label>
-
-                <input
-                    type="url"
-                    id="projectLink"
-                    placeholder="GitHub, Google Drive, deployed system, or other project link"
-                >
-
-            </div>
+            <input
+                type="text"
+                id="projectName"
+                required
+                placeholder="Enter system or application name"
+            >
+        </div>
 
 
-            <!-- PROJECT OWNER -->
+        <!-- DEVELOPMENT TEAM -->
+        <div class="form-group">
 
-            <div class="form-group">
+            <label>
+                Development Team
+            </label>
 
-                <label for="projectOwner">
-                    Project Owner
-                </label>
+            <div id="developmentTeamContainer">
 
-                <input
-                    type="text"
-                    id="projectOwner"
-                    placeholder="Enter project owner"
-                >
-
-            </div>
-            <!-- DEVELOPMENT TEAM -->
-
-            <div class="form-group">
-
-                <label>
-                    Development Team
-                </label>
-
-                <div id="developmentTeamContainer">
-
-                    <div class="team-member-row">
-
-                        <input
-                            type="text"
-                            class="team-member-name"
-                            placeholder="Enter team member name"
-                        >
-
-                        <input
-                            type="text"
-                            class="team-member-role"
-                            placeholder="Role e.g. Backend Developer"
-                        >
-
-                        <button
-                            type="button"
-                            class="remove-team-member-btn"
-                            aria-label="Remove team member"
-                        >
-                            &times;
-                        </button>
-
-                    </div>
-
-                </div>
-
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    id="addTeamMemberBtn"
-                >
-                    + Add Team Member
-                </button>
-
-            </div>
-
-
-            <!-- STATUS + DATE -->
-
-            <div class="form-row">
-
-                <div class="form-group">
-
-                    <label for="projectStatus">
-                        Project Status
-                    </label>
-
-                    <select id="projectStatus">
-
-                        <option value="Not Started">
-                            Not Started
-                        </option>
-
-                        <option value="Active">
-                            Active
-                        </option>
-
-                        <option value="On Hold">
-                            On Hold
-                        </option>
-
-                        <option value="Completed">
-                            Completed
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="dateOpened">
-                        Date Started
-                    </label>
+                <div class="team-member-row">
 
                     <input
-                        type="date"
-                        id="dateOpened"
+                        type="text"
+                        class="team-member-name"
+                        placeholder="Team member name"
                     >
+
+                    <input
+                        type="text"
+                        class="team-member-role"
+                        placeholder="Role"
+                    >
+
+                    <button
+                        type="button"
+                        class="remove-team-member-btn"
+                        aria-label="Remove team member"
+                    >
+                        &times;
+                    </button>
 
                 </div>
 
             </div>
 
+            <button
+                type="button"
+                class="btn btn-secondary"
+                id="addTeamMemberBtn"
+            >
+                + Add Team Member
+            </button>
 
-            <!-- ACTIONS -->
+        </div>
 
-            <div class="form-actions">
 
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    id="cancelProjectBtn"
-                >
-                    Cancel
-                </button>
+        <!-- VERSION -->
+        <div class="form-group">
+            <label for="projectVersion">
+                Version
+            </label>
 
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                    id="projectSubmitBtn"
-                >
-                    Create Project
-                </button>
+            <input
+                type="text"
+                id="projectVersion"
+                placeholder="e.g. 1.0.0"
+            >
+        </div>
+
+
+        <!-- STATUS + DATE STARTED -->
+        <div class="form-row">
+
+            <div class="form-group">
+
+                <label for="projectStatus">
+                    Status
+                </label>
+
+                <select id="projectStatus">
+
+                    <option value="Not Started">
+                        Not Started
+                    </option>
+
+                    <option value="Active">
+                        Active
+                    </option>
+
+                    <option value="On Hold">
+                        On Hold
+                    </option>
+
+                    <option value="Completed">
+                        Completed
+                    </option>
+
+                </select>
 
             </div>
 
-        </form>
+
+            <div class="form-group">
+
+                <label for="dateOpened">
+                    Date Started
+                </label>
+
+                <input
+                    type="date"
+                    id="dateOpened"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+        <div class="form-actions">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                id="cancelProjectBtn"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+                id="projectSubmitBtn"
+            >
+                Create Project
+            </button>
+
+        </div>
+
+    </form>
+
+        </div>
 
     </div>
-
-</div>
 
     <!-- Shared Components -->
     <script src="/js/components.js"></script>
