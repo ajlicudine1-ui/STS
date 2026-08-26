@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 // ============================================================
 
 console.log("==============================================");
-console.log("STS SERVER STARTING");
+console.log("PTS SERVER STARTING");
 console.log("==============================================");
 
 console.log(
@@ -347,6 +347,7 @@ app.post("/api/projects", async (req, res) => {
             project_name,
             system_url_link,
             project_owner,
+            version,
             project_status,
             date_opened,
             date_closed,
@@ -381,6 +382,11 @@ app.post("/api/projects", async (req, res) => {
             project_owner:
                 project_owner
                     ? project_owner.trim()
+                    : null,
+
+            version:
+                version
+                    ? String(version).trim()
                     : null,
 
             project_status:
@@ -495,51 +501,75 @@ app.post("/api/projects", async (req, res) => {
 
 // ============================================================
 // GET NEXT PROJECT ID
+// Preview only - the database sequence still generates the real ID
 // ============================================================
 
 app.get("/api/projects-next-id", async (req, res) => {
+
     try {
 
         const { data, error } = await supabase
             .from("projects")
-            .select("project_id")
-            .order("project_id", { ascending: false })
-            .limit(1);
+            .select("project_id");
 
         if (error) {
-            console.error("Get next project ID error:", error);
+
+            console.error(
+                "Get next project ID error:",
+                error
+            );
 
             return res.status(500).json({
+                success: false,
                 error: error.message
             });
         }
 
-        let nextNumber = 1;
+        let highestNumber = 0;
 
-        if (data && data.length > 0) {
+        (data || []).forEach(project => {
 
-            const lastId = data[0].project_id;
-            // Example: IDM-007
+            const match = String(
+                project.project_id || ""
+            ).match(/^IDM-(\d+)$/);
 
-            const match = lastId.match(/^IDM-(\d+)$/);
-
-            if (match) {
-                nextNumber = parseInt(match[1], 10) + 1;
+            if (!match) {
+                return;
             }
-        }
+
+            const number =
+                Number.parseInt(
+                    match[1],
+                    10
+                );
+
+            if (
+                Number.isFinite(number) &&
+                number > highestNumber
+            ) {
+                highestNumber = number;
+            }
+        });
 
         const nextProjectId =
-            `IDM-${String(nextNumber).padStart(3, "0")}`;
+            `IDM-${String(
+                highestNumber + 1
+            ).padStart(3, "0")}`;
 
         res.json({
+            success: true,
             project_id: nextProjectId
         });
 
     } catch (error) {
 
-        console.error("Next project ID error:", error);
+        console.error(
+            "Next project ID error:",
+            error
+        );
 
         res.status(500).json({
+            success: false,
             error: "Failed to generate project ID."
         });
     }
@@ -564,6 +594,7 @@ app.put(
                 project_name,
                 system_url_link,
                 project_owner,
+                version,
                 project_status,
                 date_opened,
                 date_closed,
@@ -598,6 +629,11 @@ app.put(
                 project_owner:
                     project_owner
                         ? project_owner.trim()
+                        : null,
+
+                version:
+                    version
+                        ? String(version).trim()
                         : null,
 
                 project_status:
@@ -2094,336 +2130,10 @@ app.delete(
 );
 
 // ============================================================
-// USERS
+// USERS TABLE REMOVED
+// Project owners and development-team members are now free-text.
 // ============================================================
 
-
-// ============================================================
-// GET ALL USERS
-// ============================================================
-
-app.get("/api/users", async (req, res) => {
-
-    try {
-
-        const {
-            data,
-            error
-        } = await supabase
-            .from("users")
-            .select("*")
-            .order("created_at", {
-                ascending: true
-            });
-
-        if (error) {
-            throw error;
-        }
-
-        res.json({
-            success: true,
-            users: data || []
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Get users error:",
-            error
-        );
-
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-
-// ============================================================
-// CREATE USER
-// ============================================================
-
-app.post("/api/users", async (req, res) => {
-
-    try {
-
-        const {
-            full_name,
-            role,
-            email,
-            status
-        } = req.body;
-
-
-        if (
-            !full_name ||
-            !full_name.trim()
-        ) {
-
-            return res.status(400).json({
-                success: false,
-                error: "Full name is required."
-            });
-        }
-
-
-        const userData = {
-
-            full_name:
-                full_name.trim(),
-
-            role:
-                role && role.trim()
-                    ? role.trim()
-                    : null,
-
-            email:
-                email && email.trim()
-                    ? email.trim()
-                    : null,
-
-            status:
-                status || "Active"
-        };
-
-
-        const {
-            data,
-            error
-        } = await supabase
-            .from("users")
-            .insert([userData])
-            .select()
-            .single();
-
-
-        if (error) {
-
-            console.error(
-                "CREATE USER ERROR:",
-                error
-            );
-
-            return res.status(500).json({
-                success: false,
-                error: error.message,
-                code: error.code,
-                details: error.details,
-                hint: error.hint
-            });
-        }
-
-
-        res.status(201).json({
-
-            success: true,
-
-            message:
-                "User created successfully.",
-
-            user:
-                data
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Create user error:",
-            error
-        );
-
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-
-// ============================================================
-// UPDATE USER
-// ============================================================
-
-app.put(
-    "/api/users/:userId",
-    async (req, res) => {
-
-        try {
-
-            const { userId } =
-                req.params;
-
-
-            const {
-                full_name,
-                role,
-                email,
-                status
-            } = req.body;
-
-
-            if (
-                !full_name ||
-                !full_name.trim()
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    error:
-                        "Full name is required."
-                });
-            }
-
-
-            const userData = {
-
-                full_name:
-                    full_name.trim(),
-
-                role:
-                    role && role.trim()
-                        ? role.trim()
-                        : null,
-
-                email:
-                    email && email.trim()
-                        ? email.trim()
-                        : null,
-
-                status:
-                    status || "Active"
-            };
-
-
-            const {
-                data,
-                error
-            } = await supabase
-                .from("users")
-                .update(userData)
-                .eq(
-                    "user_id",
-                    userId
-                )
-                .select()
-                .single();
-
-
-            if (error) {
-
-                console.error(
-                    "UPDATE USER ERROR:",
-                    error
-                );
-
-                return res.status(500).json({
-                    success: false,
-                    error: error.message,
-                    code: error.code,
-                    details: error.details,
-                    hint: error.hint
-                });
-            }
-
-
-            res.json({
-
-                success: true,
-
-                message:
-                    "User updated successfully.",
-
-                user:
-                    data
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Update user error:",
-                error
-            );
-
-            res.status(500).json({
-                success: false,
-                error: error.message
-            });
-        }
-    }
-);
-
-
-// ============================================================
-// DELETE USER
-// ============================================================
-
-app.delete(
-    "/api/users/:userId",
-    async (req, res) => {
-
-        try {
-
-            const { userId } =
-                req.params;
-
-
-            const {
-                data,
-                error
-            } = await supabase
-                .from("users")
-                .delete()
-                .eq(
-                    "user_id",
-                    userId
-                )
-                .select()
-                .single();
-
-
-            if (error) {
-
-                console.error(
-                    "DELETE USER ERROR:",
-                    error
-                );
-
-                return res.status(500).json({
-                    success: false,
-                    error: error.message,
-                    code: error.code,
-                    details: error.details,
-                    hint: error.hint
-                });
-            }
-
-
-            res.json({
-
-                success: true,
-
-                message:
-                    "User deleted successfully.",
-
-                user:
-                    data
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Delete user error:",
-                error
-            );
-
-            res.status(500).json({
-                success: false,
-                error: error.message
-            });
-        }
-    }
-);
 
 // ============================================================
 // PROJECT MEMBERS
@@ -2544,7 +2254,7 @@ if (require.main === module) {
         );
 
         console.log(
-            `STS server running on port ${PORT}`
+            `PTS server running on port ${PORT}`
         );
 
         console.log(

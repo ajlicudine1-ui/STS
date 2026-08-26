@@ -327,6 +327,11 @@ function resetProjectModal() {
     }
 
     setProjectValue(
+        "projectId",
+        ""
+    );
+
+    setProjectValue(
         "projectStatus",
         "Not Started"
     );
@@ -378,10 +383,47 @@ if (newProjectBtn) {
 
 
 // ============================================================
+// LOAD PROJECT MEMBERS FOR EDIT
+// ============================================================
+
+async function loadExistingProjectMembers(projectId) {
+
+    try {
+
+        const response = await fetch(
+            `/api/projects/${encodeURIComponent(projectId)}/members`
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.error ||
+                "Failed to load development team."
+            );
+        }
+
+        return Array.isArray(result.members)
+            ? result.members
+            : [];
+
+    } catch (error) {
+
+        console.error(
+            "Load project members error:",
+            error
+        );
+
+        return [];
+    }
+}
+
+
+// ============================================================
 // OPEN EDIT PROJECT MODAL
 // ============================================================
 
-function openEditProjectModal(
+async function openEditProjectModal(
     project
 ) {
 
@@ -390,32 +432,38 @@ function openEditProjectModal(
 
 
     if (projectModalTitle) {
-
         projectModalTitle.textContent =
             "Edit Project";
-
     }
 
 
     if (projectModalSubtitle) {
-
         projectModalSubtitle.textContent =
             "Update the information for this project.";
-
     }
 
 
     if (projectSubmitBtn) {
-
         projectSubmitBtn.textContent =
             "Update Project";
-
     }
+
+
+    setProjectValue(
+        "projectId",
+        project.project_id
+    );
 
 
     setProjectValue(
         "projectName",
         project.project_name
+    );
+
+
+    setProjectValue(
+        "projectVersion",
+        project.version
     );
 
 
@@ -440,33 +488,38 @@ function openEditProjectModal(
     setProjectValue(
         "dateOpened",
         project.date_opened
-            ? String(
-                project.date_opened
-            ).substring(
-                0,
-                10
-            )
+            ? String(project.date_opened).substring(0, 10)
             : ""
     );
 
 
     clearDevelopmentTeamRows();
 
-    /*
-        Development Team is now free-text input.
-        Existing team rows can only be restored after the backend
-        stores member_name + member_role.
-    */
+    const members =
+        await loadExistingProjectMembers(
+            project.project_id
+        );
 
-    addTeamMemberRow();
+    if (members.length > 0) {
+
+        members.forEach(member => {
+            addTeamMemberRow({
+                member_name:
+                    member.member_name || "",
+                member_role:
+                    member.member_role || ""
+            });
+        });
+
+    } else {
+        addTeamMemberRow();
+    }
 
 
     if (projectModal) {
-
         projectModal.classList.add(
             "show"
         );
-
     }
 }
 
@@ -1120,6 +1173,7 @@ if (projectForm) {
 
             event.preventDefault();
 
+            console.log("PROJECT FORM SUBMITTED");
 
             try {
 
@@ -1133,6 +1187,12 @@ if (projectForm) {
                         getProjectValue(
                             "projectName"
                         ).trim(),
+
+                    version:
+                        getProjectValue(
+                            "projectVersion"
+                        ).trim() ||
+                        null,
 
                     system_url_link:
                         getProjectValue(
@@ -1171,7 +1231,7 @@ if (projectForm) {
                 if (!projectData.project_name) {
 
                     throw new Error(
-                        "Project name is required."
+                        "System/Application Name is required."
                     );
                 }
 
@@ -1226,14 +1286,34 @@ if (projectForm) {
                     );
 
 
-                const result =
-                    await response.json();
+                const responseText =
+                    await response.text();
+
+                let result = {};
+
+                try {
+                    result = responseText
+                        ? JSON.parse(responseText)
+                        : {};
+                } catch (parseError) {
+                    throw new Error(
+                        responseText ||
+                        `Server returned ${response.status}.`
+                    );
+                }
+
+                console.log(
+                    "PROJECT SERVER RESPONSE:",
+                    result
+                );
 
 
                 if (!response.ok) {
 
                     throw new Error(
                         result.error ||
+                        result.membersError ||
+                        result.details ||
                         (
                             isEditing
                                 ? "Failed to update project."
