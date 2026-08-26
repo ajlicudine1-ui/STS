@@ -335,19 +335,22 @@ if (newProjectBtn) {
 
     newProjectBtn.addEventListener(
         "click",
-        () => {
+        async () => {
 
+            // Reset all modal fields first
             resetProjectModal();
 
+            // Open modal
             if (projectModal) {
-                projectModal.classList.add(
-                    "show"
-                );
+                projectModal.classList.add("show");
             }
 
+            // Get and display the next Project ID
+            await loadNextProjectId();
         }
     );
 }
+
 
 
 // ============================================================
@@ -1257,6 +1260,55 @@ if (projectForm) {
             }
         }
     );
+}
+
+// ============================================================
+// LOAD NEXT PROJECT ID
+// ============================================================
+
+async function loadNextProjectId() {
+
+    const projectIdInput =
+        document.getElementById("projectId");
+
+    if (!projectIdInput) {
+        return;
+    }
+
+    projectIdInput.value = "Loading...";
+
+    try {
+
+        const response = await fetch(
+            "/api/projects-next-id"
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.error ||
+                "Failed to generate project ID."
+            );
+        }
+
+        projectIdInput.value =
+            result.project_id;
+
+    } catch (error) {
+
+        console.error(
+            "Load next project ID error:",
+            error
+        );
+
+        projectIdInput.value = "";
+
+        alert(
+            "Unable to generate Project ID: " +
+            error.message
+        );
+    }
 }
 
 

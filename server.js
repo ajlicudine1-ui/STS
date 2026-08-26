@@ -493,6 +493,58 @@ app.post("/api/projects", async (req, res) => {
 
 });
 
+// ============================================================
+// GET NEXT PROJECT ID
+// ============================================================
+
+app.get("/api/projects-next-id", async (req, res) => {
+    try {
+
+        const { data, error } = await supabase
+            .from("projects")
+            .select("project_id")
+            .order("project_id", { ascending: false })
+            .limit(1);
+
+        if (error) {
+            console.error("Get next project ID error:", error);
+
+            return res.status(500).json({
+                error: error.message
+            });
+        }
+
+        let nextNumber = 1;
+
+        if (data && data.length > 0) {
+
+            const lastId = data[0].project_id;
+            // Example: IDM-007
+
+            const match = lastId.match(/^IDM-(\d+)$/);
+
+            if (match) {
+                nextNumber = parseInt(match[1], 10) + 1;
+            }
+        }
+
+        const nextProjectId =
+            `IDM-${String(nextNumber).padStart(3, "0")}`;
+
+        res.json({
+            project_id: nextProjectId
+        });
+
+    } catch (error) {
+
+        console.error("Next project ID error:", error);
+
+        res.status(500).json({
+            error: "Failed to generate project ID."
+        });
+    }
+});
+
 
 // ============================================================
 // UPDATE PROJECT
