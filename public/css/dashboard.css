@@ -151,7 +151,7 @@
 /* Project ID */
 .table-container th:nth-child(1),
 .table-container td:nth-child(1) {
-    width: 11%;
+    width: 15%;
     white-space: nowrap;
 }
 
@@ -177,7 +177,7 @@
 /* Status */
 .table-container th:nth-child(5),
 .table-container td:nth-child(5) {
-    width: 11%;
+    width: 13%;
     white-space: nowrap;
 }
 
