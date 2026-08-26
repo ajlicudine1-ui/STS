@@ -2298,6 +2298,393 @@ app.delete(
 );
 
 // ============================================================
+// PROJECT MEMBERS
+// ============================================================
+
+
+// ============================================================
+// GET PROJECT MEMBERS
+// ============================================================
+
+app.get(
+    "/api/projects/:projectId/members",
+    async (req, res) => {
+
+        try {
+
+            const { projectId } = req.params;
+
+            const {
+                data,
+                error
+            } = await supabase
+                .from("project_members")
+                .select(`
+                    project_member_id,
+                    project_id,
+                    user_id,
+                    member_role,
+                    created_at,
+                    users (
+                        user_id,
+                        full_name,
+                        role,
+                        email,
+                        status
+                    )
+                `)
+                .eq("project_id", projectId)
+                .order("created_at", {
+                    ascending: true
+                });
+
+            if (error) {
+
+                console.error(
+                    "GET PROJECT MEMBERS ERROR:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: error.message,
+                    code: error.code,
+                    details: error.details,
+                    hint: error.hint
+                });
+            }
+
+            res.json({
+                success: true,
+                members: data || []
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Get project members error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// ADD PROJECT MEMBER
+// ============================================================
+
+app.post(
+    "/api/projects/:projectId/members",
+    async (req, res) => {
+
+        try {
+
+            const { projectId } = req.params;
+
+            const {
+                user_id,
+                member_role
+            } = req.body;
+
+
+            // ----------------------------------------------------
+            // VALIDATE USER
+            // ----------------------------------------------------
+
+            if (!user_id) {
+
+                return res.status(400).json({
+                    success: false,
+                    error: "User is required."
+                });
+            }
+
+
+            // ----------------------------------------------------
+            // CHECK USER EXISTS
+            // ----------------------------------------------------
+
+            const {
+                data: user,
+                error: userError
+            } = await supabase
+                .from("users")
+                .select("*")
+                .eq("user_id", user_id)
+                .single();
+
+
+            if (userError || !user) {
+
+                return res.status(404).json({
+                    success: false,
+                    error: "User not found."
+                });
+            }
+
+
+            // ----------------------------------------------------
+            // INSERT PROJECT MEMBER
+            // ----------------------------------------------------
+
+            const memberData = {
+
+                project_id:
+                    projectId,
+
+                user_id:
+                    user_id,
+
+                member_role:
+                    member_role &&
+                    member_role.trim()
+                        ? member_role.trim()
+                        : user.role || null
+            };
+
+
+            const {
+                data,
+                error
+            } = await supabase
+                .from("project_members")
+                .insert([memberData])
+                .select(`
+                    project_member_id,
+                    project_id,
+                    user_id,
+                    member_role,
+                    created_at,
+                    users (
+                        user_id,
+                        full_name,
+                        role,
+                        email,
+                        status
+                    )
+                `)
+                .single();
+
+
+            if (error) {
+
+                console.error(
+                    "ADD PROJECT MEMBER ERROR:",
+                    error
+                );
+
+                if (error.code === "23505") {
+
+                    return res.status(409).json({
+                        success: false,
+                        error:
+                            "This user is already a member of the project."
+                    });
+                }
+
+                return res.status(500).json({
+                    success: false,
+                    error: error.message,
+                    code: error.code,
+                    details: error.details,
+                    hint: error.hint
+                });
+            }
+
+
+            res.status(201).json({
+
+                success: true,
+
+                message:
+                    "Project member added successfully.",
+
+                member:
+                    data
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Add project member error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// UPDATE PROJECT MEMBER ROLE
+// ============================================================
+
+app.put(
+    "/api/project-members/:memberId",
+    async (req, res) => {
+
+        try {
+
+            const { memberId } =
+                req.params;
+
+            const {
+                member_role
+            } = req.body;
+
+
+            const {
+                data,
+                error
+            } = await supabase
+                .from("project_members")
+                .update({
+                    member_role:
+                        member_role &&
+                        member_role.trim()
+                            ? member_role.trim()
+                            : null
+                })
+                .eq(
+                    "project_member_id",
+                    memberId
+                )
+                .select(`
+                    project_member_id,
+                    project_id,
+                    user_id,
+                    member_role,
+                    users (
+                        user_id,
+                        full_name,
+                        role,
+                        email,
+                        status
+                    )
+                `)
+                .single();
+
+
+            if (error) {
+
+                console.error(
+                    "UPDATE PROJECT MEMBER ERROR:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+
+
+            res.json({
+
+                success: true,
+
+                message:
+                    "Project member updated successfully.",
+
+                member:
+                    data
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Update project member error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// REMOVE PROJECT MEMBER
+// ============================================================
+
+app.delete(
+    "/api/project-members/:memberId",
+    async (req, res) => {
+
+        try {
+
+            const { memberId } =
+                req.params;
+
+
+            const {
+                data,
+                error
+            } = await supabase
+                .from("project_members")
+                .delete()
+                .eq(
+                    "project_member_id",
+                    memberId
+                )
+                .select()
+                .single();
+
+
+            if (error) {
+
+                console.error(
+                    "REMOVE PROJECT MEMBER ERROR:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+
+
+            res.json({
+
+                success: true,
+
+                message:
+                    "Project member removed successfully.",
+
+                member:
+                    data
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Remove project member error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+);
+
+// ============================================================
 // START SERVER
 // ============================================================
 

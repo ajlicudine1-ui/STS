@@ -106,75 +106,169 @@
     </main>
 
     <!-- Create / Edit Project Modal -->
-    <div class="modal" id="projectModal">
+    <!-- Create / Edit Project Modal -->
+<div class="modal" id="projectModal">
 
-        <div class="modal-content">
+    <div class="modal-content">
 
-            <div class="modal-header">
+        <div class="modal-header">
 
-                <div>
-                    <h2 id="projectModalTitle">
-                        New Project
-                    </h2>
+            <div>
 
-                    <p id="projectModalSubtitle">
-                        Create a new project in STS.
-                    </p>
+                <h2 id="projectModalTitle">
+                    New Project
+                </h2>
+
+                <p id="projectModalSubtitle">
+                    Create a new project in PTS.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                id="closeProjectModal"
+                aria-label="Close"
+            >
+                &times;
+            </button>
+
+        </div>
+
+
+        <form id="projectForm">
+
+            <!-- PROJECT NAME -->
+
+            <div class="form-group">
+
+                <label for="projectName">
+                    Project Name *
+                </label>
+
+                <input
+                    type="text"
+                    id="projectName"
+                    required
+                    placeholder="Enter project name"
+                >
+
+            </div>
+
+
+            <!-- PROJECT LINK -->
+
+            <div class="form-group">
+
+                <label for="projectLink">
+                    Project Link
+                </label>
+
+                <input
+                    type="url"
+                    id="projectLink"
+                    placeholder="GitHub, Google Drive, deployed system, or other project link"
+                >
+
+            </div>
+
+
+            <!-- PROJECT OWNER -->
+
+            <div class="form-group">
+
+                <label for="projectOwner">
+                    Project Owner
+                </label>
+
+                <select id="projectOwner">
+
+                    <option value="">
+                        Select project owner
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- DEVELOPMENT TEAM -->
+
+            <div class="form-group">
+
+                <label>
+                    Development Team
+                </label>
+
+                <div id="developmentTeamContainer">
+
+                    <div class="team-member-row">
+
+                        <select class="team-member-user">
+
+                            <option value="">
+                                Select team member
+                            </option>
+
+                        </select>
+
+                        <input
+                            type="text"
+                            class="team-member-role"
+                            placeholder="Role e.g. Backend Developer"
+                        >
+
+                        <button
+                            type="button"
+                            class="remove-team-member-btn"
+                            aria-label="Remove team member"
+                        >
+                            &times;
+                        </button>
+
+                    </div>
+
                 </div>
+
 
                 <button
                     type="button"
-                    class="modal-close"
-                    id="closeProjectModal"
-                    aria-label="Close"
+                    class="btn btn-secondary"
+                    id="addTeamMemberBtn"
                 >
-                    &times;
+                    + Add Team Member
                 </button>
 
             </div>
 
-            <form id="projectForm">
+
+            <!-- STATUS + DATE -->
+
+            <div class="form-row">
 
                 <div class="form-group">
 
-                    <label for="projectName">
-                        Project Name *
+                    <label for="projectStatus">
+                        Project Status
                     </label>
 
-                    <input
-                        type="text"
-                        id="projectName"
-                        required
-                        placeholder="Enter project name"
-                    >
+                    <select id="projectStatus">
 
-                </div>
+                        <option value="Not Started">
+                            Not Started
+                        </option>
 
-                <div class="form-group">
+                        <option value="Active">
+                            Active
+                        </option>
 
-                    <label for="projectLink">
-                        Project Repository
-                    </label>
+                        <option value="On Hold">
+                            On Hold
+                        </option>
 
-                    <input
-                        type="url"
-                        id="projectLink"
-                        placeholder="https://github.com/... or https://drive.google.com/..."
-                    >
-
-                </div>
-
-                
-                <div class="form-group">
-
-                    <label for="projectOwner">
-                        Project Owner
-                    </label>
-
-                    <select id="projectOwner">
-
-                        <option value="">
-                            Select project owner
+                        <option value="Completed">
+                            Completed
                         </option>
 
                     </select>
@@ -184,85 +278,47 @@
 
                 <div class="form-group">
 
-                    <label>
-                        Development Team
+                    <label for="dateOpened">
+                        Date Started
                     </label>
 
-                    <div id="developmentTeamContainer">
-
-                        <!-- Team members will be added here -->
-
-                    </div>
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        id="addTeamMemberBtn"
+                    <input
+                        type="date"
+                        id="dateOpened"
                     >
-                        + Add Team Member
-                    </button>
 
                 </div>
 
-                <div class="form-row">
+            </div>
 
-                    <div class="form-group">
 
-                        <label for="projectStatus">
-                            Project Status
-                        </label>
+            <!-- ACTIONS -->
 
-                        <select id="projectStatus">
+            <div class="form-actions">
 
-                            <option value="Not Started">Not Started</option>
-                            <option value="Active">Active</option>
-                            <option value="On Hold">On Hold</option>
-                            <option value="Completed">Completed</option>
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="cancelProjectBtn"
+                >
+                    Cancel
+                </button>
 
-                        </select>
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    id="projectSubmitBtn"
+                >
+                    Create Project
+                </button>
 
-                    </div>
+            </div>
 
-                    <div class="form-group">
-
-                        <label for="dateOpened">
-                            Date Started
-                        </label>
-
-                        <input
-                            type="date"
-                            id="dateOpened"
-                        >
-
-                    </div>
-
-                </div>
-                
-                <div class="form-actions">
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        id="cancelProjectBtn"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                        id="projectSubmitBtn"
-                    >
-                        Create Project
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
+        </form>
 
     </div>
+
+</div>
 
     <!-- Shared Components -->
     <script src="/js/components.js"></script>
