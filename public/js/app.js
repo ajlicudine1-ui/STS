@@ -974,160 +974,79 @@ window.addEventListener(
 
 async function loadDashboard() {
     try {
-        const response =
-            await fetch(
-                "/api/dashboard"
-            );
-
-        const data =
-            await response.json();
+        const response = await fetch("/api/dashboard");
+        const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(
-                data.error ||
-                "Failed to load dashboard data."
-            );
+            throw new Error(data.error || "Failed to load dashboard data.");
         }
 
-        const totalProjects =
-            document.getElementById(
-                "totalProjects"
-            );
+        const totalProjects = document.getElementById("totalProjects");
+        const activeProjects = document.getElementById("activeProjects");
+        const completedProjects = document.getElementById("completedProjects");
+        const totalTasks = document.getElementById("totalTasks");
 
-        const activeProjects =
-            document.getElementById(
-                "activeProjects"
-            );
+        if (totalProjects) totalProjects.textContent = data.totalProjects ?? 0;
+        if (activeProjects) activeProjects.textContent = data.activeProjects ?? 0;
+        if (completedProjects) completedProjects.textContent = data.completedProjects ?? 0;
+        if (totalTasks) totalTasks.textContent = data.totalTasks ?? 0;
 
-        const completedProjects =
-            document.getElementById(
-                "completedProjects"
-            );
+        const table = document.getElementById("projectsTable");
+        if (!table) return;
 
-        const totalTasks =
-            document.getElementById(
-                "totalTasks"
-            );
+        table.innerHTML = "";
+        const projects = Array.isArray(data.projects) ? data.projects : [];
 
-        if (totalProjects) {
-            totalProjects.textContent =
-                data.totalProjects ?? 0;
-        }
-
-        if (activeProjects) {
-            activeProjects.textContent =
-                data.activeProjects ?? 0;
-        }
-
-        if (completedProjects) {
-            completedProjects.textContent =
-                data.completedProjects ?? 0;
-        }
-
-        if (totalTasks) {
-            totalTasks.textContent =
-                data.totalTasks ?? 0;
-        }
-
-        const table =
-            document.getElementById(
-                "projectsTable"
-            );
-
-        if (!table) {
-            return;
-        }
-
-        table.innerHTML =
-            "";
-
-        const projects =
-            Array.isArray(
-                data.projects
-            )
-                ? data.projects
-                : [];
-
-        if (
-            projects.length === 0
-        ) {
+        if (projects.length === 0) {
             table.innerHTML = `
                 <tr>
-                    <td colspan="5">
-                        No projects found.
-                    </td>
+                    <td colspan="7">No projects found.</td>
                 </tr>
             `;
-
             return;
         }
 
         projects.forEach(project => {
-            const row =
-                document.createElement(
-                    "tr"
-                );
+            const row = document.createElement("tr");
+            const statusClass = getProjectStatusClass(project.project_status);
 
-            const statusClass =
-                getProjectStatusClass(
-                    project.project_status
-                );
+            const team = Array.isArray(project.development_team)
+                ? project.development_team
+                : [];
 
+            const teamText = team.length
+                ? team.map(member => {
+                    const name = member.member_name || "";
+                    const role = member.member_role || "";
+                    return role ? `${name} (${role})` : name;
+                }).filter(Boolean).join(", ")
+                : "-";
+
+            // IMPORTANT: this cell order must exactly match index.html <thead>.
             row.innerHTML = `
-                <td>
-                    ${escapeHtml(
-                        project.project_name ||
-                        "-"
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                        project.project_owner ||
-                        "-"
-                    )}
-                </td>
-
+                <td>${escapeHtml(project.project_id || "-")}</td>
+                <td>${escapeHtml(project.project_name || "-")}</td>
+                <td>${escapeHtml(teamText)}</td>
+                <td>${escapeHtml(project.version || "-")}</td>
                 <td>
                     <span class="status ${statusClass}">
-                        ${escapeHtml(
-                            project.project_status ||
-                            "Not Started"
-                        )}
+                        ${escapeHtml(project.project_status || "Not Started")}
                     </span>
                 </td>
-
-                <td>
-                    ${escapeHtml(
-                        project.date_opened ||
-                        "-"
-                    )}
-                </td>
-
+                <td>${escapeHtml(project.date_opened || "-")}</td>
                 <td class="project-actions"></td>
             `;
 
-            const actionsCell =
-                row.querySelector(
-                    ".project-actions"
-                );
-
+            const actionsCell = row.querySelector(".project-actions");
             if (actionsCell) {
-                actionsCell.appendChild(
-                    createProjectActionMenu(
-                        project
-                    )
-                );
+                actionsCell.appendChild(createProjectActionMenu(project));
             }
 
             table.appendChild(row);
         });
 
     } catch (error) {
-        console.error(
-            "Dashboard error:",
-            error
-        );
+        console.error("Dashboard error:", error);
     }
 }
 

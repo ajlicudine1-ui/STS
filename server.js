@@ -300,13 +300,38 @@ app.get("/api/dashboard", async (req, res) => {
                     "Completed"
             ).length;
 
+        // Attach development-team members to every project for the dashboard table.
+        const projectIds = projects.map(project => project.project_id);
+        let members = [];
+
+        if (projectIds.length > 0) {
+            const { data: memberRows, error: membersError } = await supabase
+                .from("project_members")
+                .select("project_id, member_name, member_role")
+                .in("project_id", projectIds)
+                .order("created_at", { ascending: true });
+
+            if (membersError) {
+                throw membersError;
+            }
+
+            members = memberRows || [];
+        }
+
+        const projectsWithMembers = projects.map(project => ({
+            ...project,
+            development_team: members.filter(
+                member => member.project_id === project.project_id
+            )
+        }));
+
         res.json({
             success: true,
             totalProjects,
             activeProjects,
             completedProjects,
             totalTasks: totalTasks || 0,
-            projects
+            projects: projectsWithMembers
         });
 
     } catch (error) {
