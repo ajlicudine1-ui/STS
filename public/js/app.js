@@ -279,6 +279,30 @@ function collectDevelopmentTeam() {
 
 
 // ============================================================
+// VERSION GUIDE DROPDOWN
+// ============================================================
+
+const versionGuideToggle =
+    document.getElementById("versionGuideToggle");
+
+const versionGuideDropdown =
+    document.getElementById("versionGuideDropdown");
+
+
+if (versionGuideToggle && versionGuideDropdown) {
+
+    versionGuideToggle.addEventListener("click", () => {
+
+        versionGuideDropdown.classList.toggle("show");
+
+        versionGuideToggle.classList.toggle("active");
+
+    });
+
+}
+
+
+// ============================================================
 // DEVELOPMENT TEAM STORAGE
 // ============================================================
 //

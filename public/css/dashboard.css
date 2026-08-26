@@ -787,30 +787,74 @@
     }
 }
 
-.version-guide {
-    margin-top: 10px;
+/* ============================================================
+   VERSION GUIDE
+   ============================================================ */
+
+.version-guide-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    margin: 0 0 8px 0;
+    padding: 0;
+
+    border: none;
+    background: transparent;
+
+    font: inherit;
+    font-weight: 600;
+    color: #145c18;
+
+    cursor: pointer;
+}
+
+.version-arrow {
+    display: inline-block;
+    font-size: 11px;
+    transition: transform 0.2s ease;
+}
+
+/* Arrow points up when open */
+.version-guide-toggle.active .version-arrow {
+    transform: rotate(180deg);
+}
+
+
+/* ============================================================
+   DROPDOWN GUIDE
+   ============================================================ */
+
+.version-guide-dropdown {
+    display: none;
+
+    margin-bottom: 10px;
     padding: 12px 14px;
+
     background: #f6faf6;
     border: 1px solid #d8e8d8;
     border-left: 4px solid #2e7d32;
-    border-radius: 6px;
+    border-radius: 7px;
 
     font-size: 13px;
-    line-height: 1.5;
     color: #4b5563;
 }
 
-.version-guide strong {
+.version-guide-dropdown.show {
     display: block;
+}
+
+.version-guide-dropdown div {
+    display: flex;
+    gap: 8px;
     margin-bottom: 5px;
-    color: #1f2937;
 }
 
-.version-guide span {
-    display: block;
-    margin-top: 3px;
+.version-guide-dropdown div:last-child {
+    margin-bottom: 0;
 }
 
-.version-guide b {
+.version-guide-dropdown strong {
+    min-width: 125px;
     color: #2e7d32;
 }

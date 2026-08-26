@@ -213,24 +213,49 @@
 
 
         <!-- VERSION -->
-        <div class="form-group">
-            <label for="projectVersion">
-                Version ()
-            </label>
+        <div class="form-group version-form-group">
 
-            <input
-                type="text"
-                id="projectVersion"
-                placeholder="e.g. v1. "
-            >
-            <div class="version-guide">
-                <strong>Version Guide:</strong>
-                <span><b>v1.0</b> — Newly created / initial version</span>
-                <span><b>v1.1, v1.2, v1.3...</b> — Minor changes or enhancements</span>
-                <span><b>v2.0</b> — Major revision or significant update</span>
-                <span><b>v2.1, v2.2...</b> — Minor changes after the major revision</span>
-            </div>
+    <button
+        type="button"
+        class="version-guide-toggle"
+        id="versionGuideToggle"
+    >
+        <span>Version</span>
+        <span class="version-arrow" id="versionArrow">▼</span>
+    </button>
+
+    <!-- HIDDEN VERSION GUIDE -->
+    <div class="version-guide-dropdown" id="versionGuideDropdown">
+
+        <div>
+            <strong>v1.0</strong>
+            <span>Newly created / initial version</span>
         </div>
+
+        <div>
+            <strong>v1.1, v1.2, v1.3...</strong>
+            <span>Minor changes, fixes, or enhancements</span>
+        </div>
+
+        <div>
+            <strong>v2.0</strong>
+            <span>Major revision or significant system update</span>
+        </div>
+
+        <div>
+            <strong>v2.1, v2.2...</strong>
+            <span>Minor changes after the major revision</span>
+        </div>
+
+    </div>
+
+    <input
+        type="text"
+        id="projectVersion"
+        placeholder="e.g. v1.0"
+    >
+
+</div>
 
         <!-- STATUS + DATE STARTED -->
         <div class="form-row">
