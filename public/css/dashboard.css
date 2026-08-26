@@ -692,4 +692,45 @@
         overflow-x: auto;
     }
 
+    /* ============================================================
+   DEVELOPMENT TEAM ROW
+   ============================================================ */
+
+.team-member-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 42px;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.team-member-row input {
+    width: 100%;
+    min-width: 0;
+}
+
+.remove-team-member-btn {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .team-member-row {
+        grid-template-columns: 1fr;
+    }
+
+    .remove-team-member-btn {
+        width: 100%;
+    }
+}
+
 }

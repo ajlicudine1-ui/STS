@@ -223,7 +223,7 @@ function createTeamMemberRow(member = null) {
 
     const userSelect =
         row.querySelector(
-            ".team-member-user"
+            ".team-member-name"
         );
 
     const roleInput =
@@ -332,7 +332,7 @@ function refreshAllTeamMemberSelects() {
 
     developmentTeamContainer
         .querySelectorAll(
-            ".team-member-user"
+            ".team-member-name"
         )
         .forEach(select => {
             const currentValue =
@@ -415,7 +415,7 @@ function collectDevelopmentTeam() {
     for (const row of rows) {
         const userSelect =
             row.querySelector(
-                ".team-member-user"
+                ".team-member-name"
             );
 
         const roleInput =
