@@ -692,37 +692,91 @@
         overflow-x: auto;
     }
 
-    /* ============================================================
-   DEVELOPMENT TEAM ROW
+}
+
+
+/* ============================================================
+   DEVELOPMENT TEAM
    ============================================================ */
+
+#developmentTeamContainer {
+    width: 100%;
+}
 
 .team-member-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 42px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 42px;
     gap: 10px;
     align-items: center;
+    width: 100%;
     margin-bottom: 10px;
 }
 
-.team-member-row input {
+.team-member-row .team-member-name,
+.team-member-row .team-member-role {
     width: 100%;
     min-width: 0;
+    margin: 0;
 }
 
 .remove-team-member-btn {
     width: 42px;
+    min-width: 42px;
     height: 42px;
-    border: none;
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #d1d5db;
     border-radius: 8px;
-    cursor: pointer;
+
+    background: #ffffff;
+    color: #6b7280;
+
+    font-family: inherit;
     font-size: 20px;
     line-height: 1;
+
+    cursor: pointer;
+}
+
+.remove-team-member-btn:hover {
+    border-color: #dc2626;
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+#addTeamMemberBtn {
+    margin-top: 2px;
 }
 
 
-/* MOBILE */
+/* ============================================================
+   DEVELOPMENT TEAM - MOBILE
+   ============================================================ */
 
 @media (max-width: 700px) {
+
+    .team-member-row {
+        grid-template-columns: 1fr 1fr 42px;
+        gap: 8px;
+    }
+
+    .team-member-row .team-member-name,
+    .team-member-row .team-member-role {
+        font-size: 13px;
+    }
+
+    .remove-team-member-btn {
+        width: 42px;
+        min-width: 42px;
+    }
+}
+
+
+@media (max-width: 520px) {
 
     .team-member-row {
         grid-template-columns: 1fr;
@@ -731,6 +785,4 @@
     .remove-team-member-btn {
         width: 100%;
     }
-}
-
 }
