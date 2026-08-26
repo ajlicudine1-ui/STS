@@ -340,7 +340,7 @@ app.post("/api/projects", async (req, res) => {
 
         console.log(
             "Request body:",
-            req.body
+            JSON.stringify(req.body, null, 2)
         );
 
         const {

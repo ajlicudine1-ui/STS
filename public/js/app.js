@@ -1165,6 +1165,253 @@ async function loadDashboard() {
 // CREATE / UPDATE PROJECT
 // ============================================================
 
+let isSavingProject = false;
+
+
+async function saveProject() {
+
+    if (isSavingProject) {
+        return;
+    }
+
+
+    console.log("SAVE PROJECT STARTED");
+
+
+    try {
+
+        isSavingProject = true;
+
+
+        const developmentTeam =
+            collectDevelopmentTeam();
+
+
+        const projectData = {
+
+            project_name:
+                getProjectValue(
+                    "projectName"
+                ).trim(),
+
+            version:
+                getProjectValue(
+                    "projectVersion"
+                ).trim() ||
+                null,
+
+            project_status:
+                getProjectValue(
+                    "projectStatus"
+                ) ||
+                "Not Started",
+
+            date_opened:
+                getProjectValue(
+                    "dateOpened"
+                ) ||
+                null,
+
+            development_team:
+                developmentTeam
+        };
+
+
+        /*
+            These fields still exist in the database, but they are
+            optional in the newest modal. Only send them when the
+            corresponding input exists.
+        */
+
+        const projectLinkElement =
+            getProjectElement(
+                "projectLink"
+            );
+
+        const projectOwnerElement =
+            getProjectElement(
+                "projectOwner"
+            );
+
+
+        if (projectLinkElement) {
+
+            projectData.system_url_link =
+                projectLinkElement.value.trim() ||
+                null;
+        }
+
+
+        if (projectOwnerElement) {
+
+            projectData.project_owner =
+                projectOwnerElement.value.trim() ||
+                null;
+        }
+
+
+        console.log(
+            "PROJECT PAYLOAD:",
+            projectData
+        );
+
+
+        if (!projectData.project_name) {
+
+            throw new Error(
+                "System/Application Name is required."
+            );
+        }
+
+
+        const isEditing =
+            editingProjectId !== null;
+
+
+        const url =
+            isEditing
+                ? `/api/projects/${encodeURIComponent(
+                    editingProjectId
+                )}`
+                : "/api/projects";
+
+
+        const method =
+            isEditing
+                ? "PUT"
+                : "POST";
+
+
+        console.log(
+            "PROJECT REQUEST:",
+            method,
+            url
+        );
+
+
+        if (projectSubmitBtn) {
+
+            projectSubmitBtn.disabled =
+                true;
+
+            projectSubmitBtn.textContent =
+                isEditing
+                    ? "Updating..."
+                    : "Creating...";
+        }
+
+
+        const response =
+            await fetch(
+                url,
+                {
+                    method,
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(
+                            projectData
+                        )
+                }
+            );
+
+
+        const responseText =
+            await response.text();
+
+
+        console.log(
+            "PROJECT RAW RESPONSE:",
+            response.status,
+            responseText
+        );
+
+
+        let result = {};
+
+
+        if (responseText) {
+
+            try {
+
+                result =
+                    JSON.parse(
+                        responseText
+                    );
+
+            } catch (error) {
+
+                throw new Error(
+                    `Server returned an invalid response (${response.status}): ${responseText}`
+                );
+            }
+        }
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.error ||
+                result.details ||
+                result.membersError ||
+                `Server returned ${response.status}.`
+            );
+        }
+
+
+        alert(
+            isEditing
+                ? "Project updated successfully!"
+                : "Project created successfully!"
+        );
+
+
+        closeModal();
+
+        await loadDashboard();
+
+
+    } catch (error) {
+
+        console.error(
+            "SAVE PROJECT ERROR:",
+            error
+        );
+
+
+        alert(
+            "Error creating project: " +
+            error.message
+        );
+
+
+    } finally {
+
+        isSavingProject = false;
+
+
+        if (projectSubmitBtn) {
+
+            projectSubmitBtn.disabled =
+                false;
+
+            projectSubmitBtn.textContent =
+                editingProjectId
+                    ? "Update Project"
+                    : "Create Project";
+        }
+    }
+}
+
+
+// ============================================================
+// FORM SUBMIT
+// ============================================================
+
 if (projectForm) {
 
     projectForm.addEventListener(
@@ -1173,198 +1420,35 @@ if (projectForm) {
 
             event.preventDefault();
 
-            console.log("PROJECT FORM SUBMITTED");
+            await saveProject();
 
-            try {
-
-                const developmentTeam =
-                    collectDevelopmentTeam();
-
-
-                const projectData = {
-
-                    project_name:
-                        getProjectValue(
-                            "projectName"
-                        ).trim(),
-
-                    version:
-                        getProjectValue(
-                            "projectVersion"
-                        ).trim() ||
-                        null,
-
-                    system_url_link:
-                        getProjectValue(
-                            "projectLink"
-                        ).trim() ||
-                        null,
-
-                    project_owner:
-                        getProjectValue(
-                            "projectOwner"
-                        ).trim() ||
-                        null,
-
-                    project_status:
-                        getProjectValue(
-                            "projectStatus"
-                        ) ||
-                        "Not Started",
-
-                    date_opened:
-                        getProjectValue(
-                            "dateOpened"
-                        ) ||
-                        null,
-
-                    /*
-                        Prepared for backend support.
-                        Your current server may ignore this until
-                        development_team storage is added.
-                    */
-                    development_team:
-                        developmentTeam
-                };
-
-
-                if (!projectData.project_name) {
-
-                    throw new Error(
-                        "System/Application Name is required."
-                    );
-                }
-
-
-                const isEditing =
-                    editingProjectId !==
-                    null;
-
-
-                const url =
-                    isEditing
-                        ? `/api/projects/${encodeURIComponent(
-                            editingProjectId
-                        )}`
-                        : "/api/projects";
-
-
-                const method =
-                    isEditing
-                        ? "PUT"
-                        : "POST";
-
-
-                if (projectSubmitBtn) {
-
-                    projectSubmitBtn.disabled =
-                        true;
-
-                    projectSubmitBtn.textContent =
-                        isEditing
-                            ? "Updating..."
-                            : "Creating...";
-                }
-
-
-                const response =
-                    await fetch(
-                        url,
-                        {
-                            method,
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body:
-                                JSON.stringify(
-                                    projectData
-                                )
-                        }
-                    );
-
-
-                const responseText =
-                    await response.text();
-
-                let result = {};
-
-                try {
-                    result = responseText
-                        ? JSON.parse(responseText)
-                        : {};
-                } catch (parseError) {
-                    throw new Error(
-                        responseText ||
-                        `Server returned ${response.status}.`
-                    );
-                }
-
-                console.log(
-                    "PROJECT SERVER RESPONSE:",
-                    result
-                );
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        result.error ||
-                        result.membersError ||
-                        result.details ||
-                        (
-                            isEditing
-                                ? "Failed to update project."
-                                : "Failed to create project."
-                        )
-                    );
-                }
-
-
-                alert(
-                    isEditing
-                        ? "Project updated successfully!"
-                        : "Project created successfully!"
-                );
-
-
-                closeModal();
-
-                await loadDashboard();
-
-
-            } catch (error) {
-
-                console.error(
-                    "Project save error:",
-                    error
-                );
-
-
-                alert(
-                    "Error: " +
-                    error.message
-                );
-
-
-            } finally {
-
-                if (projectSubmitBtn) {
-
-                    projectSubmitBtn.disabled =
-                        false;
-
-                    projectSubmitBtn.textContent =
-                        editingProjectId
-                            ? "Update Project"
-                            : "Create Project";
-                }
-            }
         }
     );
 }
+
+
+// ============================================================
+// DIRECT CREATE / UPDATE BUTTON CLICK
+// ============================================================
+//
+// This also makes the button work if a future HTML edit
+// accidentally places it outside the <form> element.
+// ============================================================
+
+if (projectSubmitBtn) {
+
+    projectSubmitBtn.addEventListener(
+        "click",
+        async event => {
+
+            event.preventDefault();
+
+            await saveProject();
+
+        }
+    );
+}
+
 
 // ============================================================
 // LOAD NEXT PROJECT ID
