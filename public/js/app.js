@@ -1077,7 +1077,7 @@ function openEditProjectModal(project) {
 
 
     setProjectValue(
-        "systemUrlLink",
+        "projectLink",
         project.system_url_link
     );
 
@@ -1205,7 +1205,7 @@ if (projectForm) {
 
                 system_url_link:
                     getProjectValue(
-                        "systemUrlLink"
+                        "projectLink"
                     ).trim() ||
                     null,
 
