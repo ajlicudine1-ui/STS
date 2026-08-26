@@ -1966,6 +1966,338 @@ app.delete(
 );
 
 // ============================================================
+// USERS
+// ============================================================
+
+
+// ============================================================
+// GET ALL USERS
+// ============================================================
+
+app.get("/api/users", async (req, res) => {
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabase
+            .from("users")
+            .select("*")
+            .order("created_at", {
+                ascending: true
+            });
+
+        if (error) {
+            throw error;
+        }
+
+        res.json({
+            success: true,
+            users: data || []
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Get users error:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+
+// ============================================================
+// CREATE USER
+// ============================================================
+
+app.post("/api/users", async (req, res) => {
+
+    try {
+
+        const {
+            full_name,
+            role,
+            email,
+            status
+        } = req.body;
+
+
+        if (
+            !full_name ||
+            !full_name.trim()
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                error: "Full name is required."
+            });
+        }
+
+
+        const userData = {
+
+            full_name:
+                full_name.trim(),
+
+            role:
+                role && role.trim()
+                    ? role.trim()
+                    : null,
+
+            email:
+                email && email.trim()
+                    ? email.trim()
+                    : null,
+
+            status:
+                status || "Active"
+        };
+
+
+        const {
+            data,
+            error
+        } = await supabase
+            .from("users")
+            .insert([userData])
+            .select()
+            .single();
+
+
+        if (error) {
+
+            console.error(
+                "CREATE USER ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
+            });
+        }
+
+
+        res.status(201).json({
+
+            success: true,
+
+            message:
+                "User created successfully.",
+
+            user:
+                data
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Create user error:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+
+// ============================================================
+// UPDATE USER
+// ============================================================
+
+app.put(
+    "/api/users/:userId",
+    async (req, res) => {
+
+        try {
+
+            const { userId } =
+                req.params;
+
+
+            const {
+                full_name,
+                role,
+                email,
+                status
+            } = req.body;
+
+
+            if (
+                !full_name ||
+                !full_name.trim()
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Full name is required."
+                });
+            }
+
+
+            const userData = {
+
+                full_name:
+                    full_name.trim(),
+
+                role:
+                    role && role.trim()
+                        ? role.trim()
+                        : null,
+
+                email:
+                    email && email.trim()
+                        ? email.trim()
+                        : null,
+
+                status:
+                    status || "Active"
+            };
+
+
+            const {
+                data,
+                error
+            } = await supabase
+                .from("users")
+                .update(userData)
+                .eq(
+                    "user_id",
+                    userId
+                )
+                .select()
+                .single();
+
+
+            if (error) {
+
+                console.error(
+                    "UPDATE USER ERROR:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: error.message,
+                    code: error.code,
+                    details: error.details,
+                    hint: error.hint
+                });
+            }
+
+
+            res.json({
+
+                success: true,
+
+                message:
+                    "User updated successfully.",
+
+                user:
+                    data
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Update user error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// DELETE USER
+// ============================================================
+
+app.delete(
+    "/api/users/:userId",
+    async (req, res) => {
+
+        try {
+
+            const { userId } =
+                req.params;
+
+
+            const {
+                data,
+                error
+            } = await supabase
+                .from("users")
+                .delete()
+                .eq(
+                    "user_id",
+                    userId
+                )
+                .select()
+                .single();
+
+
+            if (error) {
+
+                console.error(
+                    "DELETE USER ERROR:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: error.message,
+                    code: error.code,
+                    details: error.details,
+                    hint: error.hint
+                });
+            }
+
+
+            res.json({
+
+                success: true,
+
+                message:
+                    "User deleted successfully.",
+
+                user:
+                    data
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Delete user error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+);
+
+// ============================================================
 // START SERVER
 // ============================================================
 

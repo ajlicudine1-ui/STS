@@ -1107,17 +1107,7 @@ function openEditProjectModal(project) {
     );
 
 
-    setProjectValue(
-        "dateClosed",
-        project.date_closed
-            ? String(
-                project.date_closed
-            ).substring(
-                0,
-                10
-            )
-            : ""
-    );
+    
 
 
     projectModal.classList.add(
@@ -1226,13 +1216,6 @@ if (projectForm) {
                         "dateOpened"
                     ) ||
                     null,
-
-                date_closed:
-                    getProjectValue(
-                        "dateClosed"
-                    ) ||
-                    null
-
             };
 
 

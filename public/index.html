@@ -164,17 +164,43 @@
 
                 </div>
 
+                
                 <div class="form-group">
 
                     <label for="projectOwner">
-                        Project Owner / Development Team
+                        Project Owner
                     </label>
 
-                    <input
-                        type="text"
-                        id="projectOwner"
-                        placeholder="Enter development team"
+                    <select id="projectOwner">
+
+                        <option value="">
+                            Select project owner
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Development Team
+                    </label>
+
+                    <div id="developmentTeamContainer">
+
+                        <!-- Team members will be added here -->
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="addTeamMemberBtn"
                     >
+                        + Add Team Member
+                    </button>
 
                 </div>
 
