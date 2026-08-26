@@ -13,12 +13,18 @@
 
 <body>
 
-    <!-- Shared Sidebar -->
+    <!-- =====================================================
+         SHARED SIDEBAR
+         ===================================================== -->
     <div id="sidebar-container"></div>
 
-    <!-- Main Content -->
+
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
     <main class="main">
 
+        <!-- DASHBOARD HEADER -->
         <div class="dashboard-header">
 
             <div id="header-container"></div>
@@ -33,37 +39,80 @@
 
         </div>
 
-        <!-- Dashboard Statistics -->
+
+        <!-- =================================================
+             DASHBOARD STATISTICS
+             ================================================= -->
         <section class="stats">
 
             <div class="card">
-                <div class="card-title">Total Projects</div>
-                <div class="card-value" id="totalProjects">0</div>
+                <div class="card-title">
+                    Total Projects
+                </div>
+
+                <div
+                    class="card-value"
+                    id="totalProjects"
+                >
+                    0
+                </div>
             </div>
 
-            <div class="card">
-                <div class="card-title">Active Projects</div>
-                <div class="card-value" id="activeProjects">0</div>
-            </div>
 
             <div class="card">
-                <div class="card-title">Completed Projects</div>
-                <div class="card-value" id="completedProjects">0</div>
+                <div class="card-title">
+                    Active Projects
+                </div>
+
+                <div
+                    class="card-value"
+                    id="activeProjects"
+                >
+                    0
+                </div>
             </div>
 
+
             <div class="card">
-                <div class="card-title">Total Tasks</div>
-                <div class="card-value" id="totalTasks">0</div>
+                <div class="card-title">
+                    Completed Projects
+                </div>
+
+                <div
+                    class="card-value"
+                    id="completedProjects"
+                >
+                    0
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-title">
+                    Total Tasks
+                </div>
+
+                <div
+                    class="card-value"
+                    id="totalTasks"
+                >
+                    0
+                </div>
             </div>
 
         </section>
 
-        <!-- Projects -->
+
+        <!-- =================================================
+             PROJECTS
+             ================================================= -->
         <section class="content-card">
 
             <div class="content-header">
 
-                <h2>Projects</h2>
+                <h2>
+                    Projects
+                </h2>
 
                 <button
                     type="button"
@@ -74,6 +123,7 @@
                 </button>
 
             </div>
+
 
             <div class="table-container">
 
@@ -90,11 +140,13 @@
                     </thead>
 
                     <tbody id="projectsTable">
+
                         <tr>
                             <td colspan="5">
                                 No projects found.
                             </td>
                         </tr>
+
                     </tbody>
 
                 </table>
@@ -105,226 +157,317 @@
 
     </main>
 
-    <!-- Create / Edit Project Modal -->
-    <!-- Create / Edit Project Modal -->
-<div class="modal" id="projectModal">
 
-    <div class="modal-content">
+    <!-- =====================================================
+         CREATE / EDIT PROJECT MODAL
+         ===================================================== -->
+    <div
+        class="modal"
+        id="projectModal"
+    >
 
-        <div class="modal-header">
+        <div class="modal-content">
 
-            <div>
+            <!-- =============================================
+                 MODAL HEADER
+                 ============================================= -->
+            <div class="modal-header">
 
-                <h2 id="projectModalTitle">
-                    New Project
-                </h2>
+                <div>
 
-                <p id="projectModalSubtitle">
-                    Create a new project in PTS.
-                </p>
+                    <h2 id="projectModalTitle">
+                        New Project
+                    </h2>
+
+                    <p id="projectModalSubtitle">
+                        Create a new project in PTS.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeProjectModal"
+                    aria-label="Close"
+                >
+                    &times;
+                </button>
 
             </div>
 
-            <button
-                type="button"
-                class="modal-close"
-                id="closeProjectModal"
-                aria-label="Close"
-            >
-                &times;
-            </button>
 
-        </div>
+            <!-- =============================================
+                 PROJECT FORM
+                 ============================================= -->
+            <form id="projectForm">
 
 
-        <div class="form-group">
-            <label for="projectId">
-                Project ID
-            </label>
+                <!-- =========================================
+                     PROJECT ID
+                     ========================================= -->
+                <div class="form-group">
 
-            <input
-                type="text"
-                id="projectId"
-                readonly
-                placeholder="Generating project ID..."
-            >
-        </div>
-
-
-        <!-- SYSTEM / APPLICATION NAME -->
-        <div class="form-group">
-            <label for="projectName">
-                System / Application Name *
-            </label>
-
-            <input
-                type="text"
-                id="projectName"
-                required
-                placeholder="Enter system or application name"
-            >
-        </div>
-
-
-        <!-- DEVELOPMENT TEAM -->
-        <div class="form-group">
-
-            <label>
-                Development Team
-            </label>
-
-            <div id="developmentTeamContainer">
-
-                <div class="team-member-row">
+                    <label for="projectId">
+                        Project ID
+                    </label>
 
                     <input
                         type="text"
-                        class="team-member-name"
-                        placeholder="Team member name"
+                        id="projectId"
+                        readonly
+                        placeholder="Generating project ID..."
                     >
+
+                </div>
+
+
+                <!-- =========================================
+                     SYSTEM / APPLICATION NAME
+                     ========================================= -->
+                <div class="form-group">
+
+                    <label for="projectName">
+                        System / Application Name *
+                    </label>
 
                     <input
                         type="text"
-                        class="team-member-role"
-                        placeholder="Role"
+                        id="projectName"
+                        required
+                        placeholder="Enter system or application name"
                     >
+
+                </div>
+
+
+                <!-- =========================================
+                     DEVELOPMENT TEAM
+                     ========================================= -->
+                <div class="form-group">
+
+                    <label>
+                        Development Team
+                    </label>
+
+
+                    <div id="developmentTeamContainer">
+
+                        <!-- FIRST TEAM MEMBER -->
+                        <div class="team-member-row">
+
+                            <input
+                                type="text"
+                                class="team-member-name"
+                                placeholder="Team member name"
+                            >
+
+                            <input
+                                type="text"
+                                class="team-member-role"
+                                placeholder="Role e.g. Backend Developer"
+                            >
+
+                            <button
+                                type="button"
+                                class="remove-team-member-btn"
+                                aria-label="Remove team member"
+                            >
+                                &times;
+                            </button>
+
+                        </div>
+
+                    </div>
+
 
                     <button
                         type="button"
-                        class="remove-team-member-btn"
-                        aria-label="Remove team member"
+                        class="btn btn-secondary"
+                        id="addTeamMemberBtn"
                     >
-                        &times;
+                        + Add Team Member
                     </button>
 
                 </div>
 
-            </div>
 
-            <button
-                type="button"
-                class="btn btn-secondary"
-                id="addTeamMemberBtn"
-            >
-                + Add Team Member
-            </button>
+                <!-- =========================================
+                     VERSION
+                     ========================================= -->
+                <div class="form-group version-form-group">
+
+
+                    <!-- VERSION LABEL / GUIDE BUTTON -->
+                    <button
+                        type="button"
+                        class="version-guide-toggle"
+                        id="versionGuideToggle"
+                        aria-expanded="false"
+                        aria-controls="versionGuideDropdown"
+                    >
+
+                        <span>
+                            Version
+                        </span>
+
+                        <span
+                            class="version-arrow"
+                            id="versionArrow"
+                        >
+                            ▼
+                        </span>
+
+                    </button>
+
+
+                    <!-- VERSION GUIDE DROPDOWN -->
+                    <div
+                        class="version-guide-dropdown"
+                        id="versionGuideDropdown"
+                    >
+
+                        <div>
+
+                            <strong>
+                                v1.0
+                            </strong>
+
+                            <span>
+                                Newly created / initial version
+                            </span>
+
+                        </div>
+
+
+                        <div>
+
+                            <strong>
+                                v1.1, v1.2, v1.3...
+                            </strong>
+
+                            <span>
+                                Minor changes, fixes, or enhancements
+                            </span>
+
+                        </div>
+
+
+                        <div>
+
+                            <strong>
+                                v2.0
+                            </strong>
+
+                            <span>
+                                Major revision or significant system update
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- VERSION INPUT -->
+                    <input
+                        type="text"
+                        id="projectVersion"
+                        placeholder="e.g. v1.0"
+                    >
+
+                </div>
+
+
+                <!-- =========================================
+                     STATUS + DATE STARTED
+                     ========================================= -->
+                <div class="form-row">
+
+
+                    <!-- STATUS -->
+                    <div class="form-group">
+
+                        <label for="projectStatus">
+                            Status
+                        </label>
+
+                        <select id="projectStatus">
+
+                            <option value="Not Started">
+                                Not Started
+                            </option>
+
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="On Hold">
+                                On Hold
+                            </option>
+
+                            <option value="Completed">
+                                Completed
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- DATE STARTED -->
+                    <div class="form-group">
+
+                        <label for="dateOpened">
+                            Date Started
+                        </label>
+
+                        <input
+                            type="date"
+                            id="dateOpened"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     FORM ACTIONS
+                     ========================================= -->
+                <div class="form-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="cancelProjectBtn"
+                    >
+                        Cancel
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="projectSubmitBtn"
+                    >
+                        Create Project
+                    </button>
+
+                </div>
+
+
+            </form>
+            <!-- END PROJECT FORM -->
 
         </div>
 
-
-        <!-- VERSION -->
-        <div class="form-group version-form-group">
-
-    <button
-        type="button"
-        class="version-guide-toggle"
-        id="versionGuideToggle"
-    >
-        <span>Version</span>
-        <span class="version-arrow" id="versionArrow">▼</span>
-    </button>
-
-    <!-- HIDDEN VERSION GUIDE -->
-    <div class="version-guide-dropdown" id="versionGuideDropdown">
-
-        <div>
-            <strong>v1.0</strong>
-            <span>Newly created / initial version</span>
-        </div>
-
-        <div>
-            <strong>v1.1, v1.2, v1.3...</strong>
-            <span>Minor changes, fixes, or enhancements</span>
-        </div>
-
-        <div>
-            <strong>v2.0</strong>
-            <span>Major revision or significant system update</span>
-        </div>
     </div>
 
-    <input
-        type="text"
-        id="projectVersion"
-        placeholder="e.g. v1.0"
-    >
 
-</div>
-
-        <!-- STATUS + DATE STARTED -->
-        <div class="form-row">
-
-            <div class="form-group">
-
-                <label for="projectStatus">
-                    Status
-                </label>
-
-                <select id="projectStatus">
-
-                    <option value="Not Started">
-                        Not Started
-                    </option>
-
-                    <option value="Active">
-                        Active
-                    </option>
-
-                    <option value="On Hold">
-                        On Hold
-                    </option>
-
-                    <option value="Completed">
-                        Completed
-                    </option>
-
-                </select>
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label for="dateOpened">
-                    Date Started
-                </label>
-
-                <input
-                    type="date"
-                    id="dateOpened"
-                >
-
-            </div>
-
-        </div>
-
-
-        <!-- ACTIONS -->
-        <div class="form-actions">
-
-            <button
-                type="button"
-                class="btn btn-secondary"
-                id="cancelProjectBtn"
-            >
-                Cancel
-            </button>
-
-            <button
-                type="submit"
-                class="btn btn-primary"
-                id="projectSubmitBtn"
-            >
-                Create Project
-            </button>
-
-        </div>
-
-    </form>
-
-        </div>
-
-    </div>
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
 
     <!-- Shared Components -->
     <script src="/js/components.js"></script>
@@ -332,6 +475,7 @@
     <!-- Dashboard / Project Actions -->
     <script src="/js/dashboard.js"></script>
 
+    <!-- Global Application JS -->
     <script src="/js/app.js"></script>
 
 </body>
