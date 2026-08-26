@@ -787,7 +787,7 @@ function createProjectActionMenu(
                 </span>
 
                 <span>
-                    Open Link
+                    Project Repository
                 </span>
             </button>
 
