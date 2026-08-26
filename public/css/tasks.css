@@ -1832,204 +1832,262 @@
     }
 
 /* ============================================================
-   MULTI SELECT - DEVELOPMENT TEAM
+   DEVELOPMENT TEAM MULTI-SELECT
    ============================================================ */
 
-.multi-select {
+#developmentTeamSelect {
     position: relative;
     width: 100%;
 }
 
 
-/* TRIGGER */
+/* MAIN DROPDOWN BUTTON */
 
-.multi-select-trigger {
-    width: 100%;
-    min-height: 48px;
+#developmentTeamTrigger {
+    width: 100% !important;
+    min-height: 48px !important;
 
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
 
-    padding: 0 16px;
+    padding: 0 14px !important;
 
-    background: #ffffff;
-    color: #1f2937;
+    background: #ffffff !important;
+    color: #1f2937 !important;
 
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
+    border: 1px solid #d1d5db !important;
+    border-radius: 10px !important;
 
-    font-size: 16px;
-    font-family: inherit;
+    font-family: inherit !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
 
-    cursor: pointer;
+    cursor: pointer !important;
 
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+    text-align: left !important;
+
+    appearance: none !important;
+    -webkit-appearance: none !important;
+
+    box-sizing: border-box !important;
 }
 
 
-.multi-select-trigger:hover {
-    border-color: #2e7d32;
+#developmentTeamTrigger:hover {
+    border-color: #2e7d32 !important;
 }
 
 
-.multi-select-trigger.active {
-    border-color: #2e7d32;
+#developmentTeamTrigger.active {
+    border-color: #2e7d32 !important;
 
     box-shadow:
-        0 0 0 3px rgba(46, 125, 50, 0.10);
+        0 0 0 3px rgba(46, 125, 50, 0.10) !important;
 }
 
 
+/* SELECTED TEXT */
+
+#developmentTeamSelectedText {
+    flex: 1;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ARROW */
+
 .multi-select-arrow {
+    margin-left: 10px;
+
     font-size: 11px;
+
     color: #1f2937;
 
     transition: transform 0.2s ease;
 }
 
 
-.multi-select-trigger.active
+#developmentTeamTrigger.active
 .multi-select-arrow {
     transform: rotate(180deg);
 }
 
 
 /* ============================================================
-   DROPDOWN
+   DROPDOWN MENU
    ============================================================ */
 
-.multi-select-menu {
-    display: none;
+#responsiblePersons {
+    display: none !important;
 
-    position: absolute;
+    position: absolute !important;
 
-    top: calc(100% + 4px);
-    left: 0;
+    top: calc(100% + 4px) !important;
+    left: 0 !important;
 
-    width: 100%;
-    max-height: 240px;
+    width: 100% !important;
 
-    overflow-y: auto;
+    max-height: 220px !important;
 
-    background: #ffffff;
+    overflow-y: auto !important;
 
-    border: 1px solid #9ca3af;
-    border-radius: 4px;
+    background: #ffffff !important;
+
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
 
     box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.10);
+        0 8px 20px rgba(0, 0, 0, 0.12) !important;
 
-    z-index: 9999;
+    z-index: 10000 !important;
 }
 
 
-.multi-select-menu.show {
-    display: block;
+#responsiblePersons.show {
+    display: block !important;
 }
 
 
 /* ============================================================
-   MEMBER OPTION
+   TEAM MEMBER ROW
    ============================================================ */
 
-.team-selection-item {
+#responsiblePersons .team-selection-item {
+    width: 100% !important;
+
     display: flex !important;
+    flex-direction: row !important;
     align-items: center !important;
 
-    gap: 10px;
+    gap: 10px !important;
 
-    width: 100%;
-    min-height: 42px;
+    padding: 10px 14px !important;
+    margin: 0 !important;
 
-    padding: 9px 14px;
+    background: #ffffff !important;
 
-    margin: 0;
+    border: 0 !important;
+    border-bottom: 1px solid #eeeeee !important;
+    border-radius: 0 !important;
 
-    background: #ffffff;
+    cursor: pointer !important;
 
-    border: 0;
-    border-bottom: 1px solid #f1f5f9;
-
-    cursor: pointer;
+    box-sizing: border-box !important;
 }
 
 
-.team-selection-item:last-child {
-    border-bottom: none;
+#responsiblePersons .team-selection-item:last-child {
+    border-bottom: none !important;
 }
 
 
-.team-selection-item:hover {
-    background: #f3f4f6;
+#responsiblePersons .team-selection-item:hover {
+    background: #f3f8f3 !important;
 }
 
 
-/* CHECKBOX */
+/* ============================================================
+   CHECKBOX
+   VERY IMPORTANT: OVERRIDES GLOBAL INPUT CSS
+   ============================================================ */
 
-.team-selection-item
-input[type="checkbox"] {
+#responsiblePersons
+input.responsible-person-checkbox {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+
+    display: inline-block !important;
+
     width: 16px !important;
     height: 16px !important;
 
     min-width: 16px !important;
+    max-width: 16px !important;
+
+    min-height: 16px !important;
+    max-height: 16px !important;
 
     margin: 0 !important;
     padding: 0 !important;
 
-    flex: 0 0 16px;
+    flex: 0 0 16px !important;
+
+    border: initial !important;
+    border-radius: initial !important;
+
+    box-shadow: none !important;
+
+    cursor: pointer !important;
 
     accent-color: #2e7d32;
-
-    cursor: pointer;
 }
 
 
-/* MEMBER TEXT */
+/* ============================================================
+   MEMBER NAME / ROLE
+   ============================================================ */
 
-.team-selection-info {
-    display: flex;
-    flex-direction: column;
+#responsiblePersons .team-selection-info {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+
+    flex: 1;
 
     min-width: 0;
 }
 
 
-.team-selection-info strong {
-    font-size: 15px;
-    font-weight: 500;
+#responsiblePersons .team-selection-info strong {
+    display: block !important;
 
-    color: #111827;
+    margin: 0 !important;
+
+    color: #1f2937 !important;
+
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
 }
 
 
-.team-selection-info small {
-    margin-top: 2px;
+#responsiblePersons .team-selection-info small {
+    display: block !important;
 
-    color: #6b7280;
+    margin-top: 2px !important;
 
-    font-size: 12px;
+    color: #6b7280 !important;
+
+    font-size: 12px !important;
+    font-weight: 400 !important;
 }
 
 
-/* SELECTED ROW */
+/* SELECTED MEMBER */
 
+#responsiblePersons
 .team-selection-item:has(
-    input[type="checkbox"]:checked
+    input.responsible-person-checkbox:checked
 ) {
-    background: #e8f5e9;
+    background: #eef8ef !important;
 }
 
 
 /* LOADING / EMPTY */
 
-.team-selection-empty {
-    padding: 14px 16px;
+#responsiblePersons .team-selection-empty {
+    padding: 14px !important;
 
-    color: #6b7280;
+    color: #6b7280 !important;
 
-    font-size: 14px;
+    background: #ffffff !important;
+
+    font-size: 14px !important;
+
+    text-align: center !important;
 }
 }
