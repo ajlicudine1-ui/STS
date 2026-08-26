@@ -796,13 +796,6 @@ function openEditTaskModal(task) {
         task.priority
     );
 
-
-    setValue(
-        "scheduleStatus",
-        task.schedule_status
-    );
-
-
     setSelectedResponsiblePersons(
         task.responsible_person
     );
@@ -2591,13 +2584,6 @@ if (taskForm) {
                     getValue(
                         "taskStatus"
                     ),
-
-
-                schedule_status:
-                    getValue(
-                        "scheduleStatus"
-                    ),
-
 
                 priority:
                     getValue(
