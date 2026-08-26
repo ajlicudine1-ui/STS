@@ -2990,3 +2990,42 @@ document.addEventListener(
         await loadTasks();
     }
 );
+
+// ============================================================
+// AUTO PROGRESS BASED ON STATUS
+// ============================================================
+
+function updateProgressFromStatus() {
+
+    const status =
+        document.getElementById("taskStatus");
+
+    const progress =
+        document.getElementById("percentComplete");
+
+    if (!status || !progress) {
+        return;
+    }
+
+    const progressByStatus = {
+        "Not Started": 0,
+        "In Progress": 50,
+        "On Hold": 50,
+        "Completed": 100
+    };
+
+    progress.value =
+        progressByStatus[status.value] ?? 0;
+}
+
+
+const taskStatus =
+    document.getElementById("taskStatus");
+
+if (taskStatus) {
+
+    taskStatus.addEventListener(
+        "change",
+        updateProgressFromStatus
+    );
+}
