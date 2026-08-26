@@ -804,7 +804,7 @@ function createProjectActionMenu(
                 </span>
             </button>
 
-            <div class="project-action-divider"></div>
+
         </div>
     `;
 
@@ -942,6 +942,8 @@ function createProjectActionMenu(
             }
         );
     }
+
+    return wrapper;
 }
 
 
@@ -1467,6 +1469,7 @@ async function loadNextProjectId() {
         );
     }
 }
+
 
 // ============================================================
 // INITIAL LOAD
