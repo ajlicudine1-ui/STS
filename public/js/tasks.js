@@ -466,6 +466,10 @@ function openEditTaskModal(task) {
     // --------------------------------------------------------
     // BASIC INFORMATION
     // --------------------------------------------------------
+    setValue(
+        "procedureStage",
+        task.procedure_stage
+    );
 
     setValue(
         "taskActivity",
@@ -473,10 +477,7 @@ function openEditTaskModal(task) {
     );
 
 
-    setValue(
-        "procedureStage",
-        task.procedure_stage
-    );
+    
 
 
     setValue(
