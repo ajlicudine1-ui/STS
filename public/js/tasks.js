@@ -162,30 +162,6 @@ function formatDate(dateValue) {
 }
 
 
-// ============================================================
-// HELPER - FORMAT HISTORY DATE
-// ============================================================
-
-function formatHistoryDate(dateValue) {
-
-    if (!dateValue) {
-
-        return "-";
-
-    }
-
-    const date = new Date(dateValue);
-
-    if (Number.isNaN(date.getTime())) {
-
-        return String(dateValue);
-
-    }
-
-    return date.toLocaleString();
-
-}
-
 
 // ============================================================
 // HELPER - STATUS CLASS
@@ -214,6 +190,94 @@ function getStatusClass(status) {
 
 }
 
+
+
+// ============================================================
+// PROJECT DEVELOPMENT TEAM
+// ============================================================
+
+async function loadProjectMembers() {
+    const container = document.getElementById("responsiblePersons");
+    if (!container || !projectId) return;
+
+    container.innerHTML = `
+        <div class="team-selection-empty">Loading team members...</div>
+    `;
+
+    try {
+        const response = await fetch(
+            `/api/projects/${encodeURIComponent(projectId)}/members`
+        );
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Failed to load development team.");
+        }
+
+        const members = Array.isArray(result.members) ? result.members : [];
+
+        if (members.length === 0) {
+            container.innerHTML = `
+                <div class="team-selection-empty">No development team members found.</div>
+            `;
+            return;
+        }
+
+        container.innerHTML = members.map(member => {
+            const name = member.member_name || "";
+            const role = member.member_role || "";
+
+            return `
+                <label class="team-selection-item">
+                    <input
+                        type="checkbox"
+                        class="responsible-person-checkbox"
+                        value="${escapeHtml(name)}"
+                    >
+
+                    <span class="team-selection-info">
+                        <strong>${escapeHtml(name)}</strong>
+                        ${role ? `<small>${escapeHtml(role)}</small>` : ""}
+                    </span>
+                </label>
+            `;
+        }).join("");
+
+    } catch (error) {
+        console.error("Load project members error:", error);
+        container.innerHTML = `
+            <div class="team-selection-empty">Unable to load development team.</div>
+        `;
+    }
+}
+
+function getSelectedResponsiblePersons() {
+    return Array.from(
+        document.querySelectorAll(".responsible-person-checkbox:checked")
+    )
+        .map(checkbox => checkbox.value.trim())
+        .filter(Boolean)
+        .join(", ");
+}
+
+function clearSelectedResponsiblePersons() {
+    document.querySelectorAll(".responsible-person-checkbox")
+        .forEach(checkbox => {
+            checkbox.checked = false;
+        });
+}
+
+function setSelectedResponsiblePersons(value) {
+    const selectedNames = String(value || "")
+        .split(",")
+        .map(name => name.trim())
+        .filter(Boolean);
+
+    document.querySelectorAll(".responsible-person-checkbox")
+        .forEach(checkbox => {
+            checkbox.checked = selectedNames.includes(checkbox.value);
+        });
+}
 
 // ============================================================
 // CLOSE ALL ACTION MENUS
@@ -278,6 +342,8 @@ if (newTaskBtn) {
                 "percentComplete",
                 0
             );
+
+            clearSelectedResponsiblePersons();
 
 
             if (taskModalTitle) {
@@ -345,6 +411,8 @@ function closeModal() {
         "percentComplete",
         0
     );
+
+    clearSelectedResponsiblePersons();
 
 
     if (taskModalTitle) {
@@ -502,8 +570,7 @@ function openEditTaskModal(task) {
     );
 
 
-    setValue(
-        "responsiblePerson",
+    setSelectedResponsiblePersons(
         task.responsible_person
     );
 
@@ -1576,88 +1643,6 @@ async function loadTaskHistory(task) {
 
 
 // ============================================================
-// DELETE TASK
-// ============================================================
-
-async function deleteTask(task) {
-
-    if (!task || !task.task_id) {
-
-        console.error(
-            "Cannot delete task. Task ID is missing."
-        );
-
-        return;
-
-    }
-
-
-    const confirmed =
-        confirm(
-            `Are you sure you want to delete "${task.task_activity || "this task"}"?`
-        );
-
-
-    if (!confirmed) {
-
-        return;
-
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                `/api/tasks/${encodeURIComponent(
-                    task.task_id
-                )}`,
-                {
-                    method: "DELETE"
-                }
-            );
-
-
-        const result =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                result.error ||
-                "Failed to delete task."
-            );
-
-        }
-
-
-        alert(
-            "Task deleted successfully!"
-        );
-
-
-        await loadTasks();
-
-    } catch (error) {
-
-        console.error(
-            "Delete task error:",
-            error
-        );
-
-
-        alert(
-            "Error: " +
-            error.message
-        );
-
-    }
-
-}
-
-
-// ============================================================
 // CREATE ACTION MENU
 // ============================================================
 
@@ -1746,28 +1731,6 @@ function createActionMenu(task) {
 
                 <span>
                     History
-                </span>
-
-            </button>
-
-
-            <!-- DIVIDER -->
-
-            <div class="task-action-divider"></div>
-
-
-            <!-- DELETE -->
-
-            <button
-                type="button"
-                class="task-action-item delete-action">
-
-                <span class="task-action-icon">
-                    🗑
-                </span>
-
-                <span>
-                    Delete
                 </span>
 
             </button>
@@ -1926,35 +1889,6 @@ function createActionMenu(task) {
         );
 
     }
-
-
-    // ========================================================
-    // DELETE
-    // ========================================================
-
-    const deleteAction =
-        wrapper.querySelector(
-            ".delete-action"
-        );
-
-
-    if (deleteAction) {
-
-        deleteAction.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                closeAllActionMenus();
-
-                deleteTask(task);
-
-            }
-        );
-
-    }
-
 
     return wrapper;
 
@@ -2439,9 +2373,7 @@ if (taskForm) {
 
 
                 responsible_person:
-                    getValue(
-                        "responsiblePerson"
-                    ).trim(),
+                    getSelectedResponsiblePersons(),
 
                 stakeholder_end_user:
                     getValue(
@@ -2820,9 +2752,8 @@ if (reviewForm) {
 
 document.addEventListener(
     "DOMContentLoaded",
-    () => {
-
-        loadTasks();
-
+    async () => {
+        await loadProjectMembers();
+        await loadTasks();
     }
 );
