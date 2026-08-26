@@ -2255,15 +2255,6 @@ async function loadTasks() {
 
             row.innerHTML = `
 
-                <!-- TASK -->
-
-                <td>
-                    ${escapeHtml(
-                        task.task_activity || "-"
-                    )}
-                </td>
-
-
                 <!-- PROCEDURE STAGE -->
 
                 <td>
@@ -2272,6 +2263,13 @@ async function loadTasks() {
                     )}
                 </td>
 
+                <!-- TASK -->
+
+                <td>
+                    ${escapeHtml(
+                        task.task_activity || "-"
+                    )}
+                </td>
 
                 <!-- STATUS -->
 
