@@ -1830,4 +1830,199 @@
         margin-top: 12px;
         padding: 14px 16px;
     }
+
+
+    
+/* ============================================================
+   DEVELOPMENT TEAM - MULTIPLE MEMBER SELECTION
+   ============================================================ */
+
+.team-selection-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    padding: 10px;
+
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+
+    max-height: 230px;
+    overflow-y: auto;
+}
+
+
+/* ============================================================
+   TEAM MEMBER ITEM
+   ============================================================ */
+
+.team-selection-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    padding: 11px 12px;
+
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.team-selection-item:hover {
+    border-color: #2e7d32;
+    background: #f0fdf4;
+}
+
+
+/* ============================================================
+   CHECKBOX
+   ============================================================ */
+
+.team-selection-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+
+    margin: 0;
+
+    flex-shrink: 0;
+
+    cursor: pointer;
+
+    accent-color: #2e7d32;
+}
+
+
+/* Highlight selected member */
+
+.team-selection-item:has(
+    input[type="checkbox"]:checked
+) {
+    background: #f0fdf4;
+    border-color: #2e7d32;
+
+    box-shadow:
+        0 0 0 1px rgba(46, 125, 50, 0.08);
+}
+
+
+/* ============================================================
+   MEMBER NAME + ROLE
+   ============================================================ */
+
+.team-selection-info {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 2px;
+}
+
+
+.team-selection-info strong {
+    color: #1f2937;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    line-height: 1.3;
+
+    word-break: break-word;
+}
+
+
+.team-selection-info small {
+    color: #6b7280;
+
+    font-size: 12px;
+    font-weight: 400;
+
+    line-height: 1.3;
+
+    word-break: break-word;
+}
+
+
+/* ============================================================
+   EMPTY / LOADING / ERROR STATE
+   ============================================================ */
+
+.team-selection-empty {
+    width: 100%;
+
+    padding: 16px;
+
+    color: #6b7280;
+    background: #ffffff;
+
+    border: 1px dashed #d1d5db;
+    border-radius: 8px;
+
+    font-size: 13px;
+    text-align: center;
+}
+
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+.team-selection-list::-webkit-scrollbar {
+    width: 7px;
+}
+
+
+.team-selection-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+.team-selection-list::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 20px;
+}
+
+
+.team-selection-list::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    .team-selection-list {
+        max-height: 200px;
+        padding: 8px;
+    }
+
+
+    .team-selection-item {
+        padding: 10px;
+    }
+
+
+    .team-selection-info strong {
+        font-size: 13px;
+    }
+
+
+    .team-selection-info small {
+        font-size: 11px;
+    }
+}
 }
