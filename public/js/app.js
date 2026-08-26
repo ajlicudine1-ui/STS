@@ -472,7 +472,7 @@ async function openEditProjectModal(
 
     setProjectValue(
         "projectLink",
-        project.system_url_link
+        project.project_url
     );
 
 
@@ -884,7 +884,7 @@ function createProjectActionMenu(
                 closeAllProjectActionMenus();
 
                 if (
-                    !project.system_url_link
+                    !project.project_url
                 ) {
                     alert(
                         "No project link has been added for this project."
@@ -896,7 +896,7 @@ function createProjectActionMenu(
                 try {
                     const url =
                         new URL(
-                            project.system_url_link
+                            project.project_url
                         );
 
                     if (
@@ -1207,7 +1207,7 @@ async function saveProject() {
 
         if (projectLinkElement) {
 
-            projectData.system_url_link =
+            projectData.project_url =
                 projectLinkElement.value.trim() ||
                 null;
         }

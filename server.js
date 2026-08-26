@@ -345,7 +345,7 @@ app.post("/api/projects", async (req, res) => {
 
         const {
             project_name,
-            system_url_link,
+            project_url,
             project_owner,
             version,
             project_status,
@@ -374,9 +374,9 @@ app.post("/api/projects", async (req, res) => {
             project_name:
                 project_name.trim(),
 
-            system_url_link:
-                system_url_link
-                    ? system_url_link.trim()
+            project_url:
+                project_url
+                    ? project_url.trim()
                     : null,
 
             project_owner:
@@ -592,7 +592,7 @@ app.put(
 
             const {
                 project_name,
-                system_url_link,
+                project_url,
                 project_owner,
                 version,
                 project_status,
@@ -621,9 +621,9 @@ app.put(
                 project_name:
                     project_name.trim(),
 
-                system_url_link:
-                    system_url_link
-                        ? system_url_link.trim()
+                project_url:
+                    project_url
+                        ? project_url.trim()
                         : null,
 
                 project_owner:
