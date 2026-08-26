@@ -191,6 +191,105 @@ function getStatusClass(status) {
 }
 
 
+// ============================================================
+// HELPER - CALCULATE SCHEDULE STATUS
+// ============================================================
+
+function getScheduleStatus(task) {
+
+    if (!task) {
+        return "-";
+    }
+
+    if (task.status === "Completed") {
+        return "Completed";
+    }
+
+    if (!task.start_date || !task.due_date) {
+        return "-";
+    }
+
+    const startDate =
+        new Date(
+            `${formatDate(task.start_date)}T00:00:00`
+        );
+
+    const dueDate =
+        new Date(
+            `${formatDate(task.due_date)}T00:00:00`
+        );
+
+    if (
+        Number.isNaN(startDate.getTime()) ||
+        Number.isNaN(dueDate.getTime())
+    ) {
+        return "-";
+    }
+
+    const today =
+        new Date();
+
+    today.setHours(
+        0,
+        0,
+        0,
+        0
+    );
+
+    if (today < startDate) {
+        return "Ahead of Schedule";
+    }
+
+    if (today > dueDate) {
+        return "Delayed";
+    }
+
+    const millisecondsPerDay =
+        1000 * 60 * 60 * 24;
+
+    const daysRemaining =
+        Math.ceil(
+            (dueDate - today) /
+            millisecondsPerDay
+        );
+
+    if (daysRemaining <= 10) {
+        return "At Risk";
+    }
+
+    return "On Schedule";
+}
+
+
+// ============================================================
+// HELPER - SCHEDULE STATUS CLASS
+// ============================================================
+
+function getScheduleStatusClass(scheduleStatus) {
+
+    switch (scheduleStatus) {
+
+        case "Ahead of Schedule":
+            return "schedule-ahead";
+
+        case "On Schedule":
+            return "schedule-on";
+
+        case "At Risk":
+            return "schedule-risk";
+
+        case "Delayed":
+            return "schedule-delayed";
+
+        case "Completed":
+            return "schedule-completed";
+
+        default:
+            return "";
+    }
+}
+
+
 
 // ============================================================
 // LOAD PROJECT DEVELOPMENT TEAM
@@ -826,10 +925,7 @@ function openEditTaskModal(task) {
     // PROGRESS
     // --------------------------------------------------------
 
-    setValue(
-        "percentComplete",
-        task.percent_complete ?? 0
-    );
+    updateProgressFromStatus();
 
 
     // --------------------------------------------------------
@@ -2376,7 +2472,7 @@ async function loadTasks() {
             table.innerHTML = `
                 <tr>
 
-                    <td colspan="8">
+                    <td colspan="9">
                         No tasks found for this project.
                     </td>
 
@@ -2403,6 +2499,18 @@ async function loadTasks() {
             const statusClass =
                 getStatusClass(
                     task.status
+                );
+
+
+            const scheduleStatus =
+                getScheduleStatus(
+                    task
+                );
+
+
+            const scheduleStatusClass =
+                getScheduleStatusClass(
+                    scheduleStatus
                 );
 
 
@@ -2474,6 +2582,17 @@ async function loadTasks() {
                     ${escapeHtml(
                         task.percent_complete ?? 0
                     )}%
+                </td>
+
+
+                <!-- SCHEDULE STATUS -->
+
+                <td>
+                    <span class="schedule-status ${scheduleStatusClass}">
+                        ${escapeHtml(
+                            scheduleStatus
+                        )}
+                    </span>
                 </td>
 
 
@@ -2560,6 +2679,8 @@ if (taskForm) {
         async event => {
 
             event.preventDefault();
+
+            updateProgressFromStatus();
 
 
             // ------------------------------------------------

@@ -394,49 +394,55 @@
 
 
 /* ============================================================
-   TABLE COLUMN WIDTHS
+   TASK TABLE COLUMN WIDTHS
    ============================================================ */
 
+.tasks-table {
+    width: 100%;
+    min-width: 1250px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* 1. Procedure Stage */
 .tasks-table th:nth-child(1),
-.tasks-table td:nth-child(1) {
-    width: 19%;
-}
+.tasks-table td:nth-child(1) { width: 15%; }
 
+/* 2. Task / Activity */
 .tasks-table th:nth-child(2),
-.tasks-table td:nth-child(2) {
-    width: 13%;
-}
+.tasks-table td:nth-child(2) { width: 18%; }
 
+/* 3. Status */
 .tasks-table th:nth-child(3),
-.tasks-table td:nth-child(3) {
-    width: 10%;
-}
+.tasks-table td:nth-child(3) { width: 10%; }
 
+/* 4. Priority */
 .tasks-table th:nth-child(4),
-.tasks-table td:nth-child(4) {
-    width: 9%;
-}
+.tasks-table td:nth-child(4) { width: 8%; }
 
+/* 5. Responsible Person */
 .tasks-table th:nth-child(5),
-.tasks-table td:nth-child(5) {
-    width: 14%;
-}
+.tasks-table td:nth-child(5) { width: 15%; }
 
+/* 6. Due Date */
 .tasks-table th:nth-child(6),
-.tasks-table td:nth-child(6) {
-    width: 11%;
-}
+.tasks-table td:nth-child(6) { width: 10%; }
 
+/* 7. Progress */
 .tasks-table th:nth-child(7),
-.tasks-table td:nth-child(7) {
-    width: 10%;
-}
+.tasks-table td:nth-child(7) { width: 8%; }
 
+/* 8. Sched Status */
 .tasks-table th:nth-child(8),
-.tasks-table td:nth-child(8) {
-    width: 14%;
-}
+.tasks-table td:nth-child(8) { width: 10%; }
 
+/* 9. Actions */
+.tasks-table th:nth-child(9),
+.tasks-table td:nth-child(9) {
+    width: 12%;
+    min-width: 150px;
+    overflow: visible;
+}
 
 /* ============================================================
    ACTION COLUMN
@@ -444,37 +450,33 @@
 
 .tasks-table th:last-child,
 .tasks-table td:last-child {
-    width: 14%;
-    min-width: 180px;
+    width: 12%;
+    min-width: 150px;
     padding: 10px 12px;
     vertical-align: middle;
     white-space: nowrap;
-
-    /*
-       Allow dropdown to escape the cell.
-    */
     overflow: visible;
 }
-
 
 /* ============================================================
    TABLE TEXT
    ============================================================ */
 
-.table-container td:first-child {
+.tasks-table td:nth-child(1),
+.tasks-table td:nth-child(2),
+.tasks-table td:nth-child(5) {
     white-space: normal;
     word-break: break-word;
 }
 
-.table-container td:nth-child(2),
-.table-container td:nth-child(3),
-.table-container td:nth-child(4),
-.table-container td:nth-child(5),
-.table-container td:nth-child(6),
-.table-container td:nth-child(7) {
+.tasks-table td:nth-child(3),
+.tasks-table td:nth-child(4),
+.tasks-table td:nth-child(6),
+.tasks-table td:nth-child(7),
+.tasks-table td:nth-child(8),
+.tasks-table td:nth-child(9) {
     white-space: nowrap;
 }
-
 
 /* ============================================================
    STATUS BADGES
@@ -507,6 +509,47 @@
     color: #946200;
 }
 
+
+/* ============================================================
+   SCHEDULE STATUS BADGES
+   ============================================================ */
+
+.schedule-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.schedule-ahead {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.schedule-on {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.schedule-risk {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.schedule-delayed {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.schedule-completed {
+    background: #d9f7e8;
+    color: #147a43;
+}
 
 /* ============================================================
    TASK ACTIONS
@@ -1652,7 +1695,7 @@
        Do not force the table to 1200px.
     */
     .tasks-table {
-        min-width: 100%;
+        min-width: 1250px;
     }
 
     .tasks-table th:last-child,
