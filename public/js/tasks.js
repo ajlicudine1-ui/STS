@@ -507,13 +507,6 @@ function openEditTaskModal(task) {
         task.responsible_person
     );
 
-
-    setValue(
-        "taskRole",
-        task.role
-    );
-
-
     setValue(
         "stakeholderEndUser",
         task.stakeholder_end_user
@@ -2449,13 +2442,6 @@ if (taskForm) {
                     getValue(
                         "responsiblePerson"
                     ).trim(),
-
-
-                role:
-                    getValue(
-                        "taskRole"
-                    ),
-
 
                 stakeholder_end_user:
                     getValue(
