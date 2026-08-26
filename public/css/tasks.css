@@ -322,21 +322,52 @@
     white-space: normal;
 }
 
-.tasks-table th:nth-child(5),
-.tasks-table th:nth-child(6),
-.tasks-table th:nth-child(7),
-.tasks-table th:nth-child(8) {
-    white-space: nowrap;
+/* ============================================================
+   PROJECT TABLE COLUMN WIDTHS
+   ============================================================ */
+
+/* Project ID */
+.table-container th:nth-child(1),
+.table-container td:nth-child(1) {
+    width: 10%;
 }
 
-.tasks-table th:nth-child(7),
-.tasks-table td:nth-child(7) {
-    text-align: center;
+/* System / Application Name */
+.table-container th:nth-child(2),
+.table-container td:nth-child(2) {
+    width: 22%;
 }
 
-.tasks-table th:nth-child(8),
-.tasks-table td:nth-child(8) {
-    text-align: center;
+/* Development Team */
+.table-container th:nth-child(3),
+.table-container td:nth-child(3) {
+    width: 20%;
+}
+
+/* Version */
+.table-container th:nth-child(4),
+.table-container td:nth-child(4) {
+    width: 9%;
+}
+
+/* Status */
+.table-container th:nth-child(5),
+.table-container td:nth-child(5) {
+    width: 12%;
+}
+
+/* Date Started */
+.table-container th:nth-child(6),
+.table-container td:nth-child(6) {
+    width: 13%;
+}
+
+/* Actions */
+.table-container th:nth-child(7),
+.table-container td:nth-child(7) {
+    width: 14%;
+    min-width: 150px;
+    overflow: visible;
 }
 
 
