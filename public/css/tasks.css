@@ -860,14 +860,23 @@
     border: 1px solid #e2e7ee;
     border-radius: 10px;
     background: #ffffff;
-    overflow: hidden;
+
+    position: relative;
+    overflow: visible;
+}
+
+.task-details[open] {
+    overflow: visible;
+    z-index: 20;
 }
 
 .task-details summary {
     padding: 15px 18px;
+
     color: #253858;
     font-size: 15px;
     font-weight: 600;
+
     cursor: pointer;
     list-style: none;
 }
@@ -879,6 +888,7 @@
 .task-details summary::after {
     content: "+";
     float: right;
+
     color: #61728a;
     font-size: 19px;
 }
@@ -893,7 +903,52 @@
 
 .details-content {
     padding: 18px;
+
     border-top: 1px solid #e2e7ee;
+
+    position: relative;
+    overflow: visible;
+}
+
+
+/* ============================================================
+   DEVELOPMENT TEAM DROPDOWN
+   ============================================================ */
+
+#developmentTeamSelect {
+    position: relative;
+    width: 100%;
+    z-index: 50;
+}
+
+#responsiblePersons {
+    display: none;
+
+    position: absolute !important;
+
+    top: calc(100% + 4px) !important;
+    left: 0 !important;
+    right: 0 !important;
+
+    width: 100% !important;
+    max-height: 240px !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    background: #ffffff !important;
+
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.14) !important;
+
+    z-index: 99999 !important;
+}
+
+#responsiblePersons.show {
+    display: block !important;
 }
 
 
