@@ -193,6 +193,204 @@ function getStatusClass(status) {
 
 
 // ============================================================
+// LOAD PROJECT DEVELOPMENT TEAM
+// ============================================================
+
+async function loadProjectMembers() {
+
+    if (!responsiblePersons || !projectId) {
+        return;
+    }
+
+    responsiblePersons.innerHTML = `
+        <div class="team-selection-empty">
+            Loading team members...
+        </div>
+    `;
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/projects/${encodeURIComponent(projectId)}/members`
+            );
+
+        const result =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.error ||
+                "Failed to load development team."
+            );
+        }
+
+        const members =
+            Array.isArray(result.members)
+                ? result.members
+                : Array.isArray(result)
+                    ? result
+                    : [];
+
+        if (members.length === 0) {
+
+            responsiblePersons.innerHTML = `
+                <div class="team-selection-empty">
+                    No development team members found.
+                </div>
+            `;
+
+            updateDevelopmentTeamText();
+            return;
+        }
+
+        responsiblePersons.innerHTML =
+            members
+                .map(member => {
+
+                    const name =
+                        String(
+                            member.member_name ||
+                            member.full_name ||
+                            member.name ||
+                            ""
+                        ).trim();
+
+                    const role =
+                        String(
+                            member.member_role ||
+                            member.role ||
+                            ""
+                        ).trim();
+
+                    if (!name) {
+                        return "";
+                    }
+
+                    return `
+                        <label class="team-selection-item">
+
+                            <input
+                                type="checkbox"
+                                class="responsible-person-checkbox"
+                                value="${escapeHtml(name)}"
+                            >
+
+                            <span class="team-selection-info">
+
+                                <strong>
+                                    ${escapeHtml(name)}
+                                </strong>
+
+                                ${
+                                    role
+                                        ? `
+                                            <small>
+                                                ${escapeHtml(role)}
+                                            </small>
+                                        `
+                                        : ""
+                                }
+
+                            </span>
+
+                        </label>
+                    `;
+                })
+                .join("");
+
+        updateDevelopmentTeamText();
+
+    } catch (error) {
+
+        console.error(
+            "Load project members error:",
+            error
+        );
+
+        responsiblePersons.innerHTML = `
+            <div class="team-selection-empty">
+                Unable to load development team.
+            </div>
+        `;
+    }
+}
+
+
+// ============================================================
+// GET SELECTED DEVELOPMENT TEAM
+// ============================================================
+
+function getSelectedResponsiblePersons() {
+
+    return Array
+        .from(
+            document.querySelectorAll(
+                ".responsible-person-checkbox:checked"
+            )
+        )
+        .map(
+            checkbox =>
+                checkbox.value.trim()
+        )
+        .filter(Boolean)
+        .join(", ");
+}
+
+
+// ============================================================
+// CLEAR DEVELOPMENT TEAM SELECTION
+// ============================================================
+
+function clearSelectedResponsiblePersons() {
+
+    document
+        .querySelectorAll(
+            ".responsible-person-checkbox"
+        )
+        .forEach(
+            checkbox => {
+                checkbox.checked = false;
+            }
+        );
+
+    updateDevelopmentTeamText();
+}
+
+
+// ============================================================
+// RESTORE DEVELOPMENT TEAM WHEN EDITING
+// ============================================================
+
+function setSelectedResponsiblePersons(value) {
+
+    const selectedNames =
+        String(value || "")
+            .split(",")
+            .map(
+                name => name.trim()
+            )
+            .filter(Boolean);
+
+    document
+        .querySelectorAll(
+            ".responsible-person-checkbox"
+        )
+        .forEach(
+            checkbox => {
+
+                checkbox.checked =
+                    selectedNames.includes(
+                        checkbox.value.trim()
+                    );
+            }
+        );
+
+    updateDevelopmentTeamText();
+}
+
+
+// ============================================================
 // DEVELOPMENT TEAM DROPDOWN
 // ============================================================
 
