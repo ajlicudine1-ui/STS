@@ -324,6 +324,7 @@ function resetProjectModal() {
 
     if (projectForm) {
         projectForm.reset();
+        setProjectValue("projectVersion", "v1.0");
     }
 
     setProjectValue(
@@ -366,16 +367,18 @@ if (newProjectBtn) {
         "click",
         async () => {
 
-            // Reset all modal fields first
             resetProjectModal();
 
-            // Open modal
+            // Default version for a newly created project
+            setProjectValue("projectVersion", "v1.0");
+
+            // Generate next Project ID
+            await loadNextProjectId();
+
             if (projectModal) {
                 projectModal.classList.add("show");
             }
 
-            // Get and display the next Project ID
-            await loadNextProjectId();
         }
     );
 }
