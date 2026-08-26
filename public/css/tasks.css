@@ -1831,6 +1831,8 @@
         padding: 14px 16px;
     }
 
+}
+
 /* ============================================================
    DEVELOPMENT TEAM MULTI-SELECT
    ============================================================ */
@@ -2089,5 +2091,4 @@ input.responsible-person-checkbox {
     font-size: 14px !important;
 
     text-align: center !important;
-}
 }
