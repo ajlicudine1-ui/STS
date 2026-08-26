@@ -520,17 +520,31 @@
 
 
 
-                        <div class="form-row">
+                        <div class="form-group">
 
-                            <div class="form-group">
+                            <label>
+                                Development Team
+                            </label>
 
-                                <label>
-                                    Development Team
-                                </label>
+                            <div class="multi-select" id="developmentTeamSelect">
+
+                                <button
+                                    type="button"
+                                    class="multi-select-trigger"
+                                    id="developmentTeamTrigger"
+                                >
+                                    <span id="developmentTeamSelectedText">
+                                        Select Development Team
+                                    </span>
+
+                                    <span class="multi-select-arrow">
+                                        ▼
+                                    </span>
+                                </button>
 
                                 <div
+                                    class="multi-select-menu"
                                     id="responsiblePersons"
-                                    class="team-selection-list"
                                 >
                                     <div class="team-selection-empty">
                                         Loading team members...

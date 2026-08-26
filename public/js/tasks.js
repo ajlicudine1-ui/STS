@@ -193,92 +193,127 @@ function getStatusClass(status) {
 
 
 // ============================================================
-// PROJECT DEVELOPMENT TEAM
+// DEVELOPMENT TEAM DROPDOWN
 // ============================================================
 
-async function loadProjectMembers() {
-    const container = document.getElementById("responsiblePersons");
-    if (!container || !projectId) return;
+const developmentTeamTrigger =
+    document.getElementById(
+        "developmentTeamTrigger"
+    );
 
-    container.innerHTML = `
-        <div class="team-selection-empty">Loading team members...</div>
-    `;
+const responsiblePersons =
+    document.getElementById(
+        "responsiblePersons"
+    );
 
-    try {
-        const response = await fetch(
-            `/api/projects/${encodeURIComponent(projectId)}/members`
+const developmentTeamSelectedText =
+    document.getElementById(
+        "developmentTeamSelectedText"
+    );
+
+
+function updateDevelopmentTeamText() {
+
+    const checked =
+        document.querySelectorAll(
+            ".responsible-person-checkbox:checked"
         );
-        const result = await response.json();
 
-        if (!response.ok) {
-            throw new Error(result.error || "Failed to load development team.");
-        }
 
-        const members = Array.isArray(result.members) ? result.members : [];
-
-        if (members.length === 0) {
-            container.innerHTML = `
-                <div class="team-selection-empty">No development team members found.</div>
-            `;
-            return;
-        }
-
-        container.innerHTML = members.map(member => {
-            const name = member.member_name || "";
-            const role = member.member_role || "";
-
-            return `
-                <label class="team-selection-item">
-                    <input
-                        type="checkbox"
-                        class="responsible-person-checkbox"
-                        value="${escapeHtml(name)}"
-                    >
-
-                    <span class="team-selection-info">
-                        <strong>${escapeHtml(name)}</strong>
-                        ${role ? `<small>${escapeHtml(role)}</small>` : ""}
-                    </span>
-                </label>
-            `;
-        }).join("");
-
-    } catch (error) {
-        console.error("Load project members error:", error);
-        container.innerHTML = `
-            <div class="team-selection-empty">Unable to load development team.</div>
-        `;
+    if (!developmentTeamSelectedText) {
+        return;
     }
+
+
+    if (checked.length === 0) {
+
+        developmentTeamSelectedText.textContent =
+            "Select Development Team";
+
+        return;
+    }
+
+
+    if (checked.length === 1) {
+
+        developmentTeamSelectedText.textContent =
+            checked[0].value;
+
+        return;
+    }
+
+
+    developmentTeamSelectedText.textContent =
+        `${checked.length} members selected`;
 }
 
-function getSelectedResponsiblePersons() {
-    return Array.from(
-        document.querySelectorAll(".responsible-person-checkbox:checked")
-    )
-        .map(checkbox => checkbox.value.trim())
-        .filter(Boolean)
-        .join(", ");
+
+if (
+    developmentTeamTrigger &&
+    responsiblePersons
+) {
+
+    developmentTeamTrigger.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            responsiblePersons.classList.toggle(
+                "show"
+            );
+
+            developmentTeamTrigger.classList.toggle(
+                "active"
+            );
+
+        }
+    );
+
+
+    responsiblePersons.addEventListener(
+        "change",
+        event => {
+
+            if (
+                event.target.classList.contains(
+                    "responsible-person-checkbox"
+                )
+            ) {
+
+                updateDevelopmentTeamText();
+
+            }
+
+        }
+    );
+
+
+    responsiblePersons.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+        }
+    );
+
+
+    document.addEventListener(
+        "click",
+        () => {
+
+            responsiblePersons.classList.remove(
+                "show"
+            );
+
+            developmentTeamTrigger.classList.remove(
+                "active"
+            );
+
+        }
+    );
 }
-
-function clearSelectedResponsiblePersons() {
-    document.querySelectorAll(".responsible-person-checkbox")
-        .forEach(checkbox => {
-            checkbox.checked = false;
-        });
-}
-
-function setSelectedResponsiblePersons(value) {
-    const selectedNames = String(value || "")
-        .split(",")
-        .map(name => name.trim())
-        .filter(Boolean);
-
-    document.querySelectorAll(".responsible-person-checkbox")
-        .forEach(checkbox => {
-            checkbox.checked = selectedNames.includes(checkbox.value);
-        });
-}
-
 // ============================================================
 // CLOSE ALL ACTION MENUS
 // ============================================================
