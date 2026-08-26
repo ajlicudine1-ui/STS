@@ -805,20 +805,6 @@ function createProjectActionMenu(
             </button>
 
             <div class="project-action-divider"></div>
-
-            <button
-                type="button"
-                class="project-action-item delete-project-action"
-            >
-                <span class="project-action-icon">
-                    🗑
-                </span>
-
-                <span>
-                    Delete
-                </span>
-            </button>
-
         </div>
     `;
 
@@ -956,26 +942,6 @@ function createProjectActionMenu(
             }
         );
     }
-
-    const deleteAction =
-        wrapper.querySelector(
-            ".delete-project-action"
-        );
-
-    if (deleteAction) {
-        deleteAction.addEventListener(
-            "click",
-            event => {
-                event.stopPropagation();
-
-                closeAllProjectActionMenus();
-
-                deleteProject(project);
-            }
-        );
-    }
-
-    return wrapper;
 }
 
 
@@ -1501,69 +1467,6 @@ async function loadNextProjectId() {
         );
     }
 }
-
-
-// ============================================================
-// DELETE PROJECT
-// ============================================================
-
-async function deleteProject(project) {
-    if (
-        !project ||
-        !project.project_id
-    ) {
-        return;
-    }
-
-    const confirmed =
-        confirm(
-            `Are you sure you want to delete "${project.project_name || "this project"}"?`
-        );
-
-    if (!confirmed) {
-        return;
-    }
-
-    try {
-        const response =
-            await fetch(
-                `/api/projects/${encodeURIComponent(
-                    project.project_id
-                )}`,
-                {
-                    method: "DELETE"
-                }
-            );
-
-        const result =
-            await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                result.error ||
-                "Failed to delete project."
-            );
-        }
-
-        alert(
-            "Project deleted successfully!"
-        );
-
-        await loadDashboard();
-
-    } catch (error) {
-        console.error(
-            "Delete project error:",
-            error
-        );
-
-        alert(
-            "Error: " +
-            error.message
-        );
-    }
-}
-
 
 // ============================================================
 // INITIAL LOAD
