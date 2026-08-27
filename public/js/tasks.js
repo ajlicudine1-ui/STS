@@ -59,6 +59,8 @@ const taskSubmitBtn =
 
 let editingTaskId = null;
 
+let editingTaskCompletionDate = null;
+
 
 // ============================================================
 // REVIEW STATE
@@ -197,67 +199,69 @@ function getStatusClass(status) {
 
 function getScheduleStatus(task) {
 
-    if (!task) {
+    if (!task || !task.due_date) {
         return "-";
     }
-
-    if (task.status === "Completed") {
-        return "Completed";
-    }
-
-    if (!task.start_date || !task.due_date) {
-        return "-";
-    }
-
-    const startDate =
-        new Date(
-            `${formatDate(task.start_date)}T00:00:00`
-        );
 
     const dueDate =
         new Date(
             `${formatDate(task.due_date)}T00:00:00`
         );
 
-    if (
-        Number.isNaN(startDate.getTime()) ||
-        Number.isNaN(dueDate.getTime())
-    ) {
+    if (Number.isNaN(dueDate.getTime())) {
         return "-";
     }
 
-    const today =
-        new Date();
+    let comparisonDate;
 
-    today.setHours(
-        0,
-        0,
-        0,
-        0
-    );
-
-    if (today < startDate) {
-        return "Ahead of Schedule";
+    // Completed task: use the actual Completion Date.
+    if (
+        task.status === "Completed" &&
+        task.completion_date
+    ) {
+        comparisonDate =
+            new Date(
+                `${formatDate(task.completion_date)}T00:00:00`
+            );
+    } else {
+        // Unfinished task: use today's date.
+        comparisonDate = new Date();
+        comparisonDate.setHours(0, 0, 0, 0);
     }
 
-    if (today > dueDate) {
-        return "Delayed";
+    if (Number.isNaN(comparisonDate.getTime())) {
+        return "-";
     }
 
     const millisecondsPerDay =
         1000 * 60 * 60 * 24;
 
-    const daysRemaining =
-        Math.ceil(
-            (dueDate - today) /
+    const daysDifference =
+        Math.round(
+            (comparisonDate - dueDate) /
             millisecondsPerDay
         );
 
-    if (daysRemaining <= 10) {
+    // Completed before the Due Date.
+    if (
+        task.status === "Completed" &&
+        daysDifference < 0
+    ) {
+        return "Ahead of Schedule";
+    }
+
+    // Exact Due Date or any date before it.
+    if (daysDifference <= 0) {
+        return "On Schedule";
+    }
+
+    // 10+ days overdue.
+    if (daysDifference >= 10) {
         return "At Risk";
     }
 
-    return "On Schedule";
+    // 1-9 days overdue.
+    return "Delayed";
 }
 
 
@@ -280,9 +284,6 @@ function getScheduleStatusClass(scheduleStatus) {
 
         case "Delayed":
             return "schedule-delayed";
-
-        case "Completed":
-            return "schedule-completed";
 
         default:
             return "";
@@ -661,6 +662,7 @@ if (newTaskBtn) {
         () => {
 
             editingTaskId = null;
+            editingTaskCompletionDate = null;
 
 
             if (taskForm) {
@@ -730,6 +732,7 @@ function closeModal() {
     taskModal.classList.remove("show");
 
     editingTaskId = null;
+    editingTaskCompletionDate = null;
 
 
     if (taskForm) {
@@ -833,6 +836,9 @@ function openEditTaskModal(task) {
 
     editingTaskId =
         task.task_id;
+
+    editingTaskCompletionDate =
+        task.completion_date || null;
 
 
     // --------------------------------------------------------
@@ -2731,6 +2737,15 @@ if (taskForm) {
                     getValue(
                         "dueDate"
                     ) || null,
+
+
+                completion_date:
+                    getValue("taskStatus") === "Completed"
+                        ? (
+                            editingTaskCompletionDate ||
+                            new Date().toLocaleDateString("en-CA")
+                        )
+                        : null,
 
 
                 deliverable_expected_output:
