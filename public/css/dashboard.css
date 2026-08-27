@@ -1157,53 +1157,93 @@
 
 
 /* ============================================================
-   UPLOAD FILE / FOLDER CHOICE
+   UPLOAD FILE / FOLDER CHOICE MENU
    ============================================================ */
 
 .upload-type-menu {
-
     position: fixed;
 
-    width: 190px;
+    width: 200px;
 
     padding: 6px;
 
     background: #ffffff;
 
     border: 1px solid #dfe4eb;
-
-    border-radius: 9px;
+    border-radius: 10px;
 
     box-shadow:
         0 10px 28px rgba(15, 23, 42, 0.18);
 
-    z-index: 2147483647;
+    z-index: 99999;
 }
 
 
+/* Upload File / Folder buttons */
 .upload-type-option {
+    display: flex;
+    align-items: center;
 
     width: 100%;
 
-    padding: 10px 12px;
+    padding: 11px 12px;
 
     border: none;
-
-    border-radius: 6px;
+    border-radius: 7px;
 
     background: transparent;
 
     color: #2e7d32;
 
+    font-family: inherit;
     font-size: 14px;
+    font-weight: 500;
 
     text-align: left;
 
     cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
 }
 
 
+/* Hover */
 .upload-type-option:hover {
-
     background: #edf7ee;
+    color: #1b5e20;
+}
+
+
+/* Click */
+.upload-type-option:active {
+    background: #dff0e1;
+}
+
+
+/* Keyboard focus */
+.upload-type-option:focus-visible {
+    outline: 2px solid #2e7d32;
+    outline-offset: 1px;
+}
+
+
+/* Optional divider between File and Folder */
+.upload-type-option + .upload-type-option {
+    border-top: 1px solid #f0f2f0;
+}
+
+
+/* ============================================================
+   COMBINED UPLOAD ACTION IN ACTIONS DROPDOWN
+   ============================================================ */
+
+.upload-project-content-action {
+    color: #2e7d32;
+}
+
+.upload-project-content-action:hover {
+    background: #edf7ee;
+    color: #1b5e20;
 }
