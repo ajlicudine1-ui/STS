@@ -1758,11 +1758,11 @@ function showUploadOptionsInActionMenu(
             class="project-action-item back-to-project-actions"
         >
             <span class="project-action-icon">
-                ←
+                ×
             </span>
 
             <span>
-                Back
+                Close
             </span>
         </button>
 
