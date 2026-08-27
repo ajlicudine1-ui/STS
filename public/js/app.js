@@ -1738,156 +1738,286 @@ function openProjectActionMenu(
     );
 }
 
-function openUploadTypeMenu(anchorButton) {
+function showUploadOptionsInActionMenu(
+    menu,
+    project
+) {
 
-    const existingMenu =
-        document.getElementById(
-            "projectUploadTypeMenu"
-        );
-
-    if (existingMenu) {
-        existingMenu.remove();
+    if (!menu) {
+        return;
     }
 
-
-    const menu =
-        document.createElement("div");
-
-    menu.id =
-        "projectUploadTypeMenu";
-
-    menu.className =
-        "upload-type-menu";
-
+    if (!menu._originalActionHtml) {
+        menu._originalActionHtml =
+            menu.innerHTML;
+    }
 
     menu.innerHTML = `
         <button
             type="button"
-            class="upload-type-option"
-            id="chooseUploadFiles"
+            class="project-action-item back-to-project-actions"
         >
-            📄 Upload Files
+            <span class="project-action-icon">
+                ←
+            </span>
+
+            <span>
+                Back
+            </span>
         </button>
 
         <button
             type="button"
-            class="upload-type-option"
-            id="chooseUploadFolder"
+            class="project-action-item choose-project-files"
         >
-            📁 Upload Folder
+            <span class="project-action-icon">
+                📄
+            </span>
+
+            <span>
+                Upload Files
+            </span>
+        </button>
+
+        <button
+            type="button"
+            class="project-action-item choose-project-folder"
+        >
+            <span class="project-action-icon">
+                📁
+            </span>
+
+            <span>
+                Upload Folder
+            </span>
         </button>
     `;
 
 
-    document.body.appendChild(
-        menu
-    );
-
-
-    const rect =
-    anchorButton.getBoundingClientRect();
-
-const menuWidth = 200;
-
-let left =
-    rect.left;
-
-let top =
-    rect.bottom + 6;
-
-
-// Prevent menu from going outside right side
-if (left + menuWidth > window.innerWidth - 10) {
-
-    left =
-        window.innerWidth -
-        menuWidth -
-        10;
-}
-
-
-    // Prevent menu from going below screen
-    if (top + 110 > window.innerHeight) {
-
-        top =
-            rect.top - 110;
-    }
-
-
-    menu.style.left =
-        `${Math.max(10, left)}px`;
-
-    menu.style.top =
-        `${Math.max(10, top)}px`;
+    const backButton =
+        menu.querySelector(
+            ".back-to-project-actions"
+        );
 
     const chooseFiles =
         menu.querySelector(
-            "#chooseUploadFiles"
+            ".choose-project-files"
         );
 
     const chooseFolder =
         menu.querySelector(
-            "#chooseUploadFolder"
+            ".choose-project-folder"
         );
 
 
-    chooseFiles.addEventListener(
-        "click",
-        event => {
+    if (backButton) {
 
-            event.stopPropagation();
+        backButton.addEventListener(
+            "click",
+            event => {
 
-            menu.remove();
+                event.stopPropagation();
 
-            if (projectFileInput) {
-
-                projectFileInput.value =
-                    "";
-
-                projectFileInput.click();
+                restoreProjectActionMenu(
+                    menu,
+                    project
+                );
             }
-        }
-    );
+        );
+    }
 
 
-    chooseFolder.addEventListener(
-        "click",
-        event => {
+    if (chooseFiles) {
 
-            event.stopPropagation();
+        chooseFiles.addEventListener(
+            "click",
+            event => {
 
-            menu.remove();
+                event.stopPropagation();
 
-            if (projectFolderInput) {
+                editingProjectId =
+                    project.project_id;
 
-                projectFolderInput.value =
-                    "";
+                currentRepositoryProject =
+                    project;
 
-                projectFolderInput.click();
-            }
-        }
-    );
+                if (projectFileInput) {
 
+                    projectFileInput.value =
+                        "";
 
-    setTimeout(
-        () => {
-
-            document.addEventListener(
-                "click",
-                function closeUploadMenu() {
-
-                    menu.remove();
-
-                    document.removeEventListener(
-                        "click",
-                        closeUploadMenu
-                    );
+                    projectFileInput.click();
                 }
-            );
 
-        },
-        0
+                closeAllProjectActionMenus();
+            }
+        );
+    }
+
+
+    if (chooseFolder) {
+
+        chooseFolder.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+                editingProjectId =
+                    project.project_id;
+
+                currentRepositoryProject =
+                    project;
+
+                if (projectFolderInput) {
+
+                    projectFolderInput.value =
+                        "";
+
+                    projectFolderInput.click();
+                }
+
+                closeAllProjectActionMenus();
+            }
+        );
+    }
+}
+
+
+function restoreProjectActionMenu(
+    menu,
+    project
+) {
+
+    if (
+        !menu ||
+        !menu._originalActionHtml
+    ) {
+        return;
+    }
+
+    menu.innerHTML =
+        menu._originalActionHtml;
+
+    bindProjectActionMenuItems(
+        menu,
+        project
     );
+}
+
+
+// ============================================================
+// BIND PROJECT ACTION MENU ITEMS
+// ============================================================
+
+function bindProjectActionMenuItems(
+    menu,
+    project
+) {
+
+    if (!menu) {
+        return;
+    }
+
+
+    const viewTasksAction =
+        menu.querySelector(
+            ".view-project-tasks"
+        );
+
+    if (viewTasksAction) {
+
+        viewTasksAction.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+                closeAllProjectActionMenus();
+
+                window.location.href =
+                    `/tasks.html?project_id=${encodeURIComponent(
+                        project.project_id
+                    )}`;
+            }
+        );
+    }
+
+
+    const viewRepositoryFilesAction =
+        menu.querySelector(
+            ".view-repository-files-action"
+        );
+
+    if (viewRepositoryFilesAction) {
+
+        viewRepositoryFilesAction.addEventListener(
+            "click",
+            async event => {
+
+                event.stopPropagation();
+
+                closeAllProjectActionMenus();
+
+                await openRepositoryFilesModal(
+                    project
+                );
+            }
+        );
+    }
+
+
+    const uploadProjectContentAction =
+        menu.querySelector(
+            ".upload-project-content-action"
+        );
+
+    if (uploadProjectContentAction) {
+
+        uploadProjectContentAction.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+                editingProjectId =
+                    project.project_id;
+
+                currentRepositoryProject =
+                    project;
+
+                // Replace the current Actions dropdown contents
+                // without moving or closing the dropdown.
+                showUploadOptionsInActionMenu(
+                    menu,
+                    project
+                );
+            }
+        );
+    }
+
+
+    const editAction =
+        menu.querySelector(
+            ".edit-project-action"
+        );
+
+    if (editAction) {
+
+        editAction.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+                closeAllProjectActionMenus();
+
+                openEditProjectModal(
+                    project
+                );
+            }
+        );
+    }
 }
 
 
@@ -1898,6 +2028,7 @@ if (left + menuWidth > window.innerWidth - 10) {
 function createProjectActionMenu(
     project
 ) {
+
     const wrapper =
         document.createElement(
             "div"
@@ -1905,6 +2036,7 @@ function createProjectActionMenu(
 
     wrapper.className =
         "project-action-wrapper";
+
 
     wrapper.innerHTML = `
         <button
@@ -1975,9 +2107,9 @@ function createProjectActionMenu(
                 </span>
             </button>
 
-
         </div>
     `;
+
 
     const trigger =
         wrapper.querySelector(
@@ -1989,18 +2121,26 @@ function createProjectActionMenu(
             ".project-action-menu"
         );
 
+
     if (menu) {
+
         menu._projectActionWrapper =
             wrapper;
 
         menu._projectActionTrigger =
             trigger;
+
+        menu._originalActionHtml =
+            menu.innerHTML;
     }
 
+
     if (trigger && menu) {
+
         trigger.addEventListener(
             "click",
             event => {
+
                 event.stopPropagation();
 
                 const wasOpen =
@@ -2011,6 +2151,12 @@ function createProjectActionMenu(
                 closeAllProjectActionMenus();
 
                 if (!wasOpen) {
+
+                    restoreProjectActionMenu(
+                        menu,
+                        project
+                    );
+
                     openProjectActionMenu(
                         trigger,
                         menu
@@ -2020,96 +2166,12 @@ function createProjectActionMenu(
         );
     }
 
-    const viewTasksAction =
-        wrapper.querySelector(
-            ".view-project-tasks"
-        );
 
-    if (viewTasksAction) {
-        viewTasksAction.addEventListener(
-            "click",
-            event => {
-                event.stopPropagation();
-
-                closeAllProjectActionMenus();
-
-                window.location.href =
-                    `/tasks.html?project_id=${encodeURIComponent(
-                        project.project_id
-                    )}`;
-            }
-        );
-    }
-
-    const viewRepositoryFilesAction =
-        wrapper.querySelector(
-            ".view-repository-files-action"
-        );
-
-    if (viewRepositoryFilesAction) {
-        viewRepositoryFilesAction.addEventListener(
-            "click",
-            async event => {
-                event.stopPropagation();
-
-                closeAllProjectActionMenus();
-
-                await openRepositoryFilesModal(
-                    project
-                );
-            }
-        );
-    }
-
-    const uploadProjectContentAction =
-    wrapper.querySelector(
-        ".upload-project-content-action"
+    bindProjectActionMenuItems(
+        menu,
+        project
     );
 
-    if (uploadProjectContentAction) {
-
-        uploadProjectContentAction.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                editingProjectId =
-                    project.project_id;
-
-                currentRepositoryProject =
-                    project;
-
-                // Open first so the button position is still available
-                openUploadTypeMenu(
-                    uploadProjectContentAction
-                );
-
-                // Then close the Actions dropdown
-                closeAllProjectActionMenus();
-
-            }
-        );
-    }
-    const editAction =
-        wrapper.querySelector(
-            ".edit-project-action"
-        );
-
-    if (editAction) {
-        editAction.addEventListener(
-            "click",
-            event => {
-                event.stopPropagation();
-
-                closeAllProjectActionMenus();
-
-                openEditProjectModal(
-                    project
-                );
-            }
-        );
-    }
 
     return wrapper;
 }
