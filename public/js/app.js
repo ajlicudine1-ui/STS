@@ -43,6 +43,37 @@ const projectFolderInput =
 const projectUploadSelectionStatus =
     document.getElementById("projectUploadSelectionStatus");
 
+
+const repositoryFilesModal =
+    document.getElementById("repositoryFilesModal");
+
+const repositoryFilesModalTitle =
+    document.getElementById("repositoryFilesModalTitle");
+
+const closeRepositoryFilesModalBtn =
+    document.getElementById("closeRepositoryFilesModal");
+
+const repositoryFilesList =
+    document.getElementById("repositoryFilesList");
+
+const refreshRepositoryFilesBtn =
+    document.getElementById("refreshRepositoryFilesBtn");
+
+const repositoryUploadFilesBtn =
+    document.getElementById("repositoryUploadFilesBtn");
+
+const repositoryUploadFolderBtn =
+    document.getElementById("repositoryUploadFolderBtn");
+
+const openRepositoryDriveBtn =
+    document.getElementById("openRepositoryDriveBtn");
+
+const repositoryUploadProgress =
+    document.getElementById("repositoryUploadProgress");
+
+let currentRepositoryProject =
+    null;
+
 let pendingProjectFileUploads = [];
 let pendingProjectFolderUploads = [];
 
@@ -521,6 +552,13 @@ async function uploadSelectedContentForExistingProject() {
     );
 
     resetPendingProjectUploads();
+
+    if (
+        currentRepositoryProject?.project_id ===
+        editingProjectId
+    ) {
+        await loadRepositoryFiles();
+    }
 }
 
 
@@ -625,6 +663,368 @@ if (
                     );
                 }
             }
+        }
+    );
+}
+
+
+
+// ============================================================
+// REPOSITORY FILE VIEWER
+// ============================================================
+
+function formatRepositoryFileSize(bytes) {
+
+    if (
+        bytes === null ||
+        bytes === undefined ||
+        Number.isNaN(Number(bytes))
+    ) {
+        return "";
+    }
+
+    const size =
+        Number(bytes);
+
+    if (size < 1024) {
+        return `${size} B`;
+    }
+
+    if (size < 1024 * 1024) {
+        return `${(size / 1024).toFixed(1)} KB`;
+    }
+
+    if (size < 1024 * 1024 * 1024) {
+        return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+}
+
+
+function renderRepositoryFiles(items) {
+
+    if (!repositoryFilesList) {
+        return;
+    }
+
+    const files =
+        Array.isArray(items)
+            ? items
+            : [];
+
+    if (files.length === 0) {
+
+        repositoryFilesList.innerHTML = `
+            <div class="repository-empty">
+                No uploaded files or folders yet.
+            </div>
+        `;
+
+        return;
+    }
+
+    repositoryFilesList.innerHTML =
+        files.map(item => {
+
+            const depth =
+                Math.max(
+                    0,
+                    String(
+                        item.relative_path ||
+                        item.name ||
+                        ""
+                    ).split("/").length - 1
+                );
+
+            const icon =
+                item.is_folder
+                    ? "📁"
+                    : "📄";
+
+            const sizeText =
+                item.is_folder
+                    ? ""
+                    : formatRepositoryFileSize(
+                        item.size
+                    );
+
+            const modified =
+                item.modified_time
+                    ? new Date(
+                        item.modified_time
+                    ).toLocaleString()
+                    : "";
+
+            const safeUrl =
+                item.url
+                    ? escapeHtml(item.url)
+                    : "";
+
+            return `
+                <div
+                    class="repository-file-row"
+                    style="--repository-depth:${depth}"
+                >
+                    <div class="repository-file-main">
+                        <span class="repository-file-icon">
+                            ${icon}
+                        </span>
+
+                        <div class="repository-file-info">
+                            <div class="repository-file-name">
+                                ${escapeHtml(item.name || "-")}
+                            </div>
+
+                            <div class="repository-file-path">
+                                ${escapeHtml(item.relative_path || item.name || "")}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="repository-file-meta">
+                        <span>
+                            ${escapeHtml(sizeText)}
+                        </span>
+
+                        <span>
+                            ${escapeHtml(modified)}
+                        </span>
+
+                        ${
+                            safeUrl
+                                ? `
+                                    <a
+                                        class="repository-file-open"
+                                        href="${safeUrl}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Open
+                                    </a>
+                                `
+                                : ""
+                        }
+                    </div>
+                </div>
+            `;
+        }).join("");
+}
+
+
+async function loadRepositoryFiles() {
+
+    if (
+        !currentRepositoryProject?.project_id
+    ) {
+        return;
+    }
+
+    if (repositoryFilesList) {
+        repositoryFilesList.innerHTML = `
+            <div class="repository-empty">
+                Loading repository files...
+            </div>
+        `;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/projects/${encodeURIComponent(
+                    currentRepositoryProject.project_id
+                )}/repository/files`
+            );
+
+        const result =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.error ||
+                result.details ||
+                "Failed to load repository files."
+            );
+        }
+
+        currentRepositoryProject = {
+            ...currentRepositoryProject,
+            ...result.project
+        };
+
+        renderRepositoryFiles(
+            result.items
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Load repository files error:",
+            error
+        );
+
+        if (repositoryFilesList) {
+            repositoryFilesList.innerHTML = `
+                <div class="repository-empty repository-error">
+                    ${escapeHtml(error.message)}
+                </div>
+            `;
+        }
+    }
+}
+
+
+async function openRepositoryFilesModal(
+    project
+) {
+
+    currentRepositoryProject =
+        project;
+
+    editingProjectId =
+        project.project_id;
+
+    resetPendingProjectUploads();
+
+    if (repositoryFilesModalTitle) {
+        repositoryFilesModalTitle.textContent =
+            `${project.project_id} - Project Repository`;
+    }
+
+    if (repositoryUploadProgress) {
+        repositoryUploadProgress.textContent =
+            "";
+    }
+
+    if (repositoryFilesModal) {
+        repositoryFilesModal.classList.add(
+            "show"
+        );
+    }
+
+    await loadRepositoryFiles();
+}
+
+
+function closeRepositoryFilesModal() {
+
+    if (repositoryFilesModal) {
+        repositoryFilesModal.classList.remove(
+            "show"
+        );
+    }
+
+    currentRepositoryProject =
+        null;
+
+    if (repositoryUploadProgress) {
+        repositoryUploadProgress.textContent =
+            "";
+    }
+
+    // Do not clear editingProjectId here when the main project
+    // edit modal may still need it.
+}
+
+
+if (closeRepositoryFilesModalBtn) {
+    closeRepositoryFilesModalBtn.addEventListener(
+        "click",
+        closeRepositoryFilesModal
+    );
+}
+
+
+if (repositoryFilesModal) {
+    repositoryFilesModal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                repositoryFilesModal
+            ) {
+                closeRepositoryFilesModal();
+            }
+        }
+    );
+}
+
+
+if (refreshRepositoryFilesBtn) {
+    refreshRepositoryFilesBtn.addEventListener(
+        "click",
+        loadRepositoryFiles
+    );
+}
+
+
+if (repositoryUploadFilesBtn) {
+    repositoryUploadFilesBtn.addEventListener(
+        "click",
+        () => {
+
+            if (
+                !currentRepositoryProject?.project_id
+            ) {
+                return;
+            }
+
+            editingProjectId =
+                currentRepositoryProject.project_id;
+
+            if (projectFileInput) {
+                projectFileInput.click();
+            }
+        }
+    );
+}
+
+
+if (repositoryUploadFolderBtn) {
+    repositoryUploadFolderBtn.addEventListener(
+        "click",
+        () => {
+
+            if (
+                !currentRepositoryProject?.project_id
+            ) {
+                return;
+            }
+
+            editingProjectId =
+                currentRepositoryProject.project_id;
+
+            if (projectFolderInput) {
+                projectFolderInput.click();
+            }
+        }
+    );
+}
+
+
+if (openRepositoryDriveBtn) {
+    openRepositoryDriveBtn.addEventListener(
+        "click",
+        () => {
+
+            const url =
+                currentRepositoryProject?.repository_folder_url ||
+                currentRepositoryProject?.project_url;
+
+            if (!url) {
+                alert(
+                    "Project Repository URL is not available."
+                );
+                return;
+            }
+
+            window.open(
+                url,
+                "_blank",
+                "noopener,noreferrer"
+            );
         }
     );
 }
@@ -1128,6 +1528,19 @@ function createProjectActionMenu(
 
             <button
                 type="button"
+                class="project-action-item view-repository-files-action"
+            >
+                <span class="project-action-icon">
+                    ☰
+                </span>
+
+                <span>
+                    Repository Files
+                </span>
+            </button>
+
+            <button
+                type="button"
                 class="project-action-item open-project-system"
             >
                 <span class="project-action-icon">
@@ -1243,6 +1656,27 @@ function createProjectActionMenu(
             }
         );
     }
+
+    const viewRepositoryFilesAction =
+        wrapper.querySelector(
+            ".view-repository-files-action"
+        );
+
+    if (viewRepositoryFilesAction) {
+        viewRepositoryFilesAction.addEventListener(
+            "click",
+            async event => {
+                event.stopPropagation();
+
+                closeAllProjectActionMenus();
+
+                await openRepositoryFilesModal(
+                    project
+                );
+            }
+        );
+    }
+
 
     const openSystemAction =
         wrapper.querySelector(

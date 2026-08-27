@@ -310,6 +310,107 @@ async function ensureDriveFolderPath(
 }
 
 
+
+async function listDriveFolderContents(
+    folderId,
+    relativePath = ""
+) {
+
+    const items = [];
+    let pageToken = null;
+
+    do {
+
+        const response =
+            await googleDrive.files.list({
+                q:
+                    `'${escapeDriveQueryValue(folderId)}' in parents and trashed = false`,
+
+                fields:
+                    "nextPageToken,files(id,name,mimeType,webViewLink,size,modifiedTime)",
+
+                pageSize:
+                    1000,
+
+                pageToken:
+                    pageToken || undefined,
+
+                orderBy:
+                    "folder,name"
+            });
+
+        const children =
+            response.data.files || [];
+
+        for (const child of children) {
+
+            const isFolder =
+                child.mimeType ===
+                "application/vnd.google-apps.folder";
+
+            const itemRelativePath =
+                relativePath
+                    ? `${relativePath}/${child.name}`
+                    : child.name;
+
+            items.push({
+                id:
+                    child.id,
+
+                name:
+                    child.name,
+
+                mime_type:
+                    child.mimeType,
+
+                is_folder:
+                    isFolder,
+
+                url:
+                    child.webViewLink ||
+                    (
+                        isFolder
+                            ? getDriveFolderUrl(child.id)
+                            : null
+                    ),
+
+                size:
+                    child.size
+                        ? Number(child.size)
+                        : null,
+
+                modified_time:
+                    child.modifiedTime ||
+                    null,
+
+                relative_path:
+                    itemRelativePath
+            });
+
+            if (isFolder) {
+
+                const nestedItems =
+                    await listDriveFolderContents(
+                        child.id,
+                        itemRelativePath
+                    );
+
+                items.push(
+                    ...nestedItems
+                );
+            }
+        }
+
+        pageToken =
+            response.data.nextPageToken ||
+            null;
+
+    } while (pageToken);
+
+    return items;
+}
+
+
 async function uploadBufferToDrive({
     fileName,
     mimeType,
@@ -935,6 +1036,100 @@ app.post("/api/projects", async (req, res) => {
     }
 
 });
+
+// ============================================================
+// LIST PROJECT REPOSITORY CONTENTS
+// ============================================================
+
+app.get(
+    "/api/projects/:projectId/repository/files",
+    async (req, res) => {
+
+        try {
+
+            const { projectId } =
+                req.params;
+
+            const {
+                data: project,
+                error: projectError
+            } = await supabase
+                .from("projects")
+                .select(
+                    "project_id, project_name, repository_folder_id, repository_folder_url"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .single();
+
+
+            if (
+                projectError ||
+                !project
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Project not found."
+                });
+            }
+
+
+            if (!project.repository_folder_id) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Project Repository folder is missing for this project."
+                });
+            }
+
+
+            const items =
+                await listDriveFolderContents(
+                    project.repository_folder_id
+                );
+
+
+            return res.json({
+                success: true,
+
+                project: {
+                    project_id:
+                        project.project_id,
+
+                    project_name:
+                        project.project_name,
+
+                    repository_folder_url:
+                        project.repository_folder_url
+                },
+
+                items:
+                    items
+            });
+
+        } catch (error) {
+
+            console.error(
+                "LIST PROJECT REPOSITORY ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Could not load Project Repository files.",
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
 
 // ============================================================
 // UPLOAD FILE TO PROJECT REPOSITORY

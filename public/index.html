@@ -254,7 +254,7 @@
 
                     <p class="form-help-text">
                         A Project Repository folder is created automatically inside the project folder.
-                        You may select files or folders now; they will upload after the project is created.
+                        You may select multiple files or an entire folder now; they will upload after the project is created.
                     </p>
 
                     <div class="project-repository-actions">
@@ -288,6 +288,7 @@
                     <input
                         type="file"
                         id="projectFileInput"
+                        multiple
                         hidden
                     >
 
@@ -535,6 +536,95 @@
 
     </div>
 
+
+
+    <!-- =====================================================
+         PROJECT REPOSITORY FILES MODAL
+         ===================================================== -->
+    <div
+        class="modal"
+        id="repositoryFilesModal"
+    >
+
+        <div class="modal-content repository-files-modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2 id="repositoryFilesModalTitle">
+                        Project Repository
+                    </h2>
+
+                    <p>
+                        Files and folders uploaded to this project's Google Drive repository.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeRepositoryFilesModal"
+                    aria-label="Close"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+            <div class="repository-files-toolbar">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="repositoryUploadFilesBtn"
+                >
+                    Upload Files
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="repositoryUploadFolderBtn"
+                >
+                    Upload Folder
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="refreshRepositoryFilesBtn"
+                >
+                    Refresh
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="openRepositoryDriveBtn"
+                >
+                    Open in Google Drive
+                </button>
+
+            </div>
+
+            <div
+                class="repository-upload-progress"
+                id="repositoryUploadProgress"
+                aria-live="polite"
+            ></div>
+
+            <div
+                class="repository-files-list"
+                id="repositoryFilesList"
+            >
+                <div class="repository-empty">
+                    Select a project repository to view its files.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
 
     <!-- =====================================================
          JAVASCRIPT
