@@ -1305,3 +1305,161 @@
 
     min-height: 42px;
 }
+
+
+/* ============================================================
+   REPOSITORY MODAL TOOLBAR - FINAL OVERRIDE
+   ============================================================ */
+
+/* Make the repository modal the positioning reference */
+.repository-files-modal-content {
+    position: relative;
+}
+
+
+/* Hide upload buttons from the Repository Files modal.
+   Uploads are handled from the project Actions dropdown instead. */
+#repositoryUploadFilesBtn,
+#repositoryUploadFolderBtn {
+    display: none !important;
+}
+
+
+/* Move Refresh + Open in Google Drive to the upper-right */
+.repository-files-toolbar {
+    position: absolute !important;
+
+    top: 28px;
+    right: 30px;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+
+    gap: 8px;
+
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    border: none !important;
+    background: transparent;
+
+    z-index: 10;
+}
+
+
+/* Refresh = icon only */
+#refreshRepositoryFilesBtn {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    border: 1px solid #d7e5d8;
+    border-radius: 8px;
+
+    background: #edf7ee;
+    color: #1b5e20;
+
+    font-size: 0 !important;
+
+    cursor: pointer;
+}
+
+
+/* Replace the word "Refresh" visually with a refresh symbol */
+#refreshRepositoryFilesBtn::before {
+    content: "↻";
+
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+
+#refreshRepositoryFilesBtn:hover {
+    background: #dff0e1;
+}
+
+
+#refreshRepositoryFilesBtn:active::before {
+    transform: rotate(30deg);
+}
+
+
+/* Open in Google Drive button */
+#openRepositoryDriveBtn {
+    width: auto !important;
+    min-width: 170px;
+
+    height: 38px;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 16px !important;
+    margin: 0 !important;
+
+    white-space: nowrap;
+}
+
+
+/* Give the title area enough room for the controls */
+.repository-files-modal-content .modal-header {
+    padding-right: 270px;
+}
+
+
+/* Remove extra toolbar spacing/divider from the old layout */
+.repository-upload-progress {
+    margin-top: 4px;
+}
+
+.repository-files-list {
+    margin-top: 18px;
+}
+
+
+/* ============================================================
+   REPOSITORY TOOLBAR - RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+    .repository-files-toolbar {
+        position: static !important;
+
+        width: 100% !important;
+
+        justify-content: flex-end;
+
+        padding: 0 18px 12px !important;
+    }
+
+
+    .repository-files-modal-content .modal-header {
+        padding-right: 18px;
+    }
+
+
+    #openRepositoryDriveBtn {
+        width: auto !important;
+        min-width: 160px;
+    }
+
+
+    .repository-files-list {
+        margin-top: 0;
+    }
+}
+
