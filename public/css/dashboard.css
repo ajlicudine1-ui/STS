@@ -1141,3 +1141,16 @@
         flex: 0 0 32px;
     }
 }
+
+
+/* ============================================================
+   COMBINED PROJECT UPLOAD ACTION
+   ============================================================ */
+
+.upload-project-content-action {
+    color: #2e7d32;
+}
+
+.upload-project-content-action:hover {
+    background: #edf7ee;
+}

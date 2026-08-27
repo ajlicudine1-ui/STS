@@ -245,66 +245,6 @@
                 </div>
 
 
-                <!-- PROJECT REPOSITORY -->
-                <div class="form-group">
-
-                    <label>
-                        Project Repository
-                    </label>
-
-                    <p class="form-help-text">
-                        A Project Repository folder is created automatically inside the project folder.
-                        You may select multiple files or an entire folder now; they will upload after the project is created.
-                    </p>
-
-                    <div class="project-repository-actions">
-
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            id="uploadProjectFileBtn"
-                        >
-                            Upload File
-                        </button>
-
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            id="uploadProjectFolderBtn"
-                        >
-                            Upload Folder
-                        </button>
-
-                    </div>
-
-                    <div
-                        class="project-upload-selection-status"
-                        id="projectUploadSelectionStatus"
-                        aria-live="polite"
-                    >
-                        <div class="project-upload-empty">
-                            No files or folders selected.
-                        </div>
-                    </div>
-
-                    <input
-                        type="file"
-                        id="projectFileInput"
-                        multiple
-                        hidden
-                    >
-
-                    <input
-                        type="file"
-                        id="projectFolderInput"
-                        webkitdirectory
-                        directory
-                        multiple
-                        hidden
-                    >
-
-                </div>
-
                 <!-- PROJECT OWNER -->
                 <div class="form-group">
 
@@ -538,6 +478,25 @@
 
     </div>
 
+
+
+
+    <!-- Hidden repository pickers used after a project exists -->
+    <input
+        type="file"
+        id="projectFileInput"
+        multiple
+        hidden
+    >
+
+    <input
+        type="file"
+        id="projectFolderInput"
+        webkitdirectory
+        directory
+        multiple
+        hidden
+    >
 
 
     <!-- =====================================================

@@ -1798,40 +1798,14 @@ function createProjectActionMenu(
 
             <button
                 type="button"
-                class="project-action-item open-project-system"
-            >
-                <span class="project-action-icon">
-                    ↗
-                </span>
-
-                <span>
-                    Project Repository
-                </span>
-            </button>
-
-            <button
-                type="button"
-                class="project-action-item upload-project-file-action"
+                class="project-action-item upload-project-content-action"
             >
                 <span class="project-action-icon">
                     ↑
                 </span>
 
                 <span>
-                    Upload File
-                </span>
-            </button>
-
-            <button
-                type="button"
-                class="project-action-item upload-project-folder-action"
-            >
-                <span class="project-action-icon">
-                    ▣
-                </span>
-
-                <span>
-                    Upload Folder
+                    Upload Files / Folder
                 </span>
             </button>
 
@@ -1935,106 +1909,29 @@ function createProjectActionMenu(
     }
 
 
-    const openSystemAction =
+    const uploadProjectContentAction =
         wrapper.querySelector(
-            ".open-project-system"
+            ".upload-project-content-action"
         );
 
-    if (openSystemAction) {
-        openSystemAction.addEventListener(
+    if (uploadProjectContentAction) {
+        uploadProjectContentAction.addEventListener(
             "click",
-            event => {
+            async event => {
                 event.stopPropagation();
 
                 closeAllProjectActionMenus();
 
-                const repositoryUrl =
-                    project.repository_folder_url ||
-                    project.drive_folder_url ||
-                    project.project_url;
+                // One dropdown action for both upload types.
+                // Open the Repository Files window where the user can
+                // choose either Upload Files or Upload Folder.
+                await openRepositoryFilesModal(
+                    project
+                );
 
-                if (!repositoryUrl) {
-                    alert(
-                        "No Project Repository folder is available for this project."
-                    );
-
-                    return;
-                }
-
-                try {
-                    const url =
-                        new URL(
-                            repositoryUrl
-                        );
-
-                    if (
-                        url.protocol !== "http:" &&
-                        url.protocol !== "https:"
-                    ) {
-                        throw new Error(
-                            "Invalid URL."
-                        );
-                    }
-
-                    window.open(
-                        url.href,
-                        "_blank",
-                        "noopener,noreferrer"
-                    );
-
-                } catch (error) {
-                    alert(
-                        "The Project Repository link is invalid."
-                    );
-                }
-            }
-        );
-    }
-
-    const uploadFileAction =
-        wrapper.querySelector(
-            ".upload-project-file-action"
-        );
-
-    if (uploadFileAction) {
-        uploadFileAction.addEventListener(
-            "click",
-            event => {
-                event.stopPropagation();
-                closeAllProjectActionMenus();
-
-                editingProjectId =
-                    project.project_id;
-
-                resetPendingProjectUploads();
-
-                if (projectFileInput) {
-                    projectFileInput.click();
-                }
-            }
-        );
-    }
-
-
-    const uploadFolderAction =
-        wrapper.querySelector(
-            ".upload-project-folder-action"
-        );
-
-    if (uploadFolderAction) {
-        uploadFolderAction.addEventListener(
-            "click",
-            event => {
-                event.stopPropagation();
-                closeAllProjectActionMenus();
-
-                editingProjectId =
-                    project.project_id;
-
-                resetPendingProjectUploads();
-
-                if (projectFolderInput) {
-                    projectFolderInput.click();
+                if (repositoryUploadProgress) {
+                    repositoryUploadProgress.textContent =
+                        "Choose Upload Files or Upload Folder above.";
                 }
             }
         );
