@@ -2191,3 +2191,203 @@ input.responsible-person-checkbox {
 
     text-align: center !important;
 }
+
+
+/* ============================================================
+   TABLE READABILITY / NO-OVERLAP OVERRIDES
+   Keep this section at the END of the file.
+   ============================================================ */
+
+/* All table wrappers scroll horizontally instead of squeezing cells. */
+.table-container,
+.history-table-container {
+    max-width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Main task table: give every column enough physical room. */
+.tasks-table {
+    width: 100%;
+    min-width: 1450px !important;
+    table-layout: fixed;
+}
+
+/* Prevent text from visually entering neighboring cells. */
+.tasks-table th,
+.tasks-table td {
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+/* Long-text columns may wrap cleanly. */
+.tasks-table th:nth-child(1),
+.tasks-table td:nth-child(1),
+.tasks-table th:nth-child(2),
+.tasks-table td:nth-child(2),
+.tasks-table th:nth-child(5),
+.tasks-table td:nth-child(5) {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+/* Compact columns stay on one line. */
+.tasks-table th:nth-child(3),
+.tasks-table td:nth-child(3),
+.tasks-table th:nth-child(4),
+.tasks-table td:nth-child(4),
+.tasks-table th:nth-child(6),
+.tasks-table td:nth-child(6),
+.tasks-table th:nth-child(7),
+.tasks-table td:nth-child(7),
+.tasks-table th:nth-child(8),
+.tasks-table td:nth-child(8),
+.tasks-table th:nth-child(9),
+.tasks-table td:nth-child(9) {
+    white-space: nowrap !important;
+}
+
+/* More balanced widths for the 9 task columns. */
+.tasks-table th:nth-child(1),
+.tasks-table td:nth-child(1) {
+    width: 180px !important;
+}
+
+.tasks-table th:nth-child(2),
+.tasks-table td:nth-child(2) {
+    width: 250px !important;
+}
+
+.tasks-table th:nth-child(3),
+.tasks-table td:nth-child(3) {
+    width: 125px !important;
+}
+
+.tasks-table th:nth-child(4),
+.tasks-table td:nth-child(4) {
+    width: 105px !important;
+}
+
+.tasks-table th:nth-child(5),
+.tasks-table td:nth-child(5) {
+    width: 220px !important;
+}
+
+.tasks-table th:nth-child(6),
+.tasks-table td:nth-child(6) {
+    width: 120px !important;
+}
+
+.tasks-table th:nth-child(7),
+.tasks-table td:nth-child(7) {
+    width: 100px !important;
+}
+
+.tasks-table th:nth-child(8),
+.tasks-table td:nth-child(8) {
+    width: 155px !important;
+}
+
+.tasks-table th:nth-child(9),
+.tasks-table td:nth-child(9) {
+    width: 150px !important;
+    min-width: 150px !important;
+    overflow: visible !important;
+}
+
+/* Badges must remain readable and must not collide with other columns. */
+.status,
+.schedule-status {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Action dropdown itself is allowed to escape the cell. */
+.task-actions,
+.task-action-wrapper {
+    overflow: visible !important;
+}
+
+/* History table gets enough width and wraps descriptive text. */
+.history-table {
+    width: 100%;
+    min-width: 1350px !important;
+    table-layout: fixed;
+}
+
+.history-table th,
+.history-table td {
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-table td:nth-child(2),
+.history-table td:nth-child(6),
+.history-table td:nth-child(7),
+.history-table td:nth-child(8) {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+.history-table td:nth-child(1),
+.history-table td:nth-child(3),
+.history-table td:nth-child(4),
+.history-table td:nth-child(5) {
+    white-space: nowrap;
+}
+
+/* Keep remarks inside their own cell. */
+.history-remarks {
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+}
+
+/* Make header labels readable instead of overlapping. */
+.tasks-table th,
+.history-table th {
+    line-height: 1.3;
+}
+
+/* At Risk and Delayed: both red, with Delayed slightly darker. */
+.schedule-risk {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+.schedule-delayed {
+    background: #b91c1c !important;
+    color: #ffffff !important;
+}
+
+/* Smaller screens keep the same readable table and use scrolling. */
+@media (max-width: 1100px) {
+    .tasks-table {
+        min-width: 1450px !important;
+    }
+
+    .history-table {
+        min-width: 1350px !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .table-container,
+    .history-table-container {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .tasks-table {
+        min-width: 1450px !important;
+    }
+
+    .history-table {
+        min-width: 1350px !important;
+    }
+}
