@@ -825,3 +825,52 @@
     min-width: 125px;
     color: #2e7d32;
 }
+
+
+/* ============================================================
+   PROJECT REPOSITORY UPLOAD
+   ============================================================ */
+
+.form-help-text {
+    margin: -1px 0 10px;
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.project-repository-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.project-repository-actions .btn {
+    min-width: 125px;
+}
+
+.project-repository-actions .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.upload-project-file-action,
+.upload-project-folder-action {
+    color: #2e7d32;
+}
+
+.upload-project-file-action:hover,
+.upload-project-folder-action:hover {
+    background: #edf7ee;
+}
+
+@media (max-width: 520px) {
+    .project-repository-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .project-repository-actions .btn {
+        width: 100%;
+    }
+}

@@ -245,18 +245,55 @@
                 </div>
 
 
-                <!-- PROJECT REPOSITORY / LINK -->
+                <!-- PROJECT REPOSITORY -->
                 <div class="form-group">
 
-                    <label for="projectLink">
+                    <label>
                         Project Repository
                     </label>
 
+                    <p class="form-help-text">
+                        The project repository is created automatically in Google Drive.
+                        Upload project files or folders after the project is created.
+                    </p>
+
+                    <div class="project-repository-actions">
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            id="uploadProjectFileBtn"
+                            disabled
+                        >
+                            Upload File
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            id="uploadProjectFolderBtn"
+                            disabled
+                        >
+                            Upload Folder
+                        </button>
+
+                    </div>
+
                     <input
-                        type="url"
-                        id="projectLink"
-                        placeholder="GitHub, Google Drive, deployed system, or other project link"
+                        type="file"
+                        id="projectFileInput"
+                        hidden
                     >
+
+                    <input
+                        type="file"
+                        id="projectFolderInput"
+                        webkitdirectory
+                        directory
+                        multiple
+                        hidden
+                    >
+
                 </div>
 
                 <!-- PROJECT OWNER -->

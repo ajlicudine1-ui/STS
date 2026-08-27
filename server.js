@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
 const { google } = require("googleapis");
+const { Readable } = require("stream");
 
 require("dotenv").config();
 
@@ -222,6 +223,151 @@ async function deleteDriveFolder(folderId) {
         );
     }
 }
+
+// ============================================================
+// GOOGLE DRIVE FILE / FOLDER UPLOAD HELPERS
+// ============================================================
+
+function escapeDriveQueryValue(value) {
+
+    return String(value || "")
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'");
+}
+
+
+async function findChildDriveFolder(
+    parentFolderId,
+    folderName
+) {
+
+    const escapedName =
+        escapeDriveQueryValue(
+            folderName
+        );
+
+    const escapedParent =
+        escapeDriveQueryValue(
+            parentFolderId
+        );
+
+    const response =
+        await googleDrive.files.list({
+            q:
+                `'${escapedParent}' in parents and ` +
+                `name = '${escapedName}' and ` +
+                `mimeType = 'application/vnd.google-apps.folder' and ` +
+                `trashed = false`,
+
+            fields:
+                "files(id,name)",
+
+            pageSize:
+                1
+        });
+
+    return response.data.files?.[0] || null;
+}
+
+
+async function ensureDriveFolderPath(
+    parentFolderId,
+    relativePath
+) {
+
+    const pathParts =
+        String(relativePath || "")
+            .split("/")
+            .map(part => part.trim())
+            .filter(Boolean);
+
+    let currentParentId =
+        parentFolderId;
+
+    for (const part of pathParts) {
+
+        let folder =
+            await findChildDriveFolder(
+                currentParentId,
+                part
+            );
+
+        if (!folder) {
+
+            const created =
+                await createDriveFolder({
+                    name:
+                        part,
+
+                    parentFolderId:
+                        currentParentId
+                });
+
+            folder = {
+                id:
+                    created.id,
+
+                name:
+                    created.name
+            };
+        }
+
+        currentParentId =
+            folder.id;
+    }
+
+    return currentParentId;
+}
+
+
+async function uploadBufferToDrive({
+    fileName,
+    mimeType,
+    buffer,
+    parentFolderId
+}) {
+
+    if (!fileName) {
+        throw new Error(
+            "File name is required."
+        );
+    }
+
+    if (!parentFolderId) {
+        throw new Error(
+            "Google Drive destination folder is missing."
+        );
+    }
+
+    const response =
+        await googleDrive.files.create({
+            requestBody: {
+                name:
+                    fileName,
+
+                parents: [
+                    parentFolderId
+                ]
+            },
+
+            media: {
+                mimeType:
+                    mimeType ||
+                    "application/octet-stream",
+
+                body:
+                    Readable.from(
+                        buffer
+                    )
+            },
+
+            fields:
+                "id,name,mimeType,webViewLink"
+        });
+
+    return response.data;
+}
+
 
 // ============================================================
 // MIDDLEWARE
@@ -664,6 +810,9 @@ app.post("/api/projects", async (req, res) => {
                         projectDriveFolder.id,
 
                     drive_folder_url:
+                        projectDriveFolder.url,
+
+                    project_url:
                         projectDriveFolder.url
                 })
                 .eq(
@@ -793,6 +942,174 @@ app.post("/api/projects", async (req, res) => {
 });
 
 // ============================================================
+// UPLOAD FILE TO PROJECT GOOGLE DRIVE REPOSITORY
+// ============================================================
+
+app.post(
+    "/api/projects/:projectId/repository/upload",
+    express.raw({
+        type: "*/*",
+        limit: "25mb"
+    }),
+    async (req, res) => {
+
+        try {
+
+            const { projectId } =
+                req.params;
+
+            const encodedFileName =
+                req.get("X-File-Name") ||
+                "";
+
+            const encodedRelativePath =
+                req.get("X-Relative-Path") ||
+                "";
+
+            const fileName =
+                decodeURIComponent(
+                    encodedFileName
+                ).trim();
+
+            const relativePath =
+                decodeURIComponent(
+                    encodedRelativePath
+                ).trim();
+
+
+            if (!fileName) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "File name is required."
+                });
+            }
+
+
+            if (
+                !Buffer.isBuffer(req.body) ||
+                req.body.length === 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "The uploaded file is empty."
+                });
+            }
+
+
+            const {
+                data: project,
+                error: projectError
+            } = await supabase
+                .from("projects")
+                .select(
+                    "project_id, project_name, drive_folder_id, drive_folder_url"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .single();
+
+
+            if (
+                projectError ||
+                !project
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Project not found."
+                });
+            }
+
+
+            if (!project.drive_folder_id) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "This project does not have a Google Drive repository."
+                });
+            }
+
+
+            const destinationFolderId =
+                await ensureDriveFolderPath(
+                    project.drive_folder_id,
+                    relativePath
+                );
+
+
+            const uploadedFile =
+                await uploadBufferToDrive({
+                    fileName:
+                        fileName,
+
+                    mimeType:
+                        req.get(
+                            "Content-Type"
+                        ) ||
+                        "application/octet-stream",
+
+                    buffer:
+                        req.body,
+
+                    parentFolderId:
+                        destinationFolderId
+                });
+
+
+            res.status(201).json({
+                success: true,
+
+                message:
+                    "File uploaded successfully.",
+
+                file: {
+                    id:
+                        uploadedFile.id,
+
+                    name:
+                        uploadedFile.name,
+
+                    mime_type:
+                        uploadedFile.mimeType,
+
+                    url:
+                        uploadedFile.webViewLink ||
+                        null,
+
+                    relative_path:
+                        relativePath ||
+                        null
+                }
+            });
+
+        } catch (error) {
+
+            console.error(
+                "PROJECT REPOSITORY UPLOAD ERROR:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error:
+                    "File could not be uploaded to Google Drive.",
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
 // GET NEXT PROJECT ID
 // Preview only - the database sequence still generates the real ID
 // ============================================================
@@ -885,7 +1202,6 @@ app.put(
 
             const {
                 project_name,
-                project_url,
                 project_owner,
                 version,
                 project_status,
@@ -913,11 +1229,6 @@ app.put(
 
                 project_name:
                     project_name.trim(),
-
-                project_url:
-                    project_url
-                        ? project_url.trim()
-                        : null,
 
                 project_owner:
                     project_owner

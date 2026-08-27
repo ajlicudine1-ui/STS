@@ -28,6 +28,21 @@ const projectOwner = document.getElementById("projectOwner");
 const developmentTeamContainer = document.getElementById("developmentTeamContainer");
 const addTeamMemberBtn = document.getElementById("addTeamMemberBtn");
 
+const uploadProjectFileBtn =
+    document.getElementById("uploadProjectFileBtn");
+
+const uploadProjectFolderBtn =
+    document.getElementById("uploadProjectFolderBtn");
+
+const projectFileInput =
+    document.getElementById("projectFileInput");
+
+const projectFolderInput =
+    document.getElementById("projectFolderInput");
+
+let pendingProjectFiles = [];
+let pendingProjectFolderFiles = [];
+
 
 // ============================================================
 // HELPERS
@@ -279,6 +294,378 @@ function collectDevelopmentTeam() {
 
 
 // ============================================================
+// PROJECT REPOSITORY UPLOAD
+// ============================================================
+
+function getUploadProjectId() {
+
+    if (editingProjectId) {
+        return editingProjectId;
+    }
+
+    return null;
+}
+
+
+function updateRepositoryUploadButtons() {
+
+    const hasExistingProject =
+        Boolean(editingProjectId);
+
+    if (uploadProjectFileBtn) {
+        uploadProjectFileBtn.disabled =
+            !hasExistingProject;
+
+        uploadProjectFileBtn.title =
+            hasExistingProject
+                ? "Upload a file to this project's Google Drive repository."
+                : "Create the project first before uploading files.";
+    }
+
+    if (uploadProjectFolderBtn) {
+        uploadProjectFolderBtn.disabled =
+            !hasExistingProject;
+
+        uploadProjectFolderBtn.title =
+            hasExistingProject
+                ? "Upload a folder to this project's Google Drive repository."
+                : "Create the project first before uploading folders.";
+    }
+}
+
+
+async function uploadSingleProjectFile(
+    projectId,
+    file,
+    relativePath = ""
+) {
+
+    if (!projectId || !file) {
+        throw new Error(
+            "Project and file are required."
+        );
+    }
+
+    const response =
+        await fetch(
+            `/api/projects/${encodeURIComponent(projectId)}/repository/upload`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        file.type ||
+                        "application/octet-stream",
+
+                    "X-File-Name":
+                        encodeURIComponent(
+                            file.name
+                        ),
+
+                    "X-Relative-Path":
+                        encodeURIComponent(
+                            relativePath || ""
+                        )
+                },
+
+                body:
+                    file
+            }
+        );
+
+    const result =
+        await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            result.error ||
+            result.details ||
+            `Failed to upload ${file.name}.`
+        );
+    }
+
+    return result;
+}
+
+
+async function uploadProjectFiles(
+    projectId,
+    files,
+    useRelativePath = false
+) {
+
+    const selectedFiles =
+        Array.from(files || []);
+
+    if (selectedFiles.length === 0) {
+        return;
+    }
+
+    for (
+        let index = 0;
+        index < selectedFiles.length;
+        index += 1
+    ) {
+
+        const file =
+            selectedFiles[index];
+
+        let relativePath = "";
+
+        if (
+            useRelativePath &&
+            file.webkitRelativePath
+        ) {
+
+            const pathParts =
+                file.webkitRelativePath
+                    .split("/")
+                    .filter(Boolean);
+
+            pathParts.pop();
+
+            relativePath =
+                pathParts.join("/");
+        }
+
+        const progressLabel =
+            `${index + 1}/${selectedFiles.length}`;
+
+        if (uploadProjectFileBtn) {
+            uploadProjectFileBtn.disabled =
+                true;
+        }
+
+        if (uploadProjectFolderBtn) {
+            uploadProjectFolderBtn.disabled =
+                true;
+        }
+
+        if (useRelativePath) {
+
+            if (uploadProjectFolderBtn) {
+                uploadProjectFolderBtn.textContent =
+                    `Uploading ${progressLabel}...`;
+            }
+
+        } else {
+
+            if (uploadProjectFileBtn) {
+                uploadProjectFileBtn.textContent =
+                    `Uploading ${progressLabel}...`;
+            }
+        }
+
+        await uploadSingleProjectFile(
+            projectId,
+            file,
+            relativePath
+        );
+    }
+}
+
+
+async function handleProjectFileSelection() {
+
+    const projectId =
+        getUploadProjectId();
+
+    if (!projectId) {
+
+        alert(
+            "Create the project first, then upload files to its repository."
+        );
+
+        if (projectFileInput) {
+            projectFileInput.value = "";
+        }
+
+        return;
+    }
+
+    const files =
+        Array.from(
+            projectFileInput?.files ||
+            []
+        );
+
+    if (files.length === 0) {
+        return;
+    }
+
+    try {
+
+        await uploadProjectFiles(
+            projectId,
+            files,
+            false
+        );
+
+        alert(
+            "File uploaded to the project repository successfully!"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Project file upload error:",
+            error
+        );
+
+        alert(
+            "Upload failed: " +
+            error.message
+        );
+
+    } finally {
+
+        if (projectFileInput) {
+            projectFileInput.value = "";
+        }
+
+        if (uploadProjectFileBtn) {
+            uploadProjectFileBtn.textContent =
+                "Upload File";
+        }
+
+        if (uploadProjectFolderBtn) {
+            uploadProjectFolderBtn.textContent =
+                "Upload Folder";
+        }
+
+        updateRepositoryUploadButtons();
+    }
+}
+
+
+async function handleProjectFolderSelection() {
+
+    const projectId =
+        getUploadProjectId();
+
+    if (!projectId) {
+
+        alert(
+            "Create the project first, then upload folders to its repository."
+        );
+
+        if (projectFolderInput) {
+            projectFolderInput.value = "";
+        }
+
+        return;
+    }
+
+    const files =
+        Array.from(
+            projectFolderInput?.files ||
+            []
+        );
+
+    if (files.length === 0) {
+        return;
+    }
+
+    try {
+
+        await uploadProjectFiles(
+            projectId,
+            files,
+            true
+        );
+
+        alert(
+            "Folder uploaded to the project repository successfully!"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Project folder upload error:",
+            error
+        );
+
+        alert(
+            "Folder upload failed: " +
+            error.message
+        );
+
+    } finally {
+
+        if (projectFolderInput) {
+            projectFolderInput.value = "";
+        }
+
+        if (uploadProjectFileBtn) {
+            uploadProjectFileBtn.textContent =
+                "Upload File";
+        }
+
+        if (uploadProjectFolderBtn) {
+            uploadProjectFolderBtn.textContent =
+                "Upload Folder";
+        }
+
+        updateRepositoryUploadButtons();
+    }
+}
+
+
+if (
+    uploadProjectFileBtn &&
+    projectFileInput
+) {
+
+    uploadProjectFileBtn.addEventListener(
+        "click",
+        () => {
+
+            if (!editingProjectId) {
+                alert(
+                    "Create the project first. After creation, open Edit and upload files to its repository."
+                );
+                return;
+            }
+
+            projectFileInput.click();
+        }
+    );
+
+    projectFileInput.addEventListener(
+        "change",
+        handleProjectFileSelection
+    );
+}
+
+
+if (
+    uploadProjectFolderBtn &&
+    projectFolderInput
+) {
+
+    uploadProjectFolderBtn.addEventListener(
+        "click",
+        () => {
+
+            if (!editingProjectId) {
+                alert(
+                    "Create the project first. After creation, open Edit and upload a folder to its repository."
+                );
+                return;
+            }
+
+            projectFolderInput.click();
+        }
+    );
+
+    projectFolderInput.addEventListener(
+        "change",
+        handleProjectFolderSelection
+    );
+}
+
+
+// ============================================================
 // VERSION GUIDE DROPDOWN
 // ============================================================
 
@@ -339,6 +726,16 @@ function resetProjectModal() {
 
     clearDevelopmentTeamRows();
     addTeamMemberRow();
+
+    if (projectFileInput) {
+        projectFileInput.value = "";
+    }
+
+    if (projectFolderInput) {
+        projectFolderInput.value = "";
+    }
+
+    updateRepositoryUploadButtons();
 
     if (projectModalTitle) {
         projectModalTitle.textContent =
@@ -433,6 +830,8 @@ async function openEditProjectModal(
     editingProjectId =
         project.project_id;
 
+    updateRepositoryUploadButtons();
+
 
     if (projectModalTitle) {
         projectModalTitle.textContent =
@@ -467,12 +866,6 @@ async function openEditProjectModal(
     setProjectValue(
         "projectVersion",
         project.version
-    );
-
-
-    setProjectValue(
-        "projectLink",
-        project.project_url
     );
 
 
@@ -793,6 +1186,32 @@ function createProjectActionMenu(
 
             <button
                 type="button"
+                class="project-action-item upload-project-file-action"
+            >
+                <span class="project-action-icon">
+                    ↑
+                </span>
+
+                <span>
+                    Upload File
+                </span>
+            </button>
+
+            <button
+                type="button"
+                class="project-action-item upload-project-folder-action"
+            >
+                <span class="project-action-icon">
+                    ▣
+                </span>
+
+                <span>
+                    Upload Folder
+                </span>
+            </button>
+
+            <button
+                type="button"
                 class="project-action-item edit-project-action"
             >
                 <span class="project-action-icon">
@@ -883,11 +1302,13 @@ function createProjectActionMenu(
 
                 closeAllProjectActionMenus();
 
-                if (
-                    !project.project_url
-                ) {
+                const repositoryUrl =
+                    project.drive_folder_url ||
+                    project.project_url;
+
+                if (!repositoryUrl) {
                     alert(
-                        "No project link has been added for this project."
+                        "No Google Drive repository is available for this project."
                     );
 
                     return;
@@ -896,7 +1317,7 @@ function createProjectActionMenu(
                 try {
                     const url =
                         new URL(
-                            project.project_url
+                            repositoryUrl
                         );
 
                     if (
@@ -916,12 +1337,62 @@ function createProjectActionMenu(
 
                 } catch (error) {
                     alert(
-                        "The project link is invalid."
+                        "The project repository link is invalid."
                     );
                 }
             }
         );
     }
+
+    const uploadFileAction =
+        wrapper.querySelector(
+            ".upload-project-file-action"
+        );
+
+    if (uploadFileAction) {
+        uploadFileAction.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+                closeAllProjectActionMenus();
+
+                editingProjectId =
+                    project.project_id;
+
+                updateRepositoryUploadButtons();
+
+                if (projectFileInput) {
+                    projectFileInput.click();
+                }
+            }
+        );
+    }
+
+
+    const uploadFolderAction =
+        wrapper.querySelector(
+            ".upload-project-folder-action"
+        );
+
+    if (uploadFolderAction) {
+        uploadFolderAction.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+                closeAllProjectActionMenus();
+
+                editingProjectId =
+                    project.project_id;
+
+                updateRepositoryUploadButtons();
+
+                if (projectFolderInput) {
+                    projectFolderInput.click();
+                }
+            }
+        );
+    }
+
 
     const editAction =
         wrapper.querySelector(
@@ -1113,23 +1584,10 @@ async function saveProject() {
             corresponding input exists.
         */
 
-        const projectLinkElement =
-            getProjectElement(
-                "projectLink"
-            );
-
         const projectOwnerElement =
             getProjectElement(
                 "projectOwner"
             );
-
-
-        if (projectLinkElement) {
-
-            projectData.project_url =
-                projectLinkElement.value.trim() ||
-                null;
-        }
 
 
         if (projectOwnerElement) {
@@ -1401,6 +1859,8 @@ document.addEventListener(
         loadDashboard();
 
         ensureAtLeastOneTeamRow();
+
+        updateRepositoryUploadButtons();
 
     }
 );
