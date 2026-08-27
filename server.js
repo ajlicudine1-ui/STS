@@ -225,7 +225,7 @@ async function deleteDriveFolder(folderId) {
 }
 
 // ============================================================
-// GOOGLE DRIVE FILE / FOLDER UPLOAD HELPERS
+// GOOGLE DRIVE REPOSITORY HELPERS
 // ============================================================
 
 function escapeDriveQueryValue(value) {
@@ -241,26 +241,16 @@ async function findChildDriveFolder(
     folderName
 ) {
 
-    const escapedName =
-        escapeDriveQueryValue(
-            folderName
-        );
-
-    const escapedParent =
-        escapeDriveQueryValue(
-            parentFolderId
-        );
-
     const response =
         await googleDrive.files.list({
             q:
-                `'${escapedParent}' in parents and ` +
-                `name = '${escapedName}' and ` +
+                `'${escapeDriveQueryValue(parentFolderId)}' in parents and ` +
+                `name = '${escapeDriveQueryValue(folderName)}' and ` +
                 `mimeType = 'application/vnd.google-apps.folder' and ` +
                 `trashed = false`,
 
             fields:
-                "files(id,name)",
+                "files(id,name,webViewLink)",
 
             pageSize:
                 1
@@ -275,7 +265,7 @@ async function ensureDriveFolderPath(
     relativePath
 ) {
 
-    const pathParts =
+    const parts =
         String(relativePath || "")
             .split("/")
             .map(part => part.trim())
@@ -284,15 +274,15 @@ async function ensureDriveFolderPath(
     let currentParentId =
         parentFolderId;
 
-    for (const part of pathParts) {
+    for (const part of parts) {
 
-        let folder =
+        let childFolder =
             await findChildDriveFolder(
                 currentParentId,
                 part
             );
 
-        if (!folder) {
+        if (!childFolder) {
 
             const created =
                 await createDriveFolder({
@@ -303,7 +293,7 @@ async function ensureDriveFolderPath(
                         currentParentId
                 });
 
-            folder = {
+            childFolder = {
                 id:
                     created.id,
 
@@ -313,7 +303,7 @@ async function ensureDriveFolderPath(
         }
 
         currentParentId =
-            folder.id;
+            childFolder.id;
     }
 
     return currentParentId;
@@ -326,18 +316,6 @@ async function uploadBufferToDrive({
     buffer,
     parentFolderId
 }) {
-
-    if (!fileName) {
-        throw new Error(
-            "File name is required."
-        );
-    }
-
-    if (!parentFolderId) {
-        throw new Error(
-            "Google Drive destination folder is missing."
-        );
-    }
 
     const response =
         await googleDrive.files.create({
@@ -800,6 +778,16 @@ app.post("/api/projects", async (req, res) => {
                 });
 
 
+            const repositoryDriveFolder =
+                await createDriveFolder({
+                    name:
+                        "Project Repository",
+
+                    parentFolderId:
+                        projectDriveFolder.id
+                });
+
+
             const {
                 data: updatedProject,
                 error: driveUpdateError
@@ -812,8 +800,15 @@ app.post("/api/projects", async (req, res) => {
                     drive_folder_url:
                         projectDriveFolder.url,
 
+                    repository_folder_id:
+                        repositoryDriveFolder.id,
+
+                    repository_folder_url:
+                        repositoryDriveFolder.url,
+
+                    // Keep project_url compatible with older frontend code.
                     project_url:
-                        projectDriveFolder.url
+                        repositoryDriveFolder.url
                 })
                 .eq(
                     "project_id",
@@ -860,7 +855,7 @@ app.post("/api/projects", async (req, res) => {
                 success: false,
 
                 error:
-                    "Project could not be created because its Google Drive folder could not be created.",
+                    "Project could not be created because its Google Drive project/repository folders could not be created.",
 
                 details:
                     driveError.message
@@ -942,14 +937,17 @@ app.post("/api/projects", async (req, res) => {
 });
 
 // ============================================================
-// UPLOAD FILE TO PROJECT GOOGLE DRIVE REPOSITORY
+// UPLOAD FILE TO PROJECT REPOSITORY
 // ============================================================
 
 app.post(
     "/api/projects/:projectId/repository/upload",
     express.raw({
-        type: "*/*",
-        limit: "25mb"
+        type:
+            "application/octet-stream",
+
+        limit:
+            "25mb"
     }),
     async (req, res) => {
 
@@ -958,22 +956,22 @@ app.post(
             const { projectId } =
                 req.params;
 
-            const encodedFileName =
-                req.get("X-File-Name") ||
-                "";
-
-            const encodedRelativePath =
-                req.get("X-Relative-Path") ||
-                "";
-
             const fileName =
                 decodeURIComponent(
-                    encodedFileName
+                    req.get("X-File-Name") ||
+                    ""
+                ).trim();
+
+            const mimeType =
+                decodeURIComponent(
+                    req.get("X-File-Mime-Type") ||
+                    "application/octet-stream"
                 ).trim();
 
             const relativePath =
                 decodeURIComponent(
-                    encodedRelativePath
+                    req.get("X-Relative-Path") ||
+                    ""
                 ).trim();
 
 
@@ -995,7 +993,7 @@ app.post(
                 return res.status(400).json({
                     success: false,
                     error:
-                        "The uploaded file is empty."
+                        "Uploaded file is empty."
                 });
             }
 
@@ -1006,7 +1004,7 @@ app.post(
             } = await supabase
                 .from("projects")
                 .select(
-                    "project_id, project_name, drive_folder_id, drive_folder_url"
+                    "project_id, repository_folder_id, repository_folder_url"
                 )
                 .eq(
                     "project_id",
@@ -1028,33 +1026,30 @@ app.post(
             }
 
 
-            if (!project.drive_folder_id) {
+            if (!project.repository_folder_id) {
 
                 return res.status(400).json({
                     success: false,
                     error:
-                        "This project does not have a Google Drive repository."
+                        "Project Repository folder is missing for this project."
                 });
             }
 
 
             const destinationFolderId =
                 await ensureDriveFolderPath(
-                    project.drive_folder_id,
+                    project.repository_folder_id,
                     relativePath
                 );
 
 
-            const uploadedFile =
+            const uploaded =
                 await uploadBufferToDrive({
                     fileName:
                         fileName,
 
                     mimeType:
-                        req.get(
-                            "Content-Type"
-                        ) ||
-                        "application/octet-stream",
+                        mimeType,
 
                     buffer:
                         req.body,
@@ -1064,7 +1059,7 @@ app.post(
                 });
 
 
-            res.status(201).json({
+            return res.status(201).json({
                 success: true,
 
                 message:
@@ -1072,16 +1067,16 @@ app.post(
 
                 file: {
                     id:
-                        uploadedFile.id,
+                        uploaded.id,
 
                     name:
-                        uploadedFile.name,
+                        uploaded.name,
 
                     mime_type:
-                        uploadedFile.mimeType,
+                        uploaded.mimeType,
 
                     url:
-                        uploadedFile.webViewLink ||
+                        uploaded.webViewLink ||
                         null,
 
                     relative_path:
@@ -1097,10 +1092,10 @@ app.post(
                 error
             );
 
-            res.status(500).json({
+            return res.status(500).json({
                 success: false,
                 error:
-                    "File could not be uploaded to Google Drive.",
+                    "File could not be uploaded to Project Repository.",
                 details:
                     error.message
             });

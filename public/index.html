@@ -253,8 +253,8 @@
                     </label>
 
                     <p class="form-help-text">
-                        The project repository is created automatically in Google Drive.
-                        Upload project files or folders after the project is created.
+                        A Project Repository folder is created automatically inside the project folder.
+                        You may select files or folders now; they will upload after the project is created.
                     </p>
 
                     <div class="project-repository-actions">
@@ -263,7 +263,6 @@
                             type="button"
                             class="btn btn-secondary"
                             id="uploadProjectFileBtn"
-                            disabled
                         >
                             Upload File
                         </button>
@@ -272,11 +271,18 @@
                             type="button"
                             class="btn btn-secondary"
                             id="uploadProjectFolderBtn"
-                            disabled
                         >
                             Upload Folder
                         </button>
 
+                    </div>
+
+                    <div
+                        class="project-upload-selection-status"
+                        id="projectUploadSelectionStatus"
+                        aria-live="polite"
+                    >
+                        No files or folders selected.
                     </div>
 
                     <input

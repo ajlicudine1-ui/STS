@@ -846,12 +846,18 @@
 }
 
 .project-repository-actions .btn {
-    min-width: 125px;
+    min-width: 128px;
 }
 
-.project-repository-actions .btn:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
+.project-upload-selection-status {
+    margin-top: 9px;
+    padding: 9px 11px;
+    border: 1px solid #e1e7e1;
+    border-radius: 7px;
+    background: #f8fbf8;
+    color: #5f6b63;
+    font-size: 12px;
+    line-height: 1.4;
 }
 
 .upload-project-file-action,

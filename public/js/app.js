@@ -40,8 +40,12 @@ const projectFileInput =
 const projectFolderInput =
     document.getElementById("projectFolderInput");
 
-let pendingProjectFiles = [];
-let pendingProjectFolderFiles = [];
+const projectUploadSelectionStatus =
+    document.getElementById("projectUploadSelectionStatus");
+
+let pendingProjectFileUploads = [];
+let pendingProjectFolderUploads = [];
+
 
 
 // ============================================================
@@ -294,55 +298,83 @@ function collectDevelopmentTeam() {
 
 
 // ============================================================
-// PROJECT REPOSITORY UPLOAD
+// PROJECT REPOSITORY FILE / FOLDER UPLOAD
 // ============================================================
 
-function getUploadProjectId() {
+function updateProjectUploadSelectionStatus() {
 
-    if (editingProjectId) {
-        return editingProjectId;
+    if (!projectUploadSelectionStatus) {
+        return;
     }
 
-    return null;
+    const fileCount =
+        pendingProjectFileUploads.length;
+
+    const folderFileCount =
+        pendingProjectFolderUploads.length;
+
+    if (
+        fileCount === 0 &&
+        folderFileCount === 0
+    ) {
+        projectUploadSelectionStatus.textContent =
+            editingProjectId
+                ? "Choose files or folders to upload to Project Repository."
+                : "No files or folders selected.";
+        return;
+    }
+
+    const parts = [];
+
+    if (fileCount > 0) {
+        parts.push(
+            `${fileCount} file${fileCount === 1 ? "" : "s"} selected`
+        );
+    }
+
+    if (folderFileCount > 0) {
+        parts.push(
+            `${folderFileCount} folder file${folderFileCount === 1 ? "" : "s"} selected`
+        );
+    }
+
+    projectUploadSelectionStatus.textContent =
+        parts.join(" • ");
 }
 
 
-function updateRepositoryUploadButtons() {
+function resetPendingProjectUploads() {
 
-    const hasExistingProject =
-        Boolean(editingProjectId);
+    pendingProjectFileUploads = [];
+    pendingProjectFolderUploads = [];
 
-    if (uploadProjectFileBtn) {
-        uploadProjectFileBtn.disabled =
-            !hasExistingProject;
-
-        uploadProjectFileBtn.title =
-            hasExistingProject
-                ? "Upload a file to this project's Google Drive repository."
-                : "Create the project first before uploading files.";
+    if (projectFileInput) {
+        projectFileInput.value = "";
     }
 
-    if (uploadProjectFolderBtn) {
-        uploadProjectFolderBtn.disabled =
-            !hasExistingProject;
-
-        uploadProjectFolderBtn.title =
-            hasExistingProject
-                ? "Upload a folder to this project's Google Drive repository."
-                : "Create the project first before uploading folders.";
+    if (projectFolderInput) {
+        projectFolderInput.value = "";
     }
+
+    updateProjectUploadSelectionStatus();
 }
 
 
-async function uploadSingleProjectFile(
+async function uploadFileToProjectRepository(
     projectId,
     file,
     relativePath = ""
 ) {
 
-    if (!projectId || !file) {
+    if (!projectId) {
         throw new Error(
-            "Project and file are required."
+            "Project ID is required for upload."
+        );
+    }
+
+    if (!file) {
+        throw new Error(
+            "A file is required for upload."
         );
     }
 
@@ -353,8 +385,9 @@ async function uploadSingleProjectFile(
                 method: "POST",
 
                 headers: {
+                    // Always use octet-stream so the global express.json()
+                    // middleware does not consume JSON files before raw upload.
                     "Content-Type":
-                        file.type ||
                         "application/octet-stream",
 
                     "X-File-Name":
@@ -362,9 +395,16 @@ async function uploadSingleProjectFile(
                             file.name
                         ),
 
+                    "X-File-Mime-Type":
+                        encodeURIComponent(
+                            file.type ||
+                            "application/octet-stream"
+                        ),
+
                     "X-Relative-Path":
                         encodeURIComponent(
-                            relativePath || ""
+                            relativePath ||
+                            ""
                         )
                 },
 
@@ -388,226 +428,99 @@ async function uploadSingleProjectFile(
 }
 
 
-async function uploadProjectFiles(
-    projectId,
-    files,
-    useRelativePath = false
+async function uploadQueuedProjectContent(
+    projectId
 ) {
 
-    const selectedFiles =
-        Array.from(files || []);
+    const uploads = [];
 
-    if (selectedFiles.length === 0) {
-        return;
-    }
+    pendingProjectFileUploads.forEach(
+        file => {
+            uploads.push({
+                file,
+                relativePath: ""
+            });
+        }
+    );
 
-    for (
-        let index = 0;
-        index < selectedFiles.length;
-        index += 1
-    ) {
+    pendingProjectFolderUploads.forEach(
+        file => {
 
-        const file =
-            selectedFiles[index];
+            const relativeFilePath =
+                file.webkitRelativePath ||
+                "";
 
-        let relativePath = "";
-
-        if (
-            useRelativePath &&
-            file.webkitRelativePath
-        ) {
-
-            const pathParts =
-                file.webkitRelativePath
+            const parts =
+                relativeFilePath
                     .split("/")
                     .filter(Boolean);
 
-            pathParts.pop();
+            // Keep the selected root folder in Drive.
+            // Remove only the filename from the relative path.
+            parts.pop();
 
-            relativePath =
-                pathParts.join("/");
+            uploads.push({
+                file,
+                relativePath:
+                    parts.join("/")
+            });
+        }
+    );
+
+    if (uploads.length === 0) {
+        return;
+    }
+
+    const total =
+        uploads.length;
+
+    for (
+        let index = 0;
+        index < uploads.length;
+        index += 1
+    ) {
+
+        const item =
+            uploads[index];
+
+        if (projectUploadSelectionStatus) {
+            projectUploadSelectionStatus.textContent =
+                `Uploading ${index + 1} of ${total}: ${item.file.name}`;
         }
 
-        const progressLabel =
-            `${index + 1}/${selectedFiles.length}`;
-
-        if (uploadProjectFileBtn) {
-            uploadProjectFileBtn.disabled =
-                true;
-        }
-
-        if (uploadProjectFolderBtn) {
-            uploadProjectFolderBtn.disabled =
-                true;
-        }
-
-        if (useRelativePath) {
-
-            if (uploadProjectFolderBtn) {
-                uploadProjectFolderBtn.textContent =
-                    `Uploading ${progressLabel}...`;
-            }
-
-        } else {
-
-            if (uploadProjectFileBtn) {
-                uploadProjectFileBtn.textContent =
-                    `Uploading ${progressLabel}...`;
-            }
-        }
-
-        await uploadSingleProjectFile(
+        await uploadFileToProjectRepository(
             projectId,
-            file,
-            relativePath
+            item.file,
+            item.relativePath
         );
+    }
+
+    if (projectUploadSelectionStatus) {
+        projectUploadSelectionStatus.textContent =
+            `${total} upload${total === 1 ? "" : "s"} completed.`;
     }
 }
 
 
-async function handleProjectFileSelection() {
+async function uploadSelectedContentForExistingProject() {
 
-    const projectId =
-        getUploadProjectId();
-
-    if (!projectId) {
-
-        alert(
-            "Create the project first, then upload files to its repository."
-        );
-
-        if (projectFileInput) {
-            projectFileInput.value = "";
-        }
-
+    if (!editingProjectId) {
         return;
     }
 
-    const files =
-        Array.from(
-            projectFileInput?.files ||
-            []
-        );
+    const hasUploads =
+        pendingProjectFileUploads.length > 0 ||
+        pendingProjectFolderUploads.length > 0;
 
-    if (files.length === 0) {
+    if (!hasUploads) {
         return;
     }
 
-    try {
+    await uploadQueuedProjectContent(
+        editingProjectId
+    );
 
-        await uploadProjectFiles(
-            projectId,
-            files,
-            false
-        );
-
-        alert(
-            "File uploaded to the project repository successfully!"
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Project file upload error:",
-            error
-        );
-
-        alert(
-            "Upload failed: " +
-            error.message
-        );
-
-    } finally {
-
-        if (projectFileInput) {
-            projectFileInput.value = "";
-        }
-
-        if (uploadProjectFileBtn) {
-            uploadProjectFileBtn.textContent =
-                "Upload File";
-        }
-
-        if (uploadProjectFolderBtn) {
-            uploadProjectFolderBtn.textContent =
-                "Upload Folder";
-        }
-
-        updateRepositoryUploadButtons();
-    }
-}
-
-
-async function handleProjectFolderSelection() {
-
-    const projectId =
-        getUploadProjectId();
-
-    if (!projectId) {
-
-        alert(
-            "Create the project first, then upload folders to its repository."
-        );
-
-        if (projectFolderInput) {
-            projectFolderInput.value = "";
-        }
-
-        return;
-    }
-
-    const files =
-        Array.from(
-            projectFolderInput?.files ||
-            []
-        );
-
-    if (files.length === 0) {
-        return;
-    }
-
-    try {
-
-        await uploadProjectFiles(
-            projectId,
-            files,
-            true
-        );
-
-        alert(
-            "Folder uploaded to the project repository successfully!"
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Project folder upload error:",
-            error
-        );
-
-        alert(
-            "Folder upload failed: " +
-            error.message
-        );
-
-    } finally {
-
-        if (projectFolderInput) {
-            projectFolderInput.value = "";
-        }
-
-        if (uploadProjectFileBtn) {
-            uploadProjectFileBtn.textContent =
-                "Upload File";
-        }
-
-        if (uploadProjectFolderBtn) {
-            uploadProjectFolderBtn.textContent =
-                "Upload Folder";
-        }
-
-        updateRepositoryUploadButtons();
-    }
+    resetPendingProjectUploads();
 }
 
 
@@ -619,21 +532,47 @@ if (
     uploadProjectFileBtn.addEventListener(
         "click",
         () => {
-
-            if (!editingProjectId) {
-                alert(
-                    "Create the project first. After creation, open Edit and upload files to its repository."
-                );
-                return;
-            }
-
             projectFileInput.click();
         }
     );
 
     projectFileInput.addEventListener(
         "change",
-        handleProjectFileSelection
+        async () => {
+
+            pendingProjectFileUploads =
+                Array.from(
+                    projectFileInput.files ||
+                    []
+                );
+
+            updateProjectUploadSelectionStatus();
+
+            // For an existing project, upload immediately.
+            if (editingProjectId) {
+
+                try {
+
+                    await uploadSelectedContentForExistingProject();
+
+                    alert(
+                        "File uploaded to Project Repository successfully!"
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Project file upload error:",
+                        error
+                    );
+
+                    alert(
+                        "Upload failed: " +
+                        error.message
+                    );
+                }
+            }
+        }
     );
 }
 
@@ -646,21 +585,47 @@ if (
     uploadProjectFolderBtn.addEventListener(
         "click",
         () => {
-
-            if (!editingProjectId) {
-                alert(
-                    "Create the project first. After creation, open Edit and upload a folder to its repository."
-                );
-                return;
-            }
-
             projectFolderInput.click();
         }
     );
 
     projectFolderInput.addEventListener(
         "change",
-        handleProjectFolderSelection
+        async () => {
+
+            pendingProjectFolderUploads =
+                Array.from(
+                    projectFolderInput.files ||
+                    []
+                );
+
+            updateProjectUploadSelectionStatus();
+
+            // For an existing project, upload immediately.
+            if (editingProjectId) {
+
+                try {
+
+                    await uploadSelectedContentForExistingProject();
+
+                    alert(
+                        "Folder uploaded to Project Repository successfully!"
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Project folder upload error:",
+                        error
+                    );
+
+                    alert(
+                        "Folder upload failed: " +
+                        error.message
+                    );
+                }
+            }
+        }
     );
 }
 
@@ -726,16 +691,6 @@ function resetProjectModal() {
 
     clearDevelopmentTeamRows();
     addTeamMemberRow();
-
-    if (projectFileInput) {
-        projectFileInput.value = "";
-    }
-
-    if (projectFolderInput) {
-        projectFolderInput.value = "";
-    }
-
-    updateRepositoryUploadButtons();
 
     if (projectModalTitle) {
         projectModalTitle.textContent =
@@ -830,7 +785,7 @@ async function openEditProjectModal(
     editingProjectId =
         project.project_id;
 
-    updateRepositoryUploadButtons();
+    updateProjectUploadSelectionStatus();
 
 
     if (projectModalTitle) {
@@ -1303,12 +1258,13 @@ function createProjectActionMenu(
                 closeAllProjectActionMenus();
 
                 const repositoryUrl =
+                    project.repository_folder_url ||
                     project.drive_folder_url ||
                     project.project_url;
 
                 if (!repositoryUrl) {
                     alert(
-                        "No Google Drive repository is available for this project."
+                        "No Project Repository folder is available for this project."
                     );
 
                     return;
@@ -1337,7 +1293,7 @@ function createProjectActionMenu(
 
                 } catch (error) {
                     alert(
-                        "The project repository link is invalid."
+                        "The Project Repository link is invalid."
                     );
                 }
             }
@@ -1359,7 +1315,7 @@ function createProjectActionMenu(
                 editingProjectId =
                     project.project_id;
 
-                updateRepositoryUploadButtons();
+                resetPendingProjectUploads();
 
                 if (projectFileInput) {
                     projectFileInput.click();
@@ -1384,7 +1340,7 @@ function createProjectActionMenu(
                 editingProjectId =
                     project.project_id;
 
-                updateRepositoryUploadButtons();
+                resetPendingProjectUploads();
 
                 if (projectFolderInput) {
                     projectFolderInput.click();
@@ -1711,6 +1667,30 @@ async function saveProject() {
         }
 
 
+        const savedProjectId =
+            result.project?.project_id ||
+            editingProjectId;
+
+        if (
+            !isEditing &&
+            savedProjectId &&
+            (
+                pendingProjectFileUploads.length > 0 ||
+                pendingProjectFolderUploads.length > 0
+            )
+        ) {
+
+            if (projectSubmitBtn) {
+                projectSubmitBtn.textContent =
+                    "Uploading Repository...";
+            }
+
+            await uploadQueuedProjectContent(
+                savedProjectId
+            );
+        }
+
+
         alert(
             isEditing
                 ? "Project updated successfully!"
@@ -1860,7 +1840,7 @@ document.addEventListener(
 
         ensureAtLeastOneTeamRow();
 
-        updateRepositoryUploadButtons();
+        updateProjectUploadSelectionStatus();
 
     }
 );
