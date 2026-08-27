@@ -1755,15 +1755,11 @@ function showUploadOptionsInActionMenu(
     menu.innerHTML = `
         <button
             type="button"
-            class="project-action-item back-to-project-actions"
+            class="upload-menu-close back-to-project-actions"
+            title="Back"
+            aria-label="Back"
         >
-            <span class="project-action-icon">
-                ×
-            </span>
-
-            <span>
-                Close
-            </span>
+            ×
         </button>
 
         <button

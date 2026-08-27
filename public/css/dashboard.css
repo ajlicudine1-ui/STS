@@ -1241,28 +1241,42 @@
 
 
 /* Small X at upper-left */
+/* Upload submenu */
+.project-action-menu {
+    position: relative;
+}
+
+
+/* X floats in the upper-left */
 .upload-menu-close {
+    position: absolute;
+
+    top: 6px;
+    left: 7px;
+
+    width: 24px;
+    height: 24px;
+
     display: flex;
     align-items: center;
     justify-content: center;
 
-    width: 26px;
-    height: 26px;
-
-    margin: 2px 0 0 6px;
     padding: 0;
+    margin: 0;
 
     border: none;
-    border-radius: 6px;
+    border-radius: 5px;
 
     background: transparent;
     color: #475569;
 
-    font-size: 20px;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 600;
     line-height: 1;
 
     cursor: pointer;
+
+    z-index: 5;
 }
 
 .upload-menu-close:hover {
@@ -1271,16 +1285,23 @@
 }
 
 
-/* Move upload options upward */
-.upload-menu-close + .project-action-item {
-    margin-top: -1px;
+/* Upload Files starts on first row */
+.choose-project-files {
+    margin-top: 0;
+
+    padding-left: 48px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+
+    min-height: 42px;
 }
 
 
-/* Slightly tighter upload menu */
-.choose-project-files,
+/* Upload Folder directly underneath */
 .choose-project-folder {
-    min-height: 44px;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-left: 48px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+
+    min-height: 42px;
 }
