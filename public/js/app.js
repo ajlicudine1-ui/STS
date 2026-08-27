@@ -1784,15 +1784,40 @@ function openUploadTypeMenu(anchorButton) {
 
 
     const rect =
-        anchorButton.getBoundingClientRect();
+    anchorButton.getBoundingClientRect();
+
+const menuWidth = 200;
+
+let left =
+    rect.left;
+
+let top =
+    rect.bottom + 6;
+
+
+// Prevent menu from going outside right side
+if (left + menuWidth > window.innerWidth - 10) {
+
+    left =
+        window.innerWidth -
+        menuWidth -
+        10;
+}
+
+
+    // Prevent menu from going below screen
+    if (top + 110 > window.innerHeight) {
+
+        top =
+            rect.top - 110;
+    }
 
 
     menu.style.left =
-        `${rect.left}px`;
+        `${Math.max(10, left)}px`;
 
     menu.style.top =
-        `${rect.bottom + 5}px`;
-
+        `${Math.max(10, top)}px`;
 
     const chooseFiles =
         menu.querySelector(
@@ -2040,28 +2065,31 @@ function createProjectActionMenu(
         ".upload-project-content-action"
     );
 
-if (uploadProjectContentAction) {
+    if (uploadProjectContentAction) {
 
-    uploadProjectContentAction.addEventListener(
-        "click",
-        event => {
+        uploadProjectContentAction.addEventListener(
+            "click",
+            event => {
 
-            event.stopPropagation();
+                event.stopPropagation();
 
-            closeAllProjectActionMenus();
+                editingProjectId =
+                    project.project_id;
 
-            editingProjectId =
-                project.project_id;
+                currentRepositoryProject =
+                    project;
 
-            currentRepositoryProject =
-                project;
+                // Open first so the button position is still available
+                openUploadTypeMenu(
+                    uploadProjectContentAction
+                );
 
-            openUploadTypeMenu(
-                uploadProjectContentAction
-            );
-        }
-    );
-}
+                // Then close the Actions dropdown
+                closeAllProjectActionMenus();
+
+            }
+        );
+    }
     const editAction =
         wrapper.querySelector(
             ".edit-project-action"

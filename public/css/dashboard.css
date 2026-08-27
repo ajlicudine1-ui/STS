@@ -860,15 +860,6 @@
     line-height: 1.4;
 }
 
-.upload-project-file-action,
-.upload-project-folder-action {
-    color: #2e7d32;
-}
-
-.upload-project-file-action:hover,
-.upload-project-folder-action:hover {
-    background: #edf7ee;
-}
 
 @media (max-width: 520px) {
     .project-repository-actions {
