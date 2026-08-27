@@ -1238,3 +1238,49 @@
     background: #edf7ee;
     color: #1b5e20;
 }
+
+
+/* Small X at upper-left */
+.upload-menu-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 26px;
+    height: 26px;
+
+    margin: 2px 0 0 6px;
+    padding: 0;
+
+    border: none;
+    border-radius: 6px;
+
+    background: transparent;
+    color: #475569;
+
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.upload-menu-close:hover {
+    background: #edf7ee;
+    color: #1b5e20;
+}
+
+
+/* Move upload options upward */
+.upload-menu-close + .project-action-item {
+    margin-top: -1px;
+}
+
+
+/* Slightly tighter upload menu */
+.choose-project-files,
+.choose-project-folder {
+    min-height: 44px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
