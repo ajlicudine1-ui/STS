@@ -537,13 +537,14 @@
 }
 
 .schedule-risk {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.schedule-delayed {
     background: #fee2e2;
     color: #b91c1c;
+}
+
+/* Delayed */
+.schedule-delayed {
+    background: #fecaca;
+    color: #991b1b;
 }
 
 .schedule-completed {
