@@ -332,45 +332,214 @@ function collectDevelopmentTeam() {
 // PROJECT REPOSITORY FILE / FOLDER UPLOAD
 // ============================================================
 
+function getProjectQueuedUploads() {
+
+    const items = [];
+
+    pendingProjectFileUploads.forEach(
+        (file, index) => {
+            items.push({
+                type:
+                    "file",
+
+                index:
+                    index,
+
+                file:
+                    file,
+
+                displayName:
+                    file.name,
+
+                displayPath:
+                    file.name
+            });
+        }
+    );
+
+    pendingProjectFolderUploads.forEach(
+        (file, index) => {
+
+            const path =
+                file.webkitRelativePath ||
+                file.name;
+
+            items.push({
+                type:
+                    "folder",
+
+                index:
+                    index,
+
+                file:
+                    file,
+
+                displayName:
+                    file.name,
+
+                displayPath:
+                    path
+            });
+        }
+    );
+
+    return items;
+}
+
+
 function updateProjectUploadSelectionStatus() {
 
     if (!projectUploadSelectionStatus) {
         return;
     }
 
-    const fileCount =
-        pendingProjectFileUploads.length;
+    const items =
+        getProjectQueuedUploads();
 
-    const folderFileCount =
-        pendingProjectFolderUploads.length;
+    if (items.length === 0) {
 
-    if (
-        fileCount === 0 &&
-        folderFileCount === 0
-    ) {
-        projectUploadSelectionStatus.textContent =
-            editingProjectId
-                ? "Choose files or folders to upload to Project Repository."
-                : "No files or folders selected.";
+        projectUploadSelectionStatus.innerHTML = `
+            <div class="project-upload-empty">
+                ${
+                    editingProjectId
+                        ? "Choose files or folders to upload to Project Repository."
+                        : "No files or folders selected."
+                }
+            </div>
+        `;
+
         return;
     }
 
-    const parts = [];
+    const attachmentHtml =
+        items.map(item => {
 
-    if (fileCount > 0) {
-        parts.push(
-            `${fileCount} file${fileCount === 1 ? "" : "s"} selected`
-        );
-    }
+            const sizeText =
+                formatRepositoryFileSize(
+                    item.file?.size
+                );
 
-    if (folderFileCount > 0) {
-        parts.push(
-            `${folderFileCount} folder file${folderFileCount === 1 ? "" : "s"} selected`
-        );
-    }
+            const typeLabel =
+                item.type === "folder"
+                    ? "Folder item"
+                    : "File";
 
-    projectUploadSelectionStatus.textContent =
-        parts.join(" • ");
+            return `
+                <div
+                    class="project-upload-attachment"
+                    data-upload-type="${escapeHtml(item.type)}"
+                    data-upload-index="${item.index}"
+                >
+                    <div class="project-upload-attachment-icon">
+                        ${item.type === "folder" ? "📁" : "📄"}
+                    </div>
+
+                    <div class="project-upload-attachment-info">
+                        <div class="project-upload-attachment-name">
+                            ${escapeHtml(item.displayName || "Unnamed file")}
+                        </div>
+
+                        <div class="project-upload-attachment-meta">
+                            <span>
+                                ${escapeHtml(typeLabel)}
+                            </span>
+
+                            ${
+                                sizeText
+                                    ? `
+                                        <span>
+                                            ${escapeHtml(sizeText)}
+                                        </span>
+                                    `
+                                    : ""
+                            }
+
+                            ${
+                                item.displayPath &&
+                                item.displayPath !== item.displayName
+                                    ? `
+                                        <span class="project-upload-attachment-path">
+                                            ${escapeHtml(item.displayPath)}
+                                        </span>
+                                    `
+                                    : ""
+                            }
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="project-upload-remove"
+                        data-remove-upload-type="${escapeHtml(item.type)}"
+                        data-remove-upload-index="${item.index}"
+                        aria-label="Remove ${escapeHtml(item.displayName || "file")}"
+                        title="Remove"
+                    >
+                        &times;
+                    </button>
+                </div>
+            `;
+        }).join("");
+
+    projectUploadSelectionStatus.innerHTML = `
+        <div class="project-upload-summary">
+            ${items.length}
+            attachment${items.length === 1 ? "" : "s"} selected
+        </div>
+
+        <div class="project-upload-attachments">
+            ${attachmentHtml}
+        </div>
+    `;
+
+    projectUploadSelectionStatus
+        .querySelectorAll(
+            ".project-upload-remove"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                event => {
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const type =
+                        button.dataset.removeUploadType;
+
+                    const index =
+                        Number.parseInt(
+                            button.dataset.removeUploadIndex,
+                            10
+                        );
+
+                    if (
+                        !Number.isInteger(index) ||
+                        index < 0
+                    ) {
+                        return;
+                    }
+
+                    if (type === "folder") {
+
+                        pendingProjectFolderUploads.splice(
+                            index,
+                            1
+                        );
+
+                    } else {
+
+                        pendingProjectFileUploads.splice(
+                            index,
+                            1
+                        );
+                    }
+
+                    updateProjectUploadSelectionStatus();
+                }
+            );
+        });
 }
 
 
@@ -388,6 +557,73 @@ function resetPendingProjectUploads() {
     }
 
     updateProjectUploadSelectionStatus();
+}
+
+
+function makeQueuedFileKey(
+    file,
+    relativePath = ""
+) {
+
+    return [
+        relativePath || "",
+        file?.name || "",
+        file?.size ?? "",
+        file?.lastModified ?? ""
+    ].join("::");
+}
+
+
+function appendUniqueQueuedFiles(
+    targetArray,
+    newFiles,
+    useRelativePath = false
+) {
+
+    const existingKeys =
+        new Set(
+            targetArray.map(file => {
+
+                const relativePath =
+                    useRelativePath
+                        ? (
+                            file.webkitRelativePath ||
+                            file.name ||
+                            ""
+                        )
+                        : "";
+
+                return makeQueuedFileKey(
+                    file,
+                    relativePath
+                );
+            })
+        );
+
+    Array.from(newFiles || [])
+        .forEach(file => {
+
+            const relativePath =
+                useRelativePath
+                    ? (
+                        file.webkitRelativePath ||
+                        file.name ||
+                        ""
+                    )
+                    : "";
+
+            const key =
+                makeQueuedFileKey(
+                    file,
+                    relativePath
+                );
+
+            if (!existingKeys.has(key)) {
+
+                targetArray.push(file);
+                existingKeys.add(key);
+            }
+        });
 }
 
 
@@ -514,9 +750,22 @@ async function uploadQueuedProjectContent(
         const item =
             uploads[index];
 
-        if (projectUploadSelectionStatus) {
-            projectUploadSelectionStatus.textContent =
+        if (repositoryUploadProgress) {
+
+            repositoryUploadProgress.textContent =
                 `Uploading ${index + 1} of ${total}: ${item.file.name}`;
+
+        } else if (projectUploadSelectionStatus) {
+
+            const summary =
+                projectUploadSelectionStatus.querySelector(
+                    ".project-upload-summary"
+                );
+
+            if (summary) {
+                summary.textContent =
+                    `Uploading ${index + 1} of ${total}: ${item.file.name}`;
+            }
         }
 
         await uploadFileToProjectRepository(
@@ -526,8 +775,8 @@ async function uploadQueuedProjectContent(
         );
     }
 
-    if (projectUploadSelectionStatus) {
-        projectUploadSelectionStatus.textContent =
+    if (repositoryUploadProgress) {
+        repositoryUploadProgress.textContent =
             `${total} upload${total === 1 ? "" : "s"} completed.`;
     }
 }
@@ -578,11 +827,15 @@ if (
         "change",
         async () => {
 
-            pendingProjectFileUploads =
-                Array.from(
-                    projectFileInput.files ||
-                    []
-                );
+            appendUniqueQueuedFiles(
+                pendingProjectFileUploads,
+                projectFileInput.files,
+                false
+            );
+
+            // Clear the native input so the picker can be opened again
+            // and the newly selected files will be ADDED to the queue.
+            projectFileInput.value = "";
 
             updateProjectUploadSelectionStatus();
 
@@ -631,11 +884,15 @@ if (
         "change",
         async () => {
 
-            pendingProjectFolderUploads =
-                Array.from(
-                    projectFolderInput.files ||
-                    []
-                );
+            appendUniqueQueuedFiles(
+                pendingProjectFolderUploads,
+                projectFolderInput.files,
+                true
+            );
+
+            // Clear the native input so another folder selection can be
+            // appended without removing the first selected folder.
+            projectFolderInput.value = "";
 
             updateProjectUploadSelectionStatus();
 
