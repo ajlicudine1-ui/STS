@@ -811,119 +811,120 @@ async function uploadSelectedContentForExistingProject() {
 }
 
 
-if (
-    uploadProjectFileBtn &&
-    projectFileInput
-) {
-
-    uploadProjectFileBtn.addEventListener(
-        "click",
-        () => {
-            projectFileInput.click();
-        }
-    );
+if (projectFileInput) {
 
     projectFileInput.addEventListener(
         "change",
         async () => {
 
-            appendUniqueQueuedFiles(
-                pendingProjectFileUploads,
-                projectFileInput.files,
-                false
-            );
+            const selectedFiles =
+                Array.from(
+                    projectFileInput.files ||
+                    []
+                );
 
-            // Clear the native input so the picker can be opened again
-            // and the newly selected files will be ADDED to the queue.
-            projectFileInput.value = "";
+            if (
+                !editingProjectId ||
+                selectedFiles.length === 0
+            ) {
+                projectFileInput.value = "";
+                return;
+            }
 
-            updateProjectUploadSelectionStatus();
+            try {
 
-            // For an existing project, upload immediately.
-            if (editingProjectId) {
+                pendingProjectFileUploads = [];
+                pendingProjectFolderUploads = [];
 
-                try {
+                appendUniqueQueuedFiles(
+                    pendingProjectFileUploads,
+                    selectedFiles,
+                    false
+                );
 
-                    await uploadSelectedContentForExistingProject();
+                projectFileInput.value = "";
 
-                    alert(
-                        "File uploaded to Project Repository successfully!"
-                    );
+                await uploadSelectedContentForExistingProject();
 
-                } catch (error) {
+                alert(
+                    `${selectedFiles.length} file${selectedFiles.length === 1 ? "" : "s"} uploaded successfully!`
+                );
 
-                    console.error(
-                        "Project file upload error:",
-                        error
-                    );
+            } catch (error) {
 
-                    alert(
-                        "Upload failed: " +
-                        error.message
-                    );
-                }
+                console.error(
+                    "Project file upload error:",
+                    error
+                );
+
+                alert(
+                    "Upload failed: " +
+                    error.message
+                );
+
+                projectFileInput.value = "";
             }
         }
     );
 }
 
 
-if (
-    uploadProjectFolderBtn &&
-    projectFolderInput
-) {
-
-    uploadProjectFolderBtn.addEventListener(
-        "click",
-        () => {
-            projectFolderInput.click();
-        }
-    );
+if (projectFolderInput) {
 
     projectFolderInput.addEventListener(
         "change",
         async () => {
 
-            appendUniqueQueuedFiles(
-                pendingProjectFolderUploads,
-                projectFolderInput.files,
-                true
-            );
+            const selectedFolderFiles =
+                Array.from(
+                    projectFolderInput.files ||
+                    []
+                );
 
-            // Clear the native input so another folder selection can be
-            // appended without removing the first selected folder.
-            projectFolderInput.value = "";
+            if (
+                !editingProjectId ||
+                selectedFolderFiles.length === 0
+            ) {
+                projectFolderInput.value = "";
+                return;
+            }
 
-            updateProjectUploadSelectionStatus();
+            try {
 
-            // For an existing project, upload immediately.
-            if (editingProjectId) {
+                pendingProjectFileUploads = [];
+                pendingProjectFolderUploads = [];
 
-                try {
+                appendUniqueQueuedFiles(
+                    pendingProjectFolderUploads,
+                    selectedFolderFiles,
+                    true
+                );
 
-                    await uploadSelectedContentForExistingProject();
+                projectFolderInput.value = "";
 
-                    alert(
-                        "Folder uploaded to Project Repository successfully!"
-                    );
+                await uploadSelectedContentForExistingProject();
 
-                } catch (error) {
+                alert(
+                    `Folder uploaded successfully (${selectedFolderFiles.length} file${selectedFolderFiles.length === 1 ? "" : "s"}).`
+                );
 
-                    console.error(
-                        "Project folder upload error:",
-                        error
-                    );
+            } catch (error) {
 
-                    alert(
-                        "Folder upload failed: " +
-                        error.message
-                    );
-                }
+                console.error(
+                    "Project folder upload error:",
+                    error
+                );
+
+                alert(
+                    "Folder upload failed: " +
+                    error.message
+                );
+
+                projectFolderInput.value = "";
             }
         }
     );
 }
-
 
 
 // ============================================================
