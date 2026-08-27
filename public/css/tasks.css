@@ -636,10 +636,15 @@
    JavaScript positions it beside the Actions button.
 */
 
-.task-action-menu {
-    position: fixed;
+/* ============================================================
+   ACTION DROPDOWN MENU
+   ============================================================ */
 
-    width: 155px;
+.task-action-menu {
+    position: fixed !important;
+
+    width: 160px;
+    min-width: 160px;
 
     display: none;
 
@@ -651,15 +656,16 @@
     border-radius: 8px;
 
     box-shadow:
-        0 8px 20px rgba(23, 43, 77, 0.15);
+        0 10px 25px rgba(23, 43, 77, 0.18);
 
-    z-index: 999999;
+    z-index: 9999999 !important;
+
+    overflow: visible !important;
 }
 
 .task-action-menu.show {
-    display: block;
+    display: block !important;
 }
-
 
 /* ============================================================
    MENU ITEMS
