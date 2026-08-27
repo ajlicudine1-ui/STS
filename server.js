@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
+const { google } = require("googleapis");
 
 require("dotenv").config();
 
@@ -38,6 +39,51 @@ if (!process.env.SUPABASE_KEY) {
     );
 }
 
+
+console.log(
+    "GOOGLE_DRIVE_PARENT_FOLDER_ID loaded:",
+    !!process.env.GOOGLE_DRIVE_PARENT_FOLDER_ID
+);
+
+console.log(
+    "GOOGLE_CLIENT_ID loaded:",
+    !!process.env.GOOGLE_CLIENT_ID
+);
+
+console.log(
+    "GOOGLE_CLIENT_SECRET loaded:",
+    !!process.env.GOOGLE_CLIENT_SECRET
+);
+
+console.log(
+    "GOOGLE_REFRESH_TOKEN loaded:",
+    !!process.env.GOOGLE_REFRESH_TOKEN
+);
+
+if (!process.env.GOOGLE_DRIVE_PARENT_FOLDER_ID) {
+    console.error(
+        "ERROR: GOOGLE_DRIVE_PARENT_FOLDER_ID is missing from .env"
+    );
+}
+
+if (!process.env.GOOGLE_CLIENT_ID) {
+    console.error(
+        "ERROR: GOOGLE_CLIENT_ID is missing from .env"
+    );
+}
+
+if (!process.env.GOOGLE_CLIENT_SECRET) {
+    console.error(
+        "ERROR: GOOGLE_CLIENT_SECRET is missing from .env"
+    );
+}
+
+if (!process.env.GOOGLE_REFRESH_TOKEN) {
+    console.error(
+        "ERROR: GOOGLE_REFRESH_TOKEN is missing from .env"
+    );
+}
+
 // ============================================================
 // SUPABASE CONNECTION
 // ============================================================
@@ -46,6 +92,136 @@ const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_KEY
 );
+
+
+// ============================================================
+// GOOGLE DRIVE CONNECTION
+// Uses OAuth refresh-token authentication.
+// ============================================================
+
+const googleOAuth2Client =
+    new google.auth.OAuth2(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET
+    );
+
+if (process.env.GOOGLE_REFRESH_TOKEN) {
+    googleOAuth2Client.setCredentials({
+        refresh_token:
+            process.env.GOOGLE_REFRESH_TOKEN
+    });
+}
+
+const googleDrive =
+    google.drive({
+        version: "v3",
+        auth: googleOAuth2Client
+    });
+
+
+// ============================================================
+// GOOGLE DRIVE HELPERS
+// ============================================================
+
+function cleanDriveFolderName(value) {
+
+    return String(value || "")
+        .replace(/[\r\n\t]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+
+function getDriveFolderUrl(folderId) {
+
+    if (!folderId) {
+        return null;
+    }
+
+    return `https://drive.google.com/drive/folders/${folderId}`;
+}
+
+
+async function createDriveFolder({
+    name,
+    parentFolderId
+}) {
+
+    if (!parentFolderId) {
+        throw new Error(
+            "Google Drive parent folder ID is missing."
+        );
+    }
+
+    const folderName =
+        cleanDriveFolderName(name);
+
+    if (!folderName) {
+        throw new Error(
+            "Google Drive folder name is required."
+        );
+    }
+
+    const response =
+        await googleDrive.files.create({
+            requestBody: {
+                name: folderName,
+                mimeType:
+                    "application/vnd.google-apps.folder",
+                parents: [
+                    parentFolderId
+                ]
+            },
+            fields:
+                "id, name, webViewLink"
+        });
+
+    const folder =
+        response.data;
+
+    if (!folder?.id) {
+        throw new Error(
+            "Google Drive did not return a folder ID."
+        );
+    }
+
+    return {
+        id:
+            folder.id,
+
+        name:
+            folder.name || folderName,
+
+        url:
+            folder.webViewLink ||
+            getDriveFolderUrl(
+                folder.id
+            )
+    };
+}
+
+
+async function deleteDriveFolder(folderId) {
+
+    if (!folderId) {
+        return;
+    }
+
+    try {
+
+        await googleDrive.files.delete({
+            fileId:
+                folderId
+        });
+
+    } catch (error) {
+
+        console.error(
+            "GOOGLE DRIVE ROLLBACK DELETE FAILED:",
+            error.message
+        );
+    }
+}
 
 // ============================================================
 // MIDDLEWARE
@@ -455,13 +631,101 @@ app.post("/api/projects", async (req, res) => {
         }
 
 
+        // ----------------------------------------------------
+        // CREATE GOOGLE DRIVE PROJECT FOLDER
+        // ----------------------------------------------------
+
+        let projectRecord =
+            data;
+
+        let projectDriveFolder =
+            null;
+
+        try {
+
+            projectDriveFolder =
+                await createDriveFolder({
+                    name:
+                        `${data.project_id} - ${project_name.trim()}`,
+
+                    parentFolderId:
+                        process.env
+                            .GOOGLE_DRIVE_PARENT_FOLDER_ID
+                });
+
+
+            const {
+                data: updatedProject,
+                error: driveUpdateError
+            } = await supabase
+                .from("projects")
+                .update({
+                    drive_folder_id:
+                        projectDriveFolder.id,
+
+                    drive_folder_url:
+                        projectDriveFolder.url
+                })
+                .eq(
+                    "project_id",
+                    data.project_id
+                )
+                .select()
+                .single();
+
+
+            if (driveUpdateError) {
+                throw driveUpdateError;
+            }
+
+
+            projectRecord =
+                updatedProject;
+
+        } catch (driveError) {
+
+            console.error(
+                "PROJECT DRIVE FOLDER CREATION FAILED:",
+                driveError
+            );
+
+
+            if (projectDriveFolder?.id) {
+
+                await deleteDriveFolder(
+                    projectDriveFolder.id
+                );
+            }
+
+
+            await supabase
+                .from("projects")
+                .delete()
+                .eq(
+                    "project_id",
+                    data.project_id
+                );
+
+
+            return res.status(500).json({
+                success: false,
+
+                error:
+                    "Project could not be created because its Google Drive folder could not be created.",
+
+                details:
+                    driveError.message
+            });
+        }
+
+
         // Save manually entered development team members.
         // These are stored directly in project_members and do not need
         // to already exist in the users table.
         const teamMembers = Array.isArray(development_team)
             ? development_team
                 .map(member => ({
-                    project_id: data.project_id,
+                    project_id: projectRecord.project_id,
                     member_name: String(member?.name || member?.member_name || "").trim(),
                     member_role: String(member?.role || member?.member_role || "").trim() || null
                 }))
@@ -476,11 +740,15 @@ app.post("/api/projects", async (req, res) => {
             if (membersError) {
                 console.error("PROJECT CREATED BUT TEAM SAVE FAILED:", membersError);
 
-                // Roll back the project so the user does not get a half-saved record.
+                // Roll back both Drive and database records.
+                await deleteDriveFolder(
+                    projectDriveFolder?.id
+                );
+
                 await supabase
                     .from("projects")
                     .delete()
-                    .eq("project_id", data.project_id);
+                    .eq("project_id", projectRecord.project_id);
 
                 return res.status(500).json({
                     success: false,
@@ -492,7 +760,7 @@ app.post("/api/projects", async (req, res) => {
 
         console.log(
             "Project created successfully:",
-            data
+            projectRecord
         );
 
 
@@ -504,7 +772,7 @@ app.post("/api/projects", async (req, res) => {
                 "Project created successfully.",
 
             project:
-                data
+                projectRecord
 
         });
 
@@ -1095,6 +1363,50 @@ app.post(
                 });
             }
 
+
+            // ----------------------------------------------------
+            // GET PROJECT GOOGLE DRIVE FOLDER
+            // ----------------------------------------------------
+
+            const {
+                data: project,
+                error: projectError
+            } = await supabase
+                .from("projects")
+                .select(
+                    "project_id, project_name, drive_folder_id, drive_folder_url"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .single();
+
+
+            if (
+                projectError ||
+                !project
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Project not found."
+                });
+            }
+
+
+            if (!project.drive_folder_id) {
+
+                return res.status(400).json({
+                    success: false,
+
+                    error:
+                        "This project does not have a Google Drive folder yet."
+                });
+            }
+
+
             const taskData = {
 
                 project_id:
@@ -1178,6 +1490,94 @@ app.post(
                 });
             }
 
+
+            // ----------------------------------------------------
+            // CREATE GOOGLE DRIVE TASK FOLDER
+            // ----------------------------------------------------
+
+            let taskRecord =
+                data;
+
+            let taskDriveFolder =
+                null;
+
+            try {
+
+                taskDriveFolder =
+                    await createDriveFolder({
+                        name:
+                            `${data.task_id} - ${task_activity.trim()}`,
+
+                        parentFolderId:
+                            project.drive_folder_id
+                    });
+
+
+                const {
+                    data: updatedTask,
+                    error: driveUpdateError
+                } = await supabase
+                    .from("tasks")
+                    .update({
+                        drive_folder_id:
+                            taskDriveFolder.id,
+
+                        drive_folder_url:
+                            taskDriveFolder.url
+                    })
+                    .eq(
+                        "task_id",
+                        data.task_id
+                    )
+                    .select()
+                    .single();
+
+
+                if (driveUpdateError) {
+                    throw driveUpdateError;
+                }
+
+
+                taskRecord =
+                    updatedTask;
+
+            } catch (driveError) {
+
+                console.error(
+                    "TASK DRIVE FOLDER CREATION FAILED:",
+                    driveError
+                );
+
+
+                if (taskDriveFolder?.id) {
+
+                    await deleteDriveFolder(
+                        taskDriveFolder.id
+                    );
+                }
+
+
+                await supabase
+                    .from("tasks")
+                    .delete()
+                    .eq(
+                        "task_id",
+                        data.task_id
+                    );
+
+
+                return res.status(500).json({
+                    success: false,
+
+                    error:
+                        "Task could not be created because its Google Drive folder could not be created.",
+
+                    details:
+                        driveError.message
+                });
+            }
+
+
             // ----------------------------------------------------
             // CREATE HISTORY RECORD
             // ----------------------------------------------------
@@ -1186,28 +1586,28 @@ app.post(
                 await createTaskHistory({
 
                     taskId:
-                        data.task_id,
+                        taskRecord.task_id,
 
                     projectId:
-                        data.project_id,
+                        taskRecord.project_id,
 
                     action:
                         "Created",
 
                     newStatus:
-                        data.status,
+                        taskRecord.status,
 
                     newPercentComplete:
-                        data.percent_complete,
+                        taskRecord.percent_complete,
 
                     newResponsiblePerson:
-                        data.responsible_person,
+                        taskRecord.responsible_person,
 
                     remarks:
                         "Task created",
 
                     changedBy:
-                        data.responsible_person ||
+                        taskRecord.responsible_person ||
                         "System"
                 });
 
@@ -1234,13 +1634,13 @@ app.post(
                         "Unknown history error.",
 
                     task:
-                        data
+                        taskRecord
                 });
             }
 
             console.log(
                 "Task created successfully:",
-                data
+                taskRecord
             );
 
             res.status(201).json({
@@ -1251,7 +1651,7 @@ app.post(
                     "Task created successfully.",
 
                 task:
-                    data,
+                    taskRecord,
 
                 historyRecorded:
                     true
