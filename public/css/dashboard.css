@@ -1154,3 +1154,56 @@
 .upload-project-content-action:hover {
     background: #edf7ee;
 }
+
+
+/* ============================================================
+   UPLOAD FILE / FOLDER CHOICE
+   ============================================================ */
+
+.upload-type-menu {
+
+    position: fixed;
+
+    width: 190px;
+
+    padding: 6px;
+
+    background: #ffffff;
+
+    border: 1px solid #dfe4eb;
+
+    border-radius: 9px;
+
+    box-shadow:
+        0 10px 28px rgba(15, 23, 42, 0.18);
+
+    z-index: 2147483647;
+}
+
+
+.upload-type-option {
+
+    width: 100%;
+
+    padding: 10px 12px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background: transparent;
+
+    color: #2e7d32;
+
+    font-size: 14px;
+
+    text-align: left;
+
+    cursor: pointer;
+}
+
+
+.upload-type-option:hover {
+
+    background: #edf7ee;
+}

@@ -1737,6 +1737,133 @@ function openProjectActionMenu(
     );
 }
 
+function openUploadTypeMenu(anchorButton) {
+
+    const existingMenu =
+        document.getElementById(
+            "projectUploadTypeMenu"
+        );
+
+    if (existingMenu) {
+        existingMenu.remove();
+    }
+
+
+    const menu =
+        document.createElement("div");
+
+    menu.id =
+        "projectUploadTypeMenu";
+
+    menu.className =
+        "upload-type-menu";
+
+
+    menu.innerHTML = `
+        <button
+            type="button"
+            class="upload-type-option"
+            id="chooseUploadFiles"
+        >
+            📄 Upload Files
+        </button>
+
+        <button
+            type="button"
+            class="upload-type-option"
+            id="chooseUploadFolder"
+        >
+            📁 Upload Folder
+        </button>
+    `;
+
+
+    document.body.appendChild(
+        menu
+    );
+
+
+    const rect =
+        anchorButton.getBoundingClientRect();
+
+
+    menu.style.left =
+        `${rect.left}px`;
+
+    menu.style.top =
+        `${rect.bottom + 5}px`;
+
+
+    const chooseFiles =
+        menu.querySelector(
+            "#chooseUploadFiles"
+        );
+
+    const chooseFolder =
+        menu.querySelector(
+            "#chooseUploadFolder"
+        );
+
+
+    chooseFiles.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            menu.remove();
+
+            if (projectFileInput) {
+
+                projectFileInput.value =
+                    "";
+
+                projectFileInput.click();
+            }
+        }
+    );
+
+
+    chooseFolder.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            menu.remove();
+
+            if (projectFolderInput) {
+
+                projectFolderInput.value =
+                    "";
+
+                projectFolderInput.click();
+            }
+        }
+    );
+
+
+    setTimeout(
+        () => {
+
+            document.addEventListener(
+                "click",
+                function closeUploadMenu() {
+
+                    menu.remove();
+
+                    document.removeEventListener(
+                        "click",
+                        closeUploadMenu
+                    );
+                }
+            );
+
+        },
+        0
+    );
+}
+
 
 // ============================================================
 // CREATE PROJECT ACTION MENU
@@ -1908,36 +2035,33 @@ function createProjectActionMenu(
         );
     }
 
-
     const uploadProjectContentAction =
-        wrapper.querySelector(
-            ".upload-project-content-action"
-        );
+    wrapper.querySelector(
+        ".upload-project-content-action"
+    );
 
-    if (uploadProjectContentAction) {
-        uploadProjectContentAction.addEventListener(
-            "click",
-            async event => {
-                event.stopPropagation();
+if (uploadProjectContentAction) {
 
-                closeAllProjectActionMenus();
+    uploadProjectContentAction.addEventListener(
+        "click",
+        event => {
 
-                // One dropdown action for both upload types.
-                // Open the Repository Files window where the user can
-                // choose either Upload Files or Upload Folder.
-                await openRepositoryFilesModal(
-                    project
-                );
+            event.stopPropagation();
 
-                if (repositoryUploadProgress) {
-                    repositoryUploadProgress.textContent =
-                        "Choose Upload Files or Upload Folder above.";
-                }
-            }
-        );
-    }
+            closeAllProjectActionMenus();
 
+            editingProjectId =
+                project.project_id;
 
+            currentRepositoryProject =
+                project;
+
+            openUploadTypeMenu(
+                uploadProjectContentAction
+            );
+        }
+    );
+}
     const editAction =
         wrapper.querySelector(
             ".edit-project-action"
