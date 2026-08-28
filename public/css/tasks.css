@@ -536,7 +536,16 @@
     color: #166534;
 }
 
+.schedule-risk {
+    background: red;
+    color:white;
+}
 
+/* Delayed */
+.schedule-delayed {
+    background: #fecaca;
+    color: #991b1b;
+}
 
 .schedule-completed {
     background: #d9f7e8;
@@ -2351,16 +2360,15 @@ input.responsible-person-checkbox {
     line-height: 1.3;
 }
 
-/* At Risk = RED */
+/* At Risk and Delayed: both red, with Delayed slightly darker. */
 .schedule-risk {
-    background: #fecaca !important;
-    color: #991b1b !important;
+    background: #dc2626 !important;
+    color: #ffffff !important;
 }
 
-/* Delayed = PINK */
 .schedule-delayed {
-    background: #fce7f3 !important;
-    color: #be185d !important;
+    background: #b91c1c !important;
+    color: #ffffff !important;
 }
 
 /* Smaller screens keep the same readable table and use scrolling. */
@@ -2473,7 +2481,7 @@ input.responsible-person-checkbox {
 
 /* Task repository modal */
 .task-repository-modal-content {
-    width: min(920px, calc(100vw - 32px));
+    width: min(1050px, calc(100vw - 32px));
     max-height: 88vh;
     display: flex;
     flex-direction: column;
@@ -2652,37 +2660,17 @@ input.responsible-person-checkbox {
 }
 
 /* ============================================================
-   TASK REPOSITORY COLLAPSIBLE FOLDER TREE
+   TASK REPOSITORY MODAL - WIDER DESKTOP HEADER
    ============================================================ */
 
-.task-repository-row-hidden {
-    display: none !important;
-}
+@media (min-width: 701px) {
+    .task-repository-modal-content {
+        width: min(1050px, calc(100vw - 32px));
+        max-width: 1050px;
+    }
 
-.task-repository-folder-row {
-    cursor: pointer;
-    user-select: none;
-}
-
-.task-repository-folder-row:hover {
-    background: #f6fbf7;
-}
-
-.task-repository-folder-chevron {
-    width: 14px;
-    flex: 0 0 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #61728a;
-    font-size: 12px;
-}
-
-.task-repository-folder-row .task-repository-file-name {
-    color: #172b4d;
-}
-
-.task-repository-folder-row:focus-within {
-    background: #f6fbf7;
+    .task-repository-header > div:first-child p {
+        white-space: nowrap;
+    }
 }
 
