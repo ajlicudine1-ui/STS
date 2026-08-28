@@ -945,22 +945,71 @@ function renderRepositoryFiles(items) {
         return;
     }
 
+    /*
+     * IMPORTANT:
+     * Do not rely on a CSS class to hide descendants.
+     * The dashboard may still be using an older dashboard.css.
+     * We therefore calculate visibility here and apply the
+     * native HTML "hidden" attribute + inline display:none.
+     */
+    function isRepositoryItemVisible(path) {
+
+        const parts =
+            normalizeProjectRepositoryPath(path)
+                .split("/")
+                .filter(Boolean);
+
+        if (parts.length <= 1) {
+            return true;
+        }
+
+        let ancestor = "";
+
+        for (
+            let index = 0;
+            index < parts.length - 1;
+            index += 1
+        ) {
+            ancestor = ancestor
+                ? `${ancestor}/${parts[index]}`
+                : parts[index];
+
+            if (
+                !expandedProjectRepositoryFolders.has(
+                    ancestor
+                )
+            ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     repositoryFilesList.innerHTML = files
         .map(item => {
 
-            const path = normalizeProjectRepositoryPath(
-                item.relative_path || item.name || ""
-            );
+            const path =
+                normalizeProjectRepositoryPath(
+                    item.relative_path ||
+                    item.name ||
+                    ""
+                );
 
             const depth = Math.max(
                 0,
                 path.split("/").filter(Boolean).length - 1
             );
 
-            const isFolder = Boolean(item.is_folder);
+            const isFolder =
+                Boolean(item.is_folder);
+
             const isExpanded =
                 isFolder &&
                 expandedProjectRepositoryFolders.has(path);
+
+            const isVisible =
+                isRepositoryItemVisible(path);
 
             const icon = isFolder
                 ? (isExpanded ? "📂" : "📁")
@@ -971,7 +1020,9 @@ function renderRepositoryFiles(items) {
                 : formatRepositoryFileSize(item.size);
 
             const modified = item.modified_time
-                ? new Date(item.modified_time).toLocaleString()
+                ? new Date(
+                    item.modified_time
+                ).toLocaleString()
                 : "";
 
             const safeUrl = item.url
@@ -983,9 +1034,11 @@ function renderRepositoryFiles(items) {
                     class="repository-file-row${isFolder ? " repository-folder-row" : ""}"
                     data-repository-path="${escapeHtml(path)}"
                     data-repository-folder="${isFolder ? "true" : "false"}"
-                    style="--repository-depth:${depth}"
+                    style="--repository-depth:${depth};${isVisible ? "" : "display:none !important;"}"
+                    ${isVisible ? "" : "hidden"}
                 >
                     <div class="repository-file-main">
+
                         <span class="repository-folder-chevron">
                             ${isFolder ? (isExpanded ? "▾" : "▸") : ""}
                         </span>
@@ -995,6 +1048,7 @@ function renderRepositoryFiles(items) {
                         </span>
 
                         <div class="repository-file-info">
+
                             <div class="repository-file-name">
                                 ${escapeHtml(item.name || "-")}
                             </div>
@@ -1002,12 +1056,20 @@ function renderRepositoryFiles(items) {
                             <div class="repository-file-path">
                                 ${escapeHtml(path)}
                             </div>
+
                         </div>
+
                     </div>
 
                     <div class="repository-file-meta">
-                        <span>${escapeHtml(sizeText)}</span>
-                        <span>${escapeHtml(modified)}</span>
+
+                        <span>
+                            ${escapeHtml(sizeText)}
+                        </span>
+
+                        <span>
+                            ${escapeHtml(modified)}
+                        </span>
 
                         ${
                             safeUrl
@@ -1023,65 +1085,27 @@ function renderRepositoryFiles(items) {
                                 `
                                 : ""
                         }
+
                     </div>
                 </div>
             `;
         })
         .join("");
 
-    const rows = Array.from(
-        repositoryFilesList.querySelectorAll(
-            ".repository-file-row"
-        )
-    );
-
-    function updateRepositoryVisibility() {
-
-        rows.forEach(row => {
-
-            const path =
-                row.dataset.repositoryPath || "";
-
-            const parts =
-                path.split("/").filter(Boolean);
-
-            let visible = true;
-            let ancestor = "";
-
-            for (
-                let index = 0;
-                index < parts.length - 1;
-                index += 1
-            ) {
-                ancestor = ancestor
-                    ? `${ancestor}/${parts[index]}`
-                    : parts[index];
-
-                if (
-                    !expandedProjectRepositoryFolders.has(
-                        ancestor
-                    )
-                ) {
-                    visible = false;
-                    break;
-                }
-            }
-
-            row.classList.toggle(
-                "repository-row-hidden",
-                !visible
-            );
-        });
-    }
-
     repositoryFilesList
-        .querySelectorAll(".repository-folder-row")
+        .querySelectorAll(
+            ".repository-folder-row"
+        )
         .forEach(row => {
 
             row.addEventListener(
                 "click",
                 event => {
 
+                    /*
+                     * Clicking Open should open Drive only;
+                     * it must not expand/collapse the folder.
+                     */
                     if (
                         event.target.closest(
                             ".repository-file-open"
@@ -1091,7 +1115,10 @@ function renderRepositoryFiles(items) {
                     }
 
                     const path =
-                        row.dataset.repositoryPath || "";
+                        normalizeProjectRepositoryPath(
+                            row.dataset.repositoryPath ||
+                            ""
+                        );
 
                     if (!path) {
                         return;
@@ -1102,10 +1129,15 @@ function renderRepositoryFiles(items) {
                             path
                         )
                     ) {
+
                         expandedProjectRepositoryFolders.delete(
                             path
                         );
 
+                        /*
+                         * Also close every nested folder so that
+                         * reopening this parent starts clean.
+                         */
                         Array.from(
                             expandedProjectRepositoryFolders
                         ).forEach(expandedPath => {
@@ -1132,8 +1164,6 @@ function renderRepositoryFiles(items) {
                 }
             );
         });
-
-    updateRepositoryVisibility();
 }
 
 async function loadRepositoryFiles() {
