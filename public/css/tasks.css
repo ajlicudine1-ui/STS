@@ -2481,7 +2481,8 @@ input.responsible-person-checkbox {
 
 /* Task repository modal */
 .task-repository-modal-content {
-    width: min(1050px, calc(100vw - 32px));
+    width: min(920px, calc(100vw - 40px));
+    max-width: 920px;
     max-height: 88vh;
     display: flex;
     flex-direction: column;
@@ -2659,18 +2660,15 @@ input.responsible-person-checkbox {
     }
 }
 
+
+
+
+
 /* ============================================================
-   TASK REPOSITORY MODAL - WIDER DESKTOP HEADER
+   TASK REPOSITORY SUBTITLE - SINGLE LINE
    ============================================================ */
-
 @media (min-width: 701px) {
-    .task-repository-modal-content {
-        width: min(1050px, calc(100vw - 32px));
-        max-width: 1050px;
-    }
-
     .task-repository-header > div:first-child p {
         white-space: nowrap;
     }
 }
-
