@@ -2112,83 +2112,22 @@ function createActionMenu(task) {
 
                 if (!wasOpen) {
 
-    // Show first so we can measure the menu
-    menu.classList.add(
-        "show"
-    );
-
-    trigger.setAttribute(
-        "aria-expanded",
-        "true"
-    );
-
-    trigger.classList.add(
-        "active"
-    );
+                    menu.classList.add(
+                        "show"
+                    );
 
 
-    // ========================================================
-    // POSITION ACTION MENU
-    // ========================================================
-
-    const triggerRect =
-        trigger.getBoundingClientRect();
-
-    const menuRect =
-        menu.getBoundingClientRect();
-
-    const spacing = 6;
+                    trigger.setAttribute(
+                        "aria-expanded",
+                        "true"
+                    );
 
 
-    // Default: directly below Actions button
-    let top =
-        triggerRect.bottom +
-        spacing;
+                    trigger.classList.add(
+                        "active"
+                    );
 
-    let left =
-        triggerRect.right -
-        menuRect.width;
-
-
-    // Prevent menu from going beyond left side
-    if (left < 8) {
-        left = 8;
-    }
-
-
-    // Prevent menu from going beyond right side
-    if (
-        left + menuRect.width >
-        window.innerWidth - 8
-    ) {
-
-        left =
-            window.innerWidth -
-            menuRect.width -
-            8;
-    }
-
-
-    // If there is not enough room below,
-    // open ABOVE the Actions button
-            if (
-                top + menuRect.height >
-                window.innerHeight - 8
-            ) {
-
-                top =
-                    triggerRect.top -
-                    menuRect.height -
-                    spacing;
-            }
-
-
-            menu.style.top =
-                `${top}px`;
-
-            menu.style.left =
-                `${left}px`;
-        }
+                }
 
             }
         );
