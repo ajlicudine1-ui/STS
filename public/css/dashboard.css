@@ -1463,4 +1463,34 @@
     }
 }
 
-  
+/* ============================================================
+   PROJECT REPOSITORY - COLLAPSIBLE FOLDER TREE
+   ============================================================ */
+
+.repository-row-hidden {
+    display: none !important;
+}
+
+.repository-folder-row {
+    cursor: pointer;
+    user-select: none;
+}
+
+.repository-folder-row:hover {
+    background: #f6fbf7;
+}
+
+.repository-folder-chevron {
+    width: 14px;
+    flex: 0 0 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #61728a;
+    font-size: 12px;
+}
+
+.repository-folder-row .repository-file-name {
+    color: #172b4d;
+}
+

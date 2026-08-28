@@ -960,71 +960,76 @@ function formatRepositoryFileSize(bytes) {
 }
 
 
+const expandedProjectRepositoryFolders = new Set();
+
+function normalizeProjectRepositoryPath(value) {
+    return String(value || "")
+        .replace(/\\/g, "/")
+        .replace(/^\/+|\/+$/g, "");
+}
+
 function renderRepositoryFiles(items) {
 
     if (!repositoryFilesList) {
         return;
     }
 
-    const files =
-        Array.isArray(items)
-            ? items
-            : [];
+    const files = Array.isArray(items) ? items : [];
 
     if (files.length === 0) {
-
         repositoryFilesList.innerHTML = `
             <div class="repository-empty">
                 No uploaded files or folders yet.
             </div>
         `;
-
         return;
     }
 
-    repositoryFilesList.innerHTML =
-        files.map(item => {
+    repositoryFilesList.innerHTML = files
+        .map(item => {
 
-            const depth =
-                Math.max(
-                    0,
-                    String(
-                        item.relative_path ||
-                        item.name ||
-                        ""
-                    ).split("/").length - 1
-                );
+            const path = normalizeProjectRepositoryPath(
+                item.relative_path || item.name || ""
+            );
 
-            const icon =
-                item.is_folder
-                    ? "📁"
-                    : "📄";
+            const depth = Math.max(
+                0,
+                path.split("/").filter(Boolean).length - 1
+            );
 
-            const sizeText =
-                item.is_folder
-                    ? ""
-                    : formatRepositoryFileSize(
-                        item.size
-                    );
+            const isFolder = Boolean(item.is_folder);
+            const isExpanded =
+                isFolder &&
+                expandedProjectRepositoryFolders.has(path);
 
-            const modified =
-                item.modified_time
-                    ? new Date(
-                        item.modified_time
-                    ).toLocaleString()
-                    : "";
+            const icon = isFolder
+                ? (isExpanded ? "📂" : "📁")
+                : "📄";
 
-            const safeUrl =
-                item.url
-                    ? escapeHtml(item.url)
-                    : "";
+            const sizeText = isFolder
+                ? ""
+                : formatRepositoryFileSize(item.size);
+
+            const modified = item.modified_time
+                ? new Date(item.modified_time).toLocaleString()
+                : "";
+
+            const safeUrl = item.url
+                ? escapeHtml(item.url)
+                : "";
 
             return `
                 <div
-                    class="repository-file-row"
+                    class="repository-file-row${isFolder ? " repository-folder-row" : ""}"
+                    data-repository-path="${escapeHtml(path)}"
+                    data-repository-folder="${isFolder ? "true" : "false"}"
                     style="--repository-depth:${depth}"
                 >
                     <div class="repository-file-main">
+                        <span class="repository-folder-chevron">
+                            ${isFolder ? (isExpanded ? "▾" : "▸") : ""}
+                        </span>
+
                         <span class="repository-file-icon">
                             ${icon}
                         </span>
@@ -1035,19 +1040,14 @@ function renderRepositoryFiles(items) {
                             </div>
 
                             <div class="repository-file-path">
-                                ${escapeHtml(item.relative_path || item.name || "")}
+                                ${escapeHtml(path)}
                             </div>
                         </div>
                     </div>
 
                     <div class="repository-file-meta">
-                        <span>
-                            ${escapeHtml(sizeText)}
-                        </span>
-
-                        <span>
-                            ${escapeHtml(modified)}
-                        </span>
+                        <span>${escapeHtml(sizeText)}</span>
+                        <span>${escapeHtml(modified)}</span>
 
                         ${
                             safeUrl
@@ -1066,9 +1066,115 @@ function renderRepositoryFiles(items) {
                     </div>
                 </div>
             `;
-        }).join("");
-}
+        })
+        .join("");
 
+    const rows = Array.from(
+        repositoryFilesList.querySelectorAll(
+            ".repository-file-row"
+        )
+    );
+
+    function updateRepositoryVisibility() {
+
+        rows.forEach(row => {
+
+            const path =
+                row.dataset.repositoryPath || "";
+
+            const parts =
+                path.split("/").filter(Boolean);
+
+            let visible = true;
+            let ancestor = "";
+
+            for (
+                let index = 0;
+                index < parts.length - 1;
+                index += 1
+            ) {
+                ancestor = ancestor
+                    ? `${ancestor}/${parts[index]}`
+                    : parts[index];
+
+                if (
+                    !expandedProjectRepositoryFolders.has(
+                        ancestor
+                    )
+                ) {
+                    visible = false;
+                    break;
+                }
+            }
+
+            row.classList.toggle(
+                "repository-row-hidden",
+                !visible
+            );
+        });
+    }
+
+    repositoryFilesList
+        .querySelectorAll(".repository-folder-row")
+        .forEach(row => {
+
+            row.addEventListener(
+                "click",
+                event => {
+
+                    if (
+                        event.target.closest(
+                            ".repository-file-open"
+                        )
+                    ) {
+                        return;
+                    }
+
+                    const path =
+                        row.dataset.repositoryPath || "";
+
+                    if (!path) {
+                        return;
+                    }
+
+                    if (
+                        expandedProjectRepositoryFolders.has(
+                            path
+                        )
+                    ) {
+                        expandedProjectRepositoryFolders.delete(
+                            path
+                        );
+
+                        Array.from(
+                            expandedProjectRepositoryFolders
+                        ).forEach(expandedPath => {
+
+                            if (
+                                expandedPath.startsWith(
+                                    `${path}/`
+                                )
+                            ) {
+                                expandedProjectRepositoryFolders.delete(
+                                    expandedPath
+                                );
+                            }
+                        });
+
+                    } else {
+
+                        expandedProjectRepositoryFolders.add(
+                            path
+                        );
+                    }
+
+                    renderRepositoryFiles(files);
+                }
+            );
+        });
+
+    updateRepositoryVisibility();
+}
 
 async function loadRepositoryFiles() {
 
@@ -1139,6 +1245,8 @@ async function openRepositoryFilesModal(
 
     currentRepositoryProject =
         project;
+
+    expandedProjectRepositoryFolders.clear();
 
     editingProjectId =
         project.project_id;
