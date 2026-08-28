@@ -2367,8 +2367,9 @@ input.responsible-person-checkbox {
 }
 
 .schedule-delayed {
-    background: pink !important;
-    color: #ffffff !important;
+    background: #fecdd3 !important;
+    color: #9f1239 !important;
+    font-weight: 700 !important;
 }
 
 /* Smaller screens keep the same readable table and use scrolling. */
