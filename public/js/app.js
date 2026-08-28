@@ -24,7 +24,6 @@ const projectModalTitle = document.getElementById("projectModalTitle");
 const projectModalSubtitle = document.getElementById("projectModalSubtitle");
 const projectSubmitBtn = document.getElementById("projectSubmitBtn");
 
-const projectOwner = document.getElementById("projectOwner");
 const developmentTeamContainer = document.getElementById("developmentTeamContainer");
 const addTeamMemberBtn = document.getElementById("addTeamMemberBtn");
 
@@ -1589,13 +1588,6 @@ async function openEditProjectModal(
         project.version
     );
 
-
-    setProjectValue(
-        "projectOwner",
-        project.project_owner
-    );
-
-
     setProjectValue(
         "projectStatus",
         project.project_status
@@ -2446,13 +2438,6 @@ async function saveProject() {
             optional in the newest modal. Only send them when the
             corresponding input exists.
         */
-
-        const projectOwnerElement =
-            getProjectElement(
-                "projectOwner"
-            );
-
-
         if (projectOwnerElement) {
 
             projectData.project_owner =

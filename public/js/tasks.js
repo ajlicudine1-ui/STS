@@ -356,13 +356,6 @@ async function loadProjectMembers() {
                             ""
                         ).trim();
 
-                    const role =
-                        String(
-                            member.member_role ||
-                            member.role ||
-                            ""
-                        ).trim();
-
                     if (!name) {
                         return "";
                     }
@@ -381,17 +374,6 @@ async function loadProjectMembers() {
                                 <strong>
                                     ${escapeHtml(name)}
                                 </strong>
-
-                                ${
-                                    role
-                                        ? `
-                                            <small>
-                                                ${escapeHtml(role)}
-                                            </small>
-                                        `
-                                        : ""
-                                }
-
                             </span>
 
                         </label>
