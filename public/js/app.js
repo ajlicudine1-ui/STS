@@ -2910,3 +2910,206 @@ document.addEventListener(
 
     }
 );
+
+// ============================================================
+// SELECT PROJECT FOCUS MODE
+// ============================================================
+
+function initializeSelectProjectMode() {
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    if (
+        params.get("select_project") !== "1"
+    ) {
+        return;
+    }
+
+
+    // Wait until loadDashboard() finishes rendering projects.
+    const waitForProjects =
+        setInterval(() => {
+
+            const table =
+                document.getElementById(
+                    "projectsTable"
+                );
+
+            const firstAction =
+                document.querySelector(
+                    ".project-action-trigger"
+                );
+
+            if (
+                !table ||
+                !firstAction
+            ) {
+                return;
+            }
+
+
+            clearInterval(
+                waitForProjects
+            );
+
+
+            // --------------------------------------------
+            // ENABLE FOCUS MODE
+            // --------------------------------------------
+
+            document.body.classList.add(
+                "select-project-mode"
+            );
+
+
+            // --------------------------------------------
+            // FIND TABLE CONTAINER
+            // --------------------------------------------
+
+            const tableContainer =
+                table.closest(
+                    ".projects-table-container"
+                ) ||
+                table.closest(
+                    ".table-container"
+                ) ||
+                table.parentElement;
+
+
+            if (tableContainer) {
+
+                tableContainer.classList.add(
+                    "projects-table-container"
+                );
+
+
+                // Scroll directly to project table.
+
+                tableContainer.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+
+            }
+
+
+            // --------------------------------------------
+            // FIND PROJECT SECTION
+            // --------------------------------------------
+
+            const projectSection =
+                table.closest(
+                    "section"
+                ) ||
+                table.parentElement
+                    ?.parentElement;
+
+            if (projectSection) {
+
+                projectSection.classList.add(
+                    "projects-section"
+                );
+
+            }
+
+
+            // --------------------------------------------
+            // MESSAGE
+            // --------------------------------------------
+
+            const message =
+                document.createElement(
+                    "div"
+                );
+
+            message.className =
+                "select-project-message";
+
+            message.innerHTML = `
+
+                <span>
+                    <strong>
+                        Select a project first.
+                    </strong>
+
+                    Click
+                    <b>Actions</b>
+                    → 
+                    <b>View Tasks</b>
+                    for the project you want.
+                </span>
+
+                <button
+                    type="button"
+                    class="select-project-message-close"
+                    title="Close"
+                >
+                    ×
+                </button>
+
+            `;
+
+
+            document.body.appendChild(
+                message
+            );
+
+
+            // --------------------------------------------
+            // CLOSE GUIDE
+            // --------------------------------------------
+
+            const closeButton =
+                message.querySelector(
+                    ".select-project-message-close"
+                );
+
+            if (closeButton) {
+
+                closeButton.addEventListener(
+                    "click",
+                    () => {
+
+                        document.body.classList.remove(
+                            "select-project-mode"
+                        );
+
+                        message.remove();
+
+
+                        // Remove query parameter.
+
+                        window.history.replaceState(
+                            {},
+                            document.title,
+                            "/"
+                        );
+
+                    }
+                );
+
+            }
+
+        }, 100);
+
+
+    // Safety stop after 10 seconds.
+
+    setTimeout(() => {
+
+        clearInterval(
+            waitForProjects
+        );
+
+    }, 10000);
+
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    initializeSelectProjectMode
+);

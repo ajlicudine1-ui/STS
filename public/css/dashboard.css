@@ -1462,3 +1462,203 @@
 }
 
   
+/* ============================================================
+   SELECT PROJECT FOCUS MODE
+   ============================================================ */
+
+/* Blur the main dashboard content only.
+   Sidebar remains untouched. */
+
+body.select-project-mode .main > * {
+    filter: blur(4px);
+    opacity: 0.35;
+
+    transition:
+        filter 0.3s ease,
+        opacity 0.3s ease;
+}
+
+
+/* Keep the project table clear and focused */
+
+body.select-project-mode
+.select-project-focus-table {
+    position: relative;
+
+    z-index: 10010;
+
+    filter: none !important;
+    opacity: 1 !important;
+
+    background: #ffffff;
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 18px 50px
+        rgba(0, 0, 0, 0.22);
+
+    outline:
+        3px solid
+        rgba(46, 125, 50, 0.45);
+
+    outline-offset: 5px;
+}
+
+
+/* Make sure everything inside the table stays clear */
+
+body.select-project-mode
+.select-project-focus-table,
+body.select-project-mode
+.select-project-focus-table * {
+    filter: none !important;
+}
+
+
+/* ============================================================
+   ACTIONS BUTTON HIGHLIGHT
+   ============================================================ */
+
+body.select-project-mode
+.select-project-focus-table
+.project-action-trigger {
+    position: relative;
+
+    z-index: 10020;
+
+    animation:
+        selectProjectActionPulse
+        0.9s ease-in-out
+        infinite alternate;
+}
+
+
+@keyframes selectProjectActionPulse {
+
+    from {
+        box-shadow:
+            0 0 0 0
+            rgba(46, 125, 50, 0.20);
+    }
+
+    to {
+        box-shadow:
+            0 0 0 7px
+            rgba(46, 125, 50, 0.20);
+    }
+
+}
+
+
+/* ============================================================
+   SELECT PROJECT MESSAGE
+   ============================================================ */
+
+.select-project-message {
+    position: fixed;
+
+    top: 28px;
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+    z-index: 30000;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    min-width: 390px;
+    max-width: 520px;
+
+    padding: 14px 18px;
+
+    background: #ffffff;
+
+    border:
+        1px solid #dce8d7;
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 12px 38px
+        rgba(0, 0, 0, 0.18);
+}
+
+
+/* Message icon */
+
+.select-project-message-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 11px;
+
+    background: #e8f5e9;
+
+    color: #1b5e20;
+
+    font-size: 22px;
+}
+
+
+/* Message text */
+
+.select-project-message-text {
+    flex: 1;
+}
+
+.select-project-message-text strong {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #1b5e20;
+
+    font-size: 15px;
+}
+
+.select-project-message-text span {
+    color: #64748b;
+
+    font-size: 13px;
+}
+
+
+/* Close button */
+
+.select-project-message-close {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: #f1f5f1;
+
+    color: #64748b;
+
+    font-size: 19px;
+
+    cursor: pointer;
+}
+
+.select-project-message-close:hover {
+    background: #e1eadf;
+
+    color: #1b5e20;
+}
