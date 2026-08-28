@@ -2658,3 +2658,39 @@ input.responsible-person-checkbox {
         flex-wrap: wrap;
     }
 }
+
+/* ============================================================
+   TASK REPOSITORY COLLAPSIBLE FOLDER TREE
+   ============================================================ */
+
+.task-repository-row-hidden {
+    display: none !important;
+}
+
+.task-repository-folder-row {
+    cursor: pointer;
+    user-select: none;
+}
+
+.task-repository-folder-row:hover {
+    background: #f6fbf7;
+}
+
+.task-repository-folder-chevron {
+    width: 14px;
+    flex: 0 0 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #61728a;
+    font-size: 12px;
+}
+
+.task-repository-folder-row .task-repository-file-name {
+    color: #172b4d;
+}
+
+.task-repository-folder-row:focus-within {
+    background: #f6fbf7;
+}
+

@@ -1993,6 +1993,21 @@ function formatTaskRepositoryFileSize(bytes) {
 }
 
 
+const expandedTaskRepositoryFolders = new Set();
+
+function normalizeTaskRepositoryPath(value) {
+    return String(value || "")
+        .replace(/\\/g, "/")
+        .replace(/^\/+|\/+$/g, "");
+}
+
+function getTaskRepositoryParentPath(path) {
+    const normalized = normalizeTaskRepositoryPath(path);
+    const parts = normalized.split("/").filter(Boolean);
+    parts.pop();
+    return parts.join("/");
+}
+
 function renderTaskRepositoryFiles(items) {
 
     if (!taskRepositoryFilesList) {
@@ -2013,18 +2028,26 @@ function renderTaskRepositoryFiles(items) {
     taskRepositoryFilesList.innerHTML = files
         .map(item => {
 
-            const depth = Math.max(
-                0,
-                String(
-                    item.relative_path ||
-                    item.name ||
-                    ""
-                ).split("/").length - 1
+            const path = normalizeTaskRepositoryPath(
+                item.relative_path || item.name || ""
             );
 
-            const icon = item.is_folder ? "📁" : "📄";
+            const parentPath = getTaskRepositoryParentPath(path);
 
-            const sizeText = item.is_folder
+            const depth = Math.max(
+                0,
+                path.split("/").filter(Boolean).length - 1
+            );
+
+            const isFolder = Boolean(item.is_folder);
+            const isExpanded =
+                isFolder && expandedTaskRepositoryFolders.has(path);
+
+            const icon = isFolder
+                ? (isExpanded ? "📂" : "📁")
+                : "📄";
+
+            const sizeText = isFolder
                 ? ""
                 : formatTaskRepositoryFileSize(item.size);
 
@@ -2038,10 +2061,17 @@ function renderTaskRepositoryFiles(items) {
 
             return `
                 <div
-                    class="task-repository-file-row"
+                    class="task-repository-file-row${isFolder ? " task-repository-folder-row" : ""}"
+                    data-repository-path="${escapeHtml(path)}"
+                    data-repository-parent="${escapeHtml(parentPath)}"
+                    data-repository-folder="${isFolder ? "true" : "false"}"
                     style="--task-repository-depth:${depth}"
                 >
                     <div class="task-repository-file-main">
+                        <span class="task-repository-folder-chevron">
+                            ${isFolder ? (isExpanded ? "▾" : "▸") : ""}
+                        </span>
+
                         <span class="task-repository-file-icon">
                             ${icon}
                         </span>
@@ -2052,7 +2082,7 @@ function renderTaskRepositoryFiles(items) {
                             </div>
 
                             <div class="task-repository-file-path">
-                                ${escapeHtml(item.relative_path || item.name || "")}
+                                ${escapeHtml(path)}
                             </div>
                         </div>
                     </div>
@@ -2080,8 +2110,86 @@ function renderTaskRepositoryFiles(items) {
             `;
         })
         .join("");
-}
 
+    const rows = Array.from(
+        taskRepositoryFilesList.querySelectorAll(
+            ".task-repository-file-row"
+        )
+    );
+
+    function updateTaskRepositoryVisibility() {
+        rows.forEach(row => {
+            const path = row.dataset.repositoryPath || "";
+            const parts = path.split("/").filter(Boolean);
+
+            let visible = true;
+            let ancestor = "";
+
+            for (let i = 0; i < parts.length - 1; i += 1) {
+                ancestor = ancestor
+                    ? `${ancestor}/${parts[i]}`
+                    : parts[i];
+
+                if (!expandedTaskRepositoryFolders.has(ancestor)) {
+                    visible = false;
+                    break;
+                }
+            }
+
+            row.classList.toggle(
+                "task-repository-row-hidden",
+                !visible
+            );
+        });
+    }
+
+    taskRepositoryFilesList
+        .querySelectorAll(".task-repository-folder-row")
+        .forEach(row => {
+
+            row.addEventListener("click", event => {
+
+                if (
+                    event.target.closest(
+                        ".task-repository-file-open"
+                    )
+                ) {
+                    return;
+                }
+
+                const path =
+                    row.dataset.repositoryPath || "";
+
+                if (!path) {
+                    return;
+                }
+
+                if (expandedTaskRepositoryFolders.has(path)) {
+                    expandedTaskRepositoryFolders.delete(path);
+
+                    // Also collapse nested folders so reopening starts clean.
+                    Array.from(expandedTaskRepositoryFolders)
+                        .forEach(expandedPath => {
+                            if (
+                                expandedPath.startsWith(
+                                    `${path}/`
+                                )
+                            ) {
+                                expandedTaskRepositoryFolders.delete(
+                                    expandedPath
+                                );
+                            }
+                        });
+                } else {
+                    expandedTaskRepositoryFolders.add(path);
+                }
+
+                renderTaskRepositoryFiles(files);
+            });
+        });
+
+    updateTaskRepositoryVisibility();
+}
 
 async function loadTaskRepositoryFiles() {
 
@@ -2147,6 +2255,8 @@ async function openTaskRepositoryFilesModal(task) {
     }
 
     currentRepositoryTask = task;
+
+    expandedTaskRepositoryFolders.clear();
 
     if (taskRepositoryFilesModalTitle) {
         taskRepositoryFilesModalTitle.textContent =
