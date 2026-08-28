@@ -6,32 +6,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     const headerContainer =
         document.getElementById("header-container");
 
-
     // ============================================================
     // LOAD SIDEBAR
     // ============================================================
 
     if (sidebarContainer) {
-
         const response =
             await fetch("/components/sidebar.html");
 
         sidebarContainer.innerHTML =
             await response.text();
 
-
         // ========================================================
         // GET CURRENT PROJECT ID
         // ========================================================
 
         const urlParams =
-            new URLSearchParams(
-                window.location.search
-            );
+            new URLSearchParams(window.location.search);
 
         const projectId =
             urlParams.get("project_id");
-
 
         // ========================================================
         // TASKS LINK
@@ -43,42 +37,23 @@ document.addEventListener("DOMContentLoaded", async () => {
             );
 
         if (tasksLink) {
-
             if (projectId) {
-
-                // A project is already selected.
-                // Keep the current project when opening Tasks.
-
                 tasksLink.href =
-                    `/tasks.html?project_id=${encodeURIComponent(
-                        projectId
-                    )}`;
-
+                    `/tasks.html?project_id=${encodeURIComponent(projectId)}`;
             } else {
-
-                // No project selected.
-                // Send the user to Projects and trigger
-                // the "Select a Project" guide.
-
                 tasksLink.href =
                     "/?select_project=1";
 
                 tasksLink.addEventListener(
                     "click",
                     event => {
-
                         event.preventDefault();
-
                         window.location.href =
                             "/?select_project=1";
-
                     }
                 );
-
             }
-
         }
-
 
         // ========================================================
         // ACTIVE PAGE
@@ -93,10 +68,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             );
 
         sidebarLinks.forEach(link => {
+            link.classList.remove("active");
 
-            link.classList.remove(
-                "active"
-            );
+            // On the Projects page, ONLY Projects is active.
+            // This prevents both Projects and Tasks becoming active
+            // when Tasks redirects to /?select_project=1.
+            if (currentPath === "/") {
+                if (link.id === "sidebarDashboardLink") {
+                    link.classList.add("active");
+                }
+                return;
+            }
 
             const linkPath =
                 new URL(
@@ -104,52 +86,21 @@ document.addEventListener("DOMContentLoaded", async () => {
                     window.location.origin
                 ).pathname;
 
-
-            // PROJECTS PAGE
-            if (
-                currentPath === "/" &&
-                link.id === "sidebarDashboardLink"
-            ) {
-
-                link.classList.add(
-                    "active"
-                );
-
-                return;
-
+            if (linkPath === currentPath) {
+                link.classList.add("active");
             }
-
-
-            // TASKS / REPORTS / OTHER PAGES
-            if (
-                linkPath === currentPath
-            ) {
-
-                link.classList.add(
-                    "active"
-                );
-
-            }
-
         });
-
     }
-
 
     // ============================================================
     // LOAD HEADER
     // ============================================================
 
     if (headerContainer) {
-
         const response =
-            await fetch(
-                "/components/header.html"
-            );
+            await fetch("/components/header.html");
 
         headerContainer.innerHTML =
             await response.text();
-
     }
-
 });

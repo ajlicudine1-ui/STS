@@ -2916,198 +2916,77 @@ document.addEventListener(
 // ============================================================
 
 function initializeSelectProjectMode() {
+    const params = new URLSearchParams(window.location.search);
 
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
-
-    if (
-        params.get("select_project") !== "1"
-    ) {
+    if (params.get("select_project") !== "1") {
         return;
     }
 
+    const waitForProjects = setInterval(() => {
+        const tableBody = document.getElementById("projectsTable");
+        const firstAction = document.querySelector(".project-action-trigger");
 
-    // Wait until loadDashboard() finishes rendering projects.
-    const waitForProjects =
-        setInterval(() => {
+        if (!tableBody || !firstAction) {
+            return;
+        }
 
-            const table =
-                document.getElementById(
-                    "projectsTable"
-                );
+        const tableContainer = tableBody.closest(".table-container");
 
-            const firstAction =
-                document.querySelector(
-                    ".project-action-trigger"
-                );
+        if (!tableContainer) {
+            return;
+        }
 
-            if (
-                !table ||
-                !firstAction
-            ) {
-                return;
-            }
+        clearInterval(waitForProjects);
 
+        document.body.classList.add("select-project-mode");
+        tableContainer.classList.add("select-project-focus-table");
 
-            clearInterval(
-                waitForProjects
-            );
+        tableContainer.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
 
-
-            // --------------------------------------------
-            // ENABLE FOCUS MODE
-            // --------------------------------------------
-
-            document.body.classList.add(
-                "select-project-mode"
-            );
-
-
-            // --------------------------------------------
-            // FIND TABLE CONTAINER
-            // --------------------------------------------
-
-            const tableContainer =
-                table.closest(
-                    ".projects-table-container"
-                ) ||
-                table.closest(
-                    ".table-container"
-                ) ||
-                table.parentElement;
-
-
-            if (tableContainer) {
-
-                tableContainer.classList.add(
-                    "projects-table-container"
-                );
-
-
-                // Scroll directly to project table.
-
-                tableContainer.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center"
-                });
-
-            }
-
-
-            // --------------------------------------------
-            // FIND PROJECT SECTION
-            // --------------------------------------------
-
-            const projectSection =
-                table.closest(
-                    "section"
-                ) ||
-                table.parentElement
-                    ?.parentElement;
-
-            if (projectSection) {
-
-                projectSection.classList.add(
-                    "projects-section"
-                );
-
-            }
-
-
-            // --------------------------------------------
-            // MESSAGE
-            // --------------------------------------------
-
-            const message =
-                document.createElement(
-                    "div"
-                );
-
-            message.className =
-                "select-project-message";
-
+        if (!document.querySelector(".select-project-message")) {
+            const message = document.createElement("div");
+            message.className = "select-project-message";
             message.innerHTML = `
+                <div class="select-project-message-icon">☷</div>
 
-                <span>
-                    <strong>
-                        Select a project first.
-                    </strong>
-
-                    Click
-                    <b>Actions</b>
-                    → 
-                    <b>View Tasks</b>
-                    for the project you want.
-                </span>
+                <div class="select-project-message-text">
+                    <strong>Select a project first</strong>
+                    <span>Choose the project you want, then click <b>Actions</b> → <b>View Tasks</b>.</span>
+                </div>
 
                 <button
                     type="button"
                     class="select-project-message-close"
+                    aria-label="Close"
                     title="Close"
-                >
-                    ×
-                </button>
-
+                >×</button>
             `;
 
+            document.body.appendChild(message);
 
-            document.body.appendChild(
-                message
-            );
-
-
-            // --------------------------------------------
-            // CLOSE GUIDE
-            // --------------------------------------------
-
-            const closeButton =
-                message.querySelector(
-                    ".select-project-message-close"
-                );
+            const closeButton = message.querySelector(".select-project-message-close");
 
             if (closeButton) {
+                closeButton.addEventListener("click", () => {
+                    document.body.classList.remove("select-project-mode");
+                    tableContainer.classList.remove("select-project-focus-table");
+                    message.remove();
 
-                closeButton.addEventListener(
-                    "click",
-                    () => {
-
-                        document.body.classList.remove(
-                            "select-project-mode"
-                        );
-
-                        message.remove();
-
-
-                        // Remove query parameter.
-
-                        window.history.replaceState(
-                            {},
-                            document.title,
-                            "/"
-                        );
-
-                    }
-                );
-
+                    const cleanUrl = new URL(window.location.href);
+                    cleanUrl.searchParams.delete("select_project");
+                    window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search);
+                });
             }
-
-        }, 100);
-
-
-    // Safety stop after 10 seconds.
+        }
+    }, 100);
 
     setTimeout(() => {
-
-        clearInterval(
-            waitForProjects
-        );
-
+        clearInterval(waitForProjects);
     }, 10000);
-
 }
-
 
 document.addEventListener(
     "DOMContentLoaded",

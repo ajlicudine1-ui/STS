@@ -1461,204 +1461,132 @@
     }
 }
 
-  
 /* ============================================================
-   SELECT PROJECT FOCUS MODE
+   SELECT PROJECT FOCUS MODE - TABLE ONLY
    ============================================================ */
 
-/* Blur the main dashboard content only.
-   Sidebar remains untouched. */
+/* Sidebar is intentionally not targeted anywhere below. */
 
-body.select-project-mode .main > * {
+/* Blur/dim dashboard heading and KPI cards. */
+body.select-project-mode .dashboard-header,
+body.select-project-mode .stats {
     filter: blur(4px);
-    opacity: 0.35;
-
-    transition:
-        filter 0.3s ease,
-        opacity 0.3s ease;
+    opacity: 0.30;
+    pointer-events: none;
+    transition: filter 0.25s ease, opacity 0.25s ease;
 }
 
+/* Blur only the Projects card header, NOT the card/table parent. */
+body.select-project-mode .content-card > .content-header {
+    filter: blur(4px);
+    opacity: 0.30;
+    pointer-events: none;
+    transition: filter 0.25s ease, opacity 0.25s ease;
+}
 
-/* Keep the project table clear and focused */
-
-body.select-project-mode
-.select-project-focus-table {
+/* Keep the actual projects table completely sharp and elevated. */
+body.select-project-mode .table-container.select-project-focus-table {
     position: relative;
-
     z-index: 10010;
-
     filter: none !important;
     opacity: 1 !important;
-
     background: #ffffff;
-
-    border-radius: 14px;
-
-    box-shadow:
-        0 18px 50px
-        rgba(0, 0, 0, 0.22);
-
-    outline:
-        3px solid
-        rgba(46, 125, 50, 0.45);
-
+    border-radius: 12px;
+    box-shadow: 0 16px 45px rgba(15, 23, 42, 0.20);
+    outline: 3px solid rgba(46, 125, 50, 0.38);
     outline-offset: 5px;
 }
 
-
-/* Make sure everything inside the table stays clear */
-
-body.select-project-mode
-.select-project-focus-table,
-body.select-project-mode
-.select-project-focus-table * {
+body.select-project-mode .table-container.select-project-focus-table table,
+body.select-project-mode .table-container.select-project-focus-table th,
+body.select-project-mode .table-container.select-project-focus-table td,
+body.select-project-mode .table-container.select-project-focus-table tr {
     filter: none !important;
+    opacity: 1 !important;
 }
 
-
-/* ============================================================
-   ACTIONS BUTTON HIGHLIGHT
-   ============================================================ */
-
-body.select-project-mode
-.select-project-focus-table
-.project-action-trigger {
+/* Highlight the Actions control so the next step is obvious. */
+body.select-project-mode .select-project-focus-table .project-action-trigger {
     position: relative;
-
     z-index: 10020;
-
-    animation:
-        selectProjectActionPulse
-        0.9s ease-in-out
-        infinite alternate;
+    border-color: #2e7d32;
+    animation: selectProjectActionPulse 0.85s ease-in-out infinite alternate;
 }
-
 
 @keyframes selectProjectActionPulse {
-
     from {
-        box-shadow:
-            0 0 0 0
-            rgba(46, 125, 50, 0.20);
+        box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.14);
     }
-
     to {
-        box-shadow:
-            0 0 0 7px
-            rgba(46, 125, 50, 0.20);
+        box-shadow: 0 0 0 7px rgba(46, 125, 50, 0.24);
     }
-
 }
 
-
-/* ============================================================
-   SELECT PROJECT MESSAGE
-   ============================================================ */
-
+/* Guide message */
 .select-project-message {
     position: fixed;
-
-    top: 28px;
+    top: 24px;
     left: 50%;
-
-    transform:
-        translateX(-50%);
-
+    transform: translateX(-50%);
     z-index: 30000;
-
     display: flex;
     align-items: center;
-
     gap: 12px;
-
-    min-width: 390px;
-    max-width: 520px;
-
-    padding: 14px 18px;
-
+    width: min(520px, calc(100vw - 32px));
+    padding: 14px 16px;
     background: #ffffff;
-
-    border:
-        1px solid #dce8d7;
-
+    border: 1px solid #dce8d7;
     border-radius: 14px;
-
-    box-shadow:
-        0 12px 38px
-        rgba(0, 0, 0, 0.18);
+    box-shadow: 0 12px 38px rgba(15, 23, 42, 0.18);
 }
 
-
-/* Message icon */
-
 .select-project-message-icon {
-    width: 42px;
-    height: 42px;
-
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    flex-shrink: 0;
-
     border-radius: 11px;
-
     background: #e8f5e9;
-
     color: #1b5e20;
-
-    font-size: 22px;
+    font-size: 21px;
 }
-
-
-/* Message text */
 
 .select-project-message-text {
     flex: 1;
+    min-width: 0;
 }
 
 .select-project-message-text strong {
     display: block;
-
     margin-bottom: 3px;
-
     color: #1b5e20;
-
     font-size: 15px;
 }
 
 .select-project-message-text span {
     color: #64748b;
-
     font-size: 13px;
+    line-height: 1.4;
 }
-
-
-/* Close button */
 
 .select-project-message-close {
     width: 30px;
     height: 30px;
-
+    flex: 0 0 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-
     border: none;
-
     border-radius: 50%;
-
     background: #f1f5f1;
-
     color: #64748b;
-
     font-size: 19px;
-
     cursor: pointer;
 }
 
 .select-project-message-close:hover {
     background: #e1eadf;
-
     color: #1b5e20;
 }
