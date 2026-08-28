@@ -151,12 +151,6 @@ function createTeamMemberRow(member = null) {
             placeholder="Enter team member name"
         >
 
-        <input
-            type="text"
-            class="team-member-role"
-            placeholder="Role e.g. Backend Developer"
-        >
-
         <button
             type="button"
             class="remove-team-member-btn"
@@ -170,12 +164,6 @@ function createTeamMemberRow(member = null) {
         row.querySelector(
             ".team-member-name"
         );
-
-    const roleInput =
-        row.querySelector(
-            ".team-member-role"
-        );
-
     const removeButton =
         row.querySelector(
             ".remove-team-member-btn"
@@ -291,12 +279,6 @@ function collectDevelopmentTeam() {
             row.querySelector(
                 ".team-member-name"
             );
-
-        const roleInput =
-            row.querySelector(
-                ".team-member-role"
-            );
-
         const memberName =
             nameInput?.value.trim() || "";
 
