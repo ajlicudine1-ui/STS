@@ -164,6 +164,7 @@ function createTeamMemberRow(member = null) {
         row.querySelector(
             ".team-member-name"
         );
+
     const removeButton =
         row.querySelector(
             ".remove-team-member-btn"
@@ -176,13 +177,6 @@ function createTeamMemberRow(member = null) {
             "";
     }
 
-    if (roleInput) {
-        roleInput.value =
-            member?.member_role ||
-            member?.role ||
-            "";
-    }
-
     if (removeButton) {
         removeButton.addEventListener(
             "click",
@@ -191,14 +185,12 @@ function createTeamMemberRow(member = null) {
                 row.remove();
 
                 ensureAtLeastOneTeamRow();
-
             }
         );
     }
 
     return row;
 }
-
 
 function clearDevelopmentTeamRows() {
 
@@ -279,35 +271,22 @@ function collectDevelopmentTeam() {
             row.querySelector(
                 ".team-member-name"
             );
+
         const memberName =
             nameInput?.value.trim() || "";
 
-        const memberRole =
-            roleInput?.value.trim() || "";
-
-        // Ignore a completely blank row.
-        if (!memberName && !memberRole) {
-            continue;
-        }
-
         if (!memberName) {
-            throw new Error(
-                "Please enter the name of each development team member."
-            );
+            continue;
         }
 
         members.push({
             member_name:
-                memberName,
-
-            member_role:
-                memberRole
+                memberName
         });
     }
 
     return members;
 }
-
 
 // ============================================================
 // PROJECT REPOSITORY FILE / FOLDER UPLOAD
@@ -1411,7 +1390,7 @@ if (versionGuideToggle && versionGuideDropdown) {
 // free-text inputs, so this function only prepares the team data.
 //
 // To persist the Development Team, the backend/project_members table
-// must accept member_name + member_role instead of requiring user_id.
+// must accept member_name values without requiring user_id.
 // ============================================================
 
 // ============================================================
@@ -1569,8 +1548,7 @@ async function openEditProjectModal(
         "projectVersion",
         project.version
     );
-
-    setProjectValue(
+setProjectValue(
         "projectStatus",
         project.project_status
     );
@@ -1596,9 +1574,7 @@ async function openEditProjectModal(
         members.forEach(member => {
             addTeamMemberRow({
                 member_name:
-                    member.member_name || "",
-                member_role:
-                    member.member_role || ""
+                    member.member_name || ""
             });
         });
 
@@ -2323,11 +2299,10 @@ async function loadDashboard() {
                 : [];
 
             const teamText = team.length
-                ? team.map(member => {
-                    const name = member.member_name || "";
-                    const role = member.member_role || "";
-                    return role ? `${name} (${role})` : name;
-                }).filter(Boolean).join(", ")
+                ? team
+                    .map(member => member.member_name || "")
+                    .filter(Boolean)
+                    .join(", ")
                 : "-";
 
             // IMPORTANT: this cell order must exactly match index.html <thead>.
@@ -2413,22 +2388,7 @@ async function saveProject() {
             development_team:
                 developmentTeam
         };
-
-
-        /*
-            These fields still exist in the database, but they are
-            optional in the newest modal. Only send them when the
-            corresponding input exists.
-        */
-        if (projectOwnerElement) {
-
-            projectData.project_owner =
-                projectOwnerElement.value.trim() ||
-                null;
-        }
-
-
-        console.log(
+console.log(
             "PROJECT PAYLOAD:",
             projectData
         );
