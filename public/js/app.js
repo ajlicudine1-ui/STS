@@ -945,13 +945,6 @@ function renderRepositoryFiles(items) {
         return;
     }
 
-    /*
-     * IMPORTANT:
-     * Do not rely on a CSS class to hide descendants.
-     * The dashboard may still be using an older dashboard.css.
-     * We therefore calculate visibility here and apply the
-     * native HTML "hidden" attribute + inline display:none.
-     */
     function isRepositoryItemVisible(path) {
 
         const parts =
@@ -1020,21 +1013,27 @@ function renderRepositoryFiles(items) {
                 : formatRepositoryFileSize(item.size);
 
             const modified = item.modified_time
-                ? new Date(
-                    item.modified_time
-                ).toLocaleString()
+                ? new Date(item.modified_time).toLocaleString()
                 : "";
 
             const safeUrl = item.url
                 ? escapeHtml(item.url)
                 : "";
 
+            const actionTitle = isFolder
+                ? (isExpanded ? "Collapse folder" : "Expand folder")
+                : (safeUrl ? "Open file in Google Drive" : "");
+
             return `
                 <div
-                    class="repository-file-row${isFolder ? " repository-folder-row" : ""}"
+                    class="repository-file-row${isFolder ? " repository-folder-row" : " repository-clickable-file"}"
                     data-repository-path="${escapeHtml(path)}"
                     data-repository-folder="${isFolder ? "true" : "false"}"
-                    style="--repository-depth:${depth};${isVisible ? "" : "display:none !important;"}"
+                    data-repository-url="${safeUrl}"
+                    role="button"
+                    tabindex="0"
+                    title="${escapeHtml(actionTitle)}"
+                    style="--repository-depth:${depth};cursor:pointer;${isVisible ? "" : "display:none !important;"}"
                     ${isVisible ? "" : "hidden"}
                 >
                     <div class="repository-file-main">
@@ -1071,96 +1070,101 @@ function renderRepositoryFiles(items) {
                             ${escapeHtml(modified)}
                         </span>
 
-                        ${
-                            safeUrl
-                                ? `
-                                    <a
-                                        class="repository-file-open"
-                                        href="${safeUrl}"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        Open
-                                    </a>
-                                `
-                                : ""
-                        }
-
                     </div>
                 </div>
             `;
         })
         .join("");
 
+    function activateRepositoryRow(row) {
+
+        const path =
+            normalizeProjectRepositoryPath(
+                row.dataset.repositoryPath ||
+                ""
+            );
+
+        const isFolder =
+            row.dataset.repositoryFolder === "true";
+
+        const url =
+            row.dataset.repositoryUrl || "";
+
+        if (isFolder) {
+
+            if (!path) {
+                return;
+            }
+
+            if (
+                expandedProjectRepositoryFolders.has(
+                    path
+                )
+            ) {
+
+                expandedProjectRepositoryFolders.delete(
+                    path
+                );
+
+                Array.from(
+                    expandedProjectRepositoryFolders
+                ).forEach(expandedPath => {
+
+                    if (
+                        expandedPath.startsWith(
+                            `${path}/`
+                        )
+                    ) {
+                        expandedProjectRepositoryFolders.delete(
+                            expandedPath
+                        );
+                    }
+                });
+
+            } else {
+
+                expandedProjectRepositoryFolders.add(
+                    path
+                );
+            }
+
+            renderRepositoryFiles(files);
+            return;
+        }
+
+        if (url) {
+            window.open(
+                url,
+                "_blank",
+                "noopener,noreferrer"
+            );
+        }
+    }
+
     repositoryFilesList
         .querySelectorAll(
-            ".repository-folder-row"
+            ".repository-file-row"
         )
         .forEach(row => {
 
             row.addEventListener(
                 "click",
+                () => {
+                    activateRepositoryRow(row);
+                }
+            );
+
+            row.addEventListener(
+                "keydown",
                 event => {
 
-                    /*
-                     * Clicking Open should open Drive only;
-                     * it must not expand/collapse the folder.
-                     */
                     if (
-                        event.target.closest(
-                            ".repository-file-open"
-                        )
+                        event.key === "Enter" ||
+                        event.key === " "
                     ) {
-                        return;
+                        event.preventDefault();
+                        activateRepositoryRow(row);
                     }
-
-                    const path =
-                        normalizeProjectRepositoryPath(
-                            row.dataset.repositoryPath ||
-                            ""
-                        );
-
-                    if (!path) {
-                        return;
-                    }
-
-                    if (
-                        expandedProjectRepositoryFolders.has(
-                            path
-                        )
-                    ) {
-
-                        expandedProjectRepositoryFolders.delete(
-                            path
-                        );
-
-                        /*
-                         * Also close every nested folder so that
-                         * reopening this parent starts clean.
-                         */
-                        Array.from(
-                            expandedProjectRepositoryFolders
-                        ).forEach(expandedPath => {
-
-                            if (
-                                expandedPath.startsWith(
-                                    `${path}/`
-                                )
-                            ) {
-                                expandedProjectRepositoryFolders.delete(
-                                    expandedPath
-                                );
-                            }
-                        });
-
-                    } else {
-
-                        expandedProjectRepositoryFolders.add(
-                            path
-                        );
-                    }
-
-                    renderRepositoryFiles(files);
                 }
             );
         });

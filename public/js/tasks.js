@@ -2007,15 +2007,6 @@ function renderTaskRepositoryFiles(items) {
         return;
     }
 
-    /*
-     * A repository item is visible only when EVERY parent folder
-     * in its path is currently expanded. This makes all folders
-     * start fully collapsed when the modal is opened.
-     *
-     * We use both the native hidden attribute and inline
-     * display:none so this works even if an older tasks.css is
-     * still cached/deployed.
-     */
     function isTaskRepositoryItemVisible(path) {
 
         const parts =
@@ -2084,21 +2075,27 @@ function renderTaskRepositoryFiles(items) {
                 : formatTaskRepositoryFileSize(item.size);
 
             const modified = item.modified_time
-                ? new Date(
-                    item.modified_time
-                ).toLocaleString()
+                ? new Date(item.modified_time).toLocaleString()
                 : "";
 
             const safeUrl = item.url
                 ? escapeHtml(item.url)
                 : "";
 
+            const actionTitle = isFolder
+                ? (isExpanded ? "Collapse folder" : "Expand folder")
+                : (safeUrl ? "Open file in Google Drive" : "");
+
             return `
                 <div
-                    class="task-repository-file-row${isFolder ? " task-repository-folder-row" : ""}"
+                    class="task-repository-file-row${isFolder ? " task-repository-folder-row" : " task-repository-clickable-file"}"
                     data-repository-path="${escapeHtml(path)}"
                     data-repository-folder="${isFolder ? "true" : "false"}"
-                    style="--task-repository-depth:${depth};${isVisible ? "" : "display:none !important;"}"
+                    data-repository-url="${safeUrl}"
+                    role="button"
+                    tabindex="0"
+                    title="${escapeHtml(actionTitle)}"
+                    style="--task-repository-depth:${depth};cursor:pointer;${isVisible ? "" : "display:none !important;"}"
                     ${isVisible ? "" : "hidden"}
                 >
                     <div class="task-repository-file-main">
@@ -2135,92 +2132,101 @@ function renderTaskRepositoryFiles(items) {
                             ${escapeHtml(modified)}
                         </span>
 
-                        ${
-                            safeUrl
-                                ? `
-                                    <a
-                                        class="task-repository-file-open"
-                                        href="${safeUrl}"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        Open
-                                    </a>
-                                `
-                                : ""
-                        }
-
                     </div>
                 </div>
             `;
         })
         .join("");
 
+    function activateTaskRepositoryRow(row) {
+
+        const path =
+            normalizeTaskRepositoryPath(
+                row.dataset.repositoryPath ||
+                ""
+            );
+
+        const isFolder =
+            row.dataset.repositoryFolder === "true";
+
+        const url =
+            row.dataset.repositoryUrl || "";
+
+        if (isFolder) {
+
+            if (!path) {
+                return;
+            }
+
+            if (
+                expandedTaskRepositoryFolders.has(
+                    path
+                )
+            ) {
+
+                expandedTaskRepositoryFolders.delete(
+                    path
+                );
+
+                Array.from(
+                    expandedTaskRepositoryFolders
+                ).forEach(expandedPath => {
+
+                    if (
+                        expandedPath.startsWith(
+                            `${path}/`
+                        )
+                    ) {
+                        expandedTaskRepositoryFolders.delete(
+                            expandedPath
+                        );
+                    }
+                });
+
+            } else {
+
+                expandedTaskRepositoryFolders.add(
+                    path
+                );
+            }
+
+            renderTaskRepositoryFiles(files);
+            return;
+        }
+
+        if (url) {
+            window.open(
+                url,
+                "_blank",
+                "noopener,noreferrer"
+            );
+        }
+    }
+
     taskRepositoryFilesList
         .querySelectorAll(
-            ".task-repository-folder-row"
+            ".task-repository-file-row"
         )
         .forEach(row => {
 
             row.addEventListener(
                 "click",
+                () => {
+                    activateTaskRepositoryRow(row);
+                }
+            );
+
+            row.addEventListener(
+                "keydown",
                 event => {
 
                     if (
-                        event.target.closest(
-                            ".task-repository-file-open"
-                        )
+                        event.key === "Enter" ||
+                        event.key === " "
                     ) {
-                        return;
+                        event.preventDefault();
+                        activateTaskRepositoryRow(row);
                     }
-
-                    const path =
-                        normalizeTaskRepositoryPath(
-                            row.dataset.repositoryPath ||
-                            ""
-                        );
-
-                    if (!path) {
-                        return;
-                    }
-
-                    if (
-                        expandedTaskRepositoryFolders.has(
-                            path
-                        )
-                    ) {
-
-                        expandedTaskRepositoryFolders.delete(
-                            path
-                        );
-
-                        /*
-                         * Collapse every nested folder too, so
-                         * reopening the parent starts clean.
-                         */
-                        Array.from(
-                            expandedTaskRepositoryFolders
-                        ).forEach(expandedPath => {
-
-                            if (
-                                expandedPath.startsWith(
-                                    `${path}/`
-                                )
-                            ) {
-                                expandedTaskRepositoryFolders.delete(
-                                    expandedPath
-                                );
-                            }
-                        });
-
-                    } else {
-
-                        expandedTaskRepositoryFolders.add(
-                            path
-                        );
-                    }
-
-                    renderTaskRepositoryFiles(files);
                 }
             );
         });
