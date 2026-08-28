@@ -19,6 +19,10 @@ body {
    SIDEBAR
    ============================================================ */
 
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
 .sidebar {
     position: fixed;
     left: 0;
@@ -42,13 +46,12 @@ body {
 
 
 /* ============================================================
-   SIDEBAR BRAND
+   BRAND
    ============================================================ */
 
 .sidebar-brand {
     display: flex;
     align-items: center;
-
     gap: 12px;
 
     min-height: 72px;
@@ -58,40 +61,23 @@ body {
 }
 
 
-/* ============================================================
-   SIDEBAR LOGO
-   ============================================================ */
-
 .sidebar-logo-mark {
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    flex-shrink: 0;
+    border-radius: 12px;
 
-    background: transparent;
-    border-radius: 0;
+    background: #eef3e8;
+    color: #556b35;
 
-    overflow: hidden;
+    font-size: 15px;
+    font-weight: 800;
 }
 
-.sidebar-logo-image {
-    width: 46px;
-    height: 46px;
-
-    display: block;
-
-    object-fit: contain;
-    object-position: center;
-}
-
-
-/* ============================================================
-   SIDEBAR BRAND TEXT
-   ============================================================ */
 
 .sidebar-brand-text {
     color: #172b4d;
@@ -100,17 +86,15 @@ body {
     font-weight: 800;
 
     letter-spacing: -0.5px;
-    line-height: 1;
 }
 
 
 /* ============================================================
-   SIDEBAR SECTION LABEL
+   SECTION LABEL
    ============================================================ */
 
 .sidebar-section-label {
     margin-bottom: 16px;
-
     padding-left: 14px;
 
     color: #94a3b8;
@@ -123,15 +107,15 @@ body {
 
 
 /* ============================================================
-   SIDEBAR NAVIGATION
+   NAVIGATION
    ============================================================ */
 
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-
     gap: 8px;
 }
+
 
 .nav-item {
     width: 100%;
@@ -147,7 +131,6 @@ body {
     border-radius: 16px;
 
     color: #64748b;
-
     text-decoration: none;
 
     font-size: 15px;
@@ -164,7 +147,7 @@ body {
 
 
 /* ============================================================
-   NAVIGATION ICON
+   NAV ICON
    ============================================================ */
 
 .nav-icon {
@@ -179,16 +162,12 @@ body {
     color: #91a4bf;
 
     font-size: 22px;
-
     line-height: 1;
-
-    transition:
-        color 0.2s ease;
 }
 
 
 /* ============================================================
-   NAVIGATION TEXT
+   NAV TEXT
    ============================================================ */
 
 .nav-text {
@@ -197,15 +176,17 @@ body {
 
 
 /* ============================================================
-   NAVIGATION HOVER
+   NAV HOVER
    ============================================================ */
 
 .nav-item:hover {
     background: #f5f7f2;
+
     color: #526832;
 
     transform: translateX(2px);
 }
+
 
 .nav-item:hover .nav-icon {
     color: #526832;
@@ -213,16 +194,18 @@ body {
 
 
 /* ============================================================
-   ACTIVE NAVIGATION ITEM
+   ACTIVE NAV ITEM
    ============================================================ */
 
 .nav-item.active {
     background: #556b35;
+
     color: #ffffff;
 
     box-shadow:
         0 8px 18px rgba(85, 107, 53, 0.22);
 }
+
 
 .nav-item.active .nav-icon {
     color: #ffffff;
@@ -241,7 +224,78 @@ body {
     padding: 30px;
 
     position: relative;
+    z-index: 1;
+}
 
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 800px) {
+
+    .sidebar {
+        width: 220px;
+
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+
+    .main {
+        margin-left: 220px;
+    }
+
+
+    .nav-item {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .sidebar {
+        position: relative;
+
+        width: 100%;
+        height: auto;
+
+        border-right: none;
+        border-bottom: 1px solid #e7ebf0;
+    }
+
+
+    .sidebar-brand {
+        margin-bottom: 22px;
+    }
+
+
+    .sidebar-nav {
+        gap: 6px;
+    }
+
+
+    .main {
+        margin-left: 0;
+
+        padding: 20px;
+    }
+
+}
+
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+
+.main {
+    margin-left: 240px;
+    min-height: 100vh;
+    padding: 30px;
+    position: relative;
     z-index: 1;
 }
 
@@ -252,22 +306,18 @@ body {
 
 .header {
     display: flex;
-
     justify-content: space-between;
     align-items: center;
-
     margin-bottom: 30px;
 }
 
 .header h1 {
     font-size: 28px;
-
     color: #1b5e20;
 }
 
 .header p {
     color: #6b7280;
-
     margin-top: 5px;
 }
 
@@ -278,13 +328,9 @@ body {
 
 .btn {
     border: none;
-
     padding: 10px 16px;
-
     border-radius: 8px;
-
     cursor: pointer;
-
     font-weight: bold;
 
     transition:
@@ -297,13 +343,11 @@ body {
 }
 
 
-/* ============================================================
-   PRIMARY BUTTON
-   ============================================================ */
+/* Primary GREEN */
 
 .btn-primary {
     background: #2e7d32;
-    color: #ffffff;
+    color: white;
 }
 
 .btn-primary:hover {
@@ -311,9 +355,7 @@ body {
 }
 
 
-/* ============================================================
-   SECONDARY BUTTON
-   ============================================================ */
+/* Secondary */
 
 .btn-secondary {
     background: #e8f5e9;
@@ -331,19 +373,14 @@ body {
 
 .modal {
     display: none;
-
     position: fixed;
-
+    z-index: 10000;
     inset: 0;
 
-    z-index: 10000;
-
-    background:
-        rgba(0, 0, 0, 0.45);
+    background: rgba(0, 0, 0, 0.45);
 
     align-items: center;
     justify-content: center;
-
     padding: 20px;
 }
 
@@ -355,71 +392,42 @@ body {
     width: 100%;
     max-width: 650px;
 
-    background: #ffffff;
-
+    background: white;
     border-radius: 14px;
-
     padding: 28px;
 
     box-shadow:
         0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
-
-/* ============================================================
-   MODAL HEADER
-   ============================================================ */
-
 .modal-header {
     display: flex;
-
     justify-content: space-between;
     align-items: flex-start;
-
     margin-bottom: 25px;
 }
 
 .modal-header h2 {
     font-size: 22px;
-
     margin-bottom: 5px;
-
     color: #1b5e20;
 }
 
 .modal-header p {
     color: #6b7280;
-
     font-size: 14px;
 }
 
-
-/* ============================================================
-   MODAL CLOSE BUTTON
-   ============================================================ */
-
 .modal-close {
     border: none;
-
     background: transparent;
-
     font-size: 28px;
-
     color: #6b7280;
-
     cursor: pointer;
-
-    transition:
-        color 0.2s ease,
-        transform 0.15s ease;
 }
 
 .modal-close:hover {
     color: #2e7d32;
-}
-
-.modal-close:active {
-    transform: scale(0.92);
 }
 
 
@@ -433,32 +441,21 @@ body {
 
 .form-group label {
     display: block;
-
     font-size: 14px;
     font-weight: bold;
-
     margin-bottom: 7px;
-
     color: #1b5e20;
 }
 
 .form-group input,
 .form-group select {
     width: 100%;
-
     padding: 11px 12px;
 
-    border:
-        1px solid #d1d5db;
-
+    border: 1px solid #d1d5db;
     border-radius: 8px;
 
-    background: #ffffff;
-
-    color: #1f2937;
-
     font-size: 14px;
-
     outline: none;
 
     transition:
@@ -467,9 +464,7 @@ body {
 }
 
 
-/* ============================================================
-   FORM FOCUS
-   ============================================================ */
+/* GREEN FOCUS */
 
 .form-group input:focus,
 .form-group select:focus {
@@ -479,32 +474,16 @@ body {
         0 0 0 3px rgba(46, 125, 50, 0.12);
 }
 
-
-/* ============================================================
-   FORM ROW
-   ============================================================ */
-
 .form-row {
     display: grid;
-
-    grid-template-columns:
-        1fr 1fr;
-
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
 
-
-/* ============================================================
-   FORM ACTIONS
-   ============================================================ */
-
 .form-actions {
     display: flex;
-
     justify-content: flex-end;
-
     gap: 10px;
-
     margin-top: 25px;
 }
 
@@ -515,9 +494,7 @@ body {
 
 .status {
     display: inline-block;
-
     padding: 5px 10px;
-
     border-radius: 20px;
 
     font-size: 12px;
@@ -525,7 +502,7 @@ body {
 }
 
 
-/* ACTIVE */
+/* Active */
 
 .status-active {
     background: #dcfce7;
@@ -533,7 +510,7 @@ body {
 }
 
 
-/* COMPLETED */
+/* Completed */
 
 .status-completed {
     background: #d1fae5;
@@ -541,7 +518,7 @@ body {
 }
 
 
-/* PENDING */
+/* Pending */
 
 .status-pending {
     background: #fef3c7;
@@ -550,7 +527,7 @@ body {
 
 
 /* ============================================================
-   GLOBAL LINKS
+   GREEN ACCENT ELEMENTS
    ============================================================ */
 
 a {
@@ -562,9 +539,7 @@ a:hover {
 }
 
 
-/* ============================================================
-   TEXT SELECTION
-   ============================================================ */
+/* Selection */
 
 ::selection {
     background: #c8e6c9;
@@ -573,109 +548,24 @@ a:hover {
 
 
 /* ============================================================
-   RESPONSIVE - TABLET
-   ============================================================ */
-
-@media (max-width: 800px) {
-
-    .sidebar {
-        width: 220px;
-
-        padding-left: 14px;
-        padding-right: 14px;
-    }
-
-    .main {
-        margin-left: 220px;
-    }
-
-    .nav-item {
-        padding-left: 14px;
-        padding-right: 14px;
-    }
-
-}
-
-
-/* ============================================================
-   RESPONSIVE - MOBILE
+   RESPONSIVE
    ============================================================ */
 
 @media (max-width: 700px) {
 
     .sidebar {
         position: relative;
-
         width: 100%;
         height: auto;
-
-        padding: 18px 16px;
-
-        border-right: none;
-
-        border-bottom:
-            1px solid #e7ebf0;
-
         z-index: 9999;
-    }
-
-    .sidebar-brand {
-        min-height: auto;
-
-        margin-bottom: 22px;
-
-        padding: 0 8px;
-    }
-
-    .sidebar-logo-mark {
-        width: 42px;
-        height: 42px;
-    }
-
-    .sidebar-logo-image {
-        width: 42px;
-        height: 42px;
-    }
-
-    .sidebar-brand-text {
-        font-size: 22px;
-    }
-
-    .sidebar-nav {
-        gap: 6px;
-    }
-
-    .nav-item {
-        min-height: 50px;
-
-        padding-left: 14px;
-        padding-right: 14px;
     }
 
     .main {
         margin-left: 0;
-
         padding: 20px;
-    }
-
-    .header {
-        align-items: flex-start;
-
-        gap: 15px;
-
-        flex-wrap: wrap;
     }
 
     .form-row {
         grid-template-columns: 1fr;
     }
-
-    .modal {
-        padding: 14px;
-    }
-
-    .modal-content {
-        padding: 22px;
-    }
-
 }
