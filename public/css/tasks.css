@@ -2190,3 +2190,38 @@ input.responsible-person-checkbox {
 
     text-align: center !important;
 }
+
+
+/* Task Actions -> Upload Files / Folder submenu */
+.task-action-menu {
+    position: relative;
+}
+
+.task-upload-menu-close {
+    position: absolute;
+    top: 6px;
+    left: 7px;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #475569;
+    font: 700 18px/1 Arial, sans-serif;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.task-upload-menu-close:hover {
+    background: #eef5ef;
+    color: #166534;
+}
+
+.task-action-menu .choose-task-files,
+.task-action-menu .choose-task-folder {
+    padding-left: 48px;
+}
+
+.task-action-menu .choose-task-files {
+    margin-top: 28px;
+}

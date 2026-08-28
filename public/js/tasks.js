@@ -2030,6 +2030,40 @@ function createActionMenu(task) {
             </button>
 
 
+            <!-- REPOSITORY FILES -->
+
+            <button
+                type="button"
+                class="task-action-item repository-files-action">
+
+                <span class="task-action-icon">
+                    ▣
+                </span>
+
+                <span>
+                    Repository Files
+                </span>
+
+            </button>
+
+
+            <!-- UPLOAD FILES / FOLDER -->
+
+            <button
+                type="button"
+                class="task-action-item upload-repository-action">
+
+                <span class="task-action-icon">
+                    ↑
+                </span>
+
+                <span>
+                    Upload Files / Folder
+                </span>
+
+            </button>
+
+
             <!-- EDIT -->
 
             <button
@@ -2160,6 +2194,125 @@ function createActionMenu(task) {
             }
         );
 
+    }
+
+
+
+    // ========================================================
+    // TASK REPOSITORY FILES
+    // ========================================================
+
+    const repositoryFilesAction =
+        wrapper.querySelector(".repository-files-action");
+
+    if (repositoryFilesAction) {
+        repositoryFilesAction.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+                closeAllActionMenus();
+
+                if (typeof openTaskRepositoryFilesModal === "function") {
+                    openTaskRepositoryFilesModal(task);
+                    return;
+                }
+
+                // Fallback: use the task repository endpoint if the modal
+                // implementation is not yet present in this file.
+                window.dispatchEvent(
+                    new CustomEvent("open-task-repository", {
+                        detail: { task }
+                    })
+                );
+            }
+        );
+    }
+
+
+    // ========================================================
+    // TASK REPOSITORY UPLOAD SUBMENU
+    // ========================================================
+
+    const uploadRepositoryAction =
+        wrapper.querySelector(".upload-repository-action");
+
+    if (uploadRepositoryAction && menu) {
+        uploadRepositoryAction.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+
+                const originalMenuHtml = menu.innerHTML;
+
+                menu.innerHTML = `
+                    <button
+                        type="button"
+                        class="task-upload-menu-close"
+                        title="Back"
+                        aria-label="Back"
+                    >×</button>
+
+                    <button
+                        type="button"
+                        class="task-action-item choose-task-files"
+                    >
+                        <span class="task-action-icon">▤</span>
+                        <span>Upload Files</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="task-action-item choose-task-folder"
+                    >
+                        <span class="task-action-icon">▣</span>
+                        <span>Upload Folder</span>
+                    </button>
+                `;
+
+                const backBtn =
+                    menu.querySelector(".task-upload-menu-close");
+
+                const chooseFiles =
+                    menu.querySelector(".choose-task-files");
+
+                const chooseFolder =
+                    menu.querySelector(".choose-task-folder");
+
+                if (backBtn) {
+                    backBtn.addEventListener("click", e => {
+                        e.stopPropagation();
+                        menu.innerHTML = originalMenuHtml;
+                        // Re-render the action menu so all original listeners
+                        // are restored cleanly.
+                        const fresh = createActionMenu(task);
+                        wrapper.replaceWith(fresh);
+                        fresh.querySelector(".task-action-trigger")?.click();
+                    });
+                }
+
+                if (chooseFiles) {
+                    chooseFiles.addEventListener("click", e => {
+                        e.stopPropagation();
+                        window.dispatchEvent(
+                            new CustomEvent("task-repository-upload-files", {
+                                detail: { task }
+                            })
+                        );
+                    });
+                }
+
+                if (chooseFolder) {
+                    chooseFolder.addEventListener("click", e => {
+                        e.stopPropagation();
+                        window.dispatchEvent(
+                            new CustomEvent("task-repository-upload-folder", {
+                                detail: { task }
+                            })
+                        );
+                    });
+                }
+            }
+        );
     }
 
 
@@ -3150,4 +3303,4 @@ if (taskStatus) {
         "change",
         updateProgressFromStatus
     );
-}
+} 
