@@ -25,7 +25,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         // ========================================================
 
         const urlParams =
-            new URLSearchParams(window.location.search);
+            new URLSearchParams(
+                window.location.search
+            );
 
         const projectId =
             urlParams.get("project_id");
@@ -40,18 +42,38 @@ document.addEventListener("DOMContentLoaded", async () => {
                 "#sidebarTasksLink"
             );
 
-
         if (tasksLink) {
 
             if (projectId) {
 
+                // A project is already selected.
+                // Keep the current project when opening Tasks.
+
                 tasksLink.href =
-                    `/tasks.html?project_id=${encodeURIComponent(projectId)}`;
+                    `/tasks.html?project_id=${encodeURIComponent(
+                        projectId
+                    )}`;
 
             } else {
 
+                // No project selected.
+                // Send the user to Projects and trigger
+                // the "Select a Project" guide.
+
                 tasksLink.href =
-                    "/tasks.html";
+                    "/?select_project=1";
+
+                tasksLink.addEventListener(
+                    "click",
+                    event => {
+
+                        event.preventDefault();
+
+                        window.location.href =
+                            "/?select_project=1";
+
+                    }
+                );
 
             }
 
@@ -65,17 +87,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         const currentPath =
             window.location.pathname;
 
-
         const sidebarLinks =
             sidebarContainer.querySelectorAll(
                 ".nav-item"
             );
 
-
         sidebarLinks.forEach(link => {
 
-            link.classList.remove("active");
-
+            link.classList.remove(
+                "active"
+            );
 
             const linkPath =
                 new URL(
@@ -84,9 +105,29 @@ document.addEventListener("DOMContentLoaded", async () => {
                 ).pathname;
 
 
-            if (linkPath === currentPath) {
+            // PROJECTS PAGE
+            if (
+                currentPath === "/" &&
+                link.id === "sidebarDashboardLink"
+            ) {
 
-                link.classList.add("active");
+                link.classList.add(
+                    "active"
+                );
+
+                return;
+
+            }
+
+
+            // TASKS / REPORTS / OTHER PAGES
+            if (
+                linkPath === currentPath
+            ) {
+
+                link.classList.add(
+                    "active"
+                );
 
             }
 
@@ -102,7 +143,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (headerContainer) {
 
         const response =
-            await fetch("/components/header.html");
+            await fetch(
+                "/components/header.html"
+            );
 
         headerContainer.innerHTML =
             await response.text();

@@ -2286,6 +2286,200 @@ window.addEventListener(
 );
 
 
+
+
+// ============================================================
+// SELECT PROJECT FIRST GUIDE
+// ============================================================
+
+function shouldShowSelectProjectGuide() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("select_project") === "1";
+}
+
+function ensureSelectProjectGuideStyles() {
+    if (document.getElementById("selectProjectGuideStyles")) {
+        return;
+    }
+
+    const style = document.createElement("style");
+    style.id = "selectProjectGuideStyles";
+    style.textContent = `
+        .select-project-guide {
+            position: fixed;
+            top: 26px;
+            left: 50%;
+            transform: translate(-50%, -18px);
+            z-index: 30000;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 360px;
+            max-width: min(540px, calc(100vw - 32px));
+            padding: 16px 18px;
+            background: #ffffff;
+            border: 1px solid #dbe7d5;
+            border-radius: 14px;
+            box-shadow: 0 16px 42px rgba(23, 43, 77, 0.2);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .22s ease, transform .22s ease;
+        }
+
+        .select-project-guide.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        .select-project-guide-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border-radius: 12px;
+            background: #e8f5e9;
+            color: #1b5e20;
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .select-project-guide strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #1b5e20;
+            font-size: 15px;
+        }
+
+        .select-project-guide span {
+            display: block;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .select-project-row-highlight {
+            position: relative;
+            z-index: 2;
+            outline: 4px solid rgba(46, 125, 50, .38);
+            outline-offset: 3px;
+            background: #f3faf2 !important;
+            animation: selectProjectPulse 0.9s ease-in-out infinite alternate;
+        }
+
+        .select-project-row-highlight .project-action-trigger {
+            transform: scale(1.08);
+            box-shadow: 0 0 0 4px rgba(46, 125, 50, .16);
+        }
+
+        @keyframes selectProjectPulse {
+            from {
+                outline-color: rgba(46, 125, 50, .25);
+            }
+            to {
+                outline-color: rgba(46, 125, 50, .7);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .select-project-guide {
+                min-width: 0;
+                width: calc(100vw - 28px);
+                top: 14px;
+            }
+        }
+    `;
+
+    document.head.appendChild(style);
+}
+
+function showSelectProjectGuide() {
+    if (!shouldShowSelectProjectGuide()) {
+        return;
+    }
+
+    ensureSelectProjectGuideStyles();
+
+    const tableBody = document.getElementById("projectsTable");
+    const firstProjectRow = tableBody?.querySelector("tr");
+
+    if (!tableBody || !firstProjectRow) {
+        return;
+    }
+
+    const actionsButton = firstProjectRow.querySelector(
+        ".project-action-trigger"
+    );
+
+    firstProjectRow.classList.add(
+        "select-project-row-highlight"
+    );
+
+    const guide = document.createElement("div");
+    guide.className = "select-project-guide";
+    guide.innerHTML = `
+        <div class="select-project-guide-icon">☷</div>
+        <div>
+            <strong>Select a project first</strong>
+            <span>Choose the project you want, then click <b>Actions</b> → <b>View Tasks</b>.</span>
+        </div>
+    `;
+
+    document.body.appendChild(guide);
+
+    requestAnimationFrame(() => {
+        guide.classList.add("show");
+    });
+
+    const target = actionsButton || firstProjectRow;
+
+    target.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest"
+    });
+
+    // Give a small visual zoom/focus to the Actions button.
+    if (actionsButton) {
+        actionsButton.focus({ preventScroll: true });
+    }
+
+    const cleanup = () => {
+        guide.classList.remove("show");
+        firstProjectRow.classList.remove(
+            "select-project-row-highlight"
+        );
+
+        setTimeout(() => {
+            guide.remove();
+        }, 250);
+    };
+
+    if (actionsButton) {
+        actionsButton.addEventListener(
+            "click",
+            cleanup,
+            { once: true }
+        );
+    }
+
+    setTimeout(cleanup, 7000);
+
+    // Remove the guide flag from the address bar so refresh does not
+    // repeatedly replay the animation.
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete("select_project");
+    window.history.replaceState(
+        {},
+        document.title,
+        cleanUrl.pathname +
+            (cleanUrl.search ? cleanUrl.search : "") +
+            cleanUrl.hash
+    );
+}
+
+
 // ============================================================
 // LOAD DASHBOARD
 // ============================================================
@@ -2361,6 +2555,10 @@ async function loadDashboard() {
 
             table.appendChild(row);
         });
+
+        // If the user came here from the Tasks sidebar without a
+        // selected project, focus the project list and show what to click.
+        showSelectProjectGuide();
 
     } catch (error) {
         console.error("Dashboard error:", error);
