@@ -24,6 +24,69 @@ if (!projectId) {
 }
 
 
+
+
+// ============================================================
+// LOAD SELECTED PROJECT NAME FOR PAGE TITLE
+// ============================================================
+
+async function loadProjectPageTitle() {
+
+    const projectTitle =
+        document.getElementById("projectTitle");
+
+    if (!projectId || !projectTitle) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch("/api/dashboard");
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Failed to load project name."
+            );
+        }
+
+        const projects = Array.isArray(data.projects)
+            ? data.projects
+            : Array.isArray(data)
+                ? data
+                : [];
+
+        const project = projects.find(
+            item =>
+                String(item.project_id || "").trim() ===
+                String(projectId).trim()
+        );
+
+        if (!project) {
+            return;
+        }
+
+        const projectName = String(
+            project.project_name ||
+            project.system_application_name ||
+            project.name ||
+            "Project"
+        ).trim();
+
+        projectTitle.textContent = `${projectName} Tasks`;
+        document.title = `${projectName} Tasks`;
+
+    } catch (error) {
+
+        console.error(
+            "Load project page title error:",
+            error
+        );
+    }
+}
+
 // ============================================================
 // TASK MODAL ELEMENTS
 // ============================================================
@@ -3847,6 +3910,7 @@ if (reviewForm) {
 document.addEventListener(
     "DOMContentLoaded",
     async () => {
+        await loadProjectPageTitle();
         await loadProjectMembers();
         await loadTasks();
     }
