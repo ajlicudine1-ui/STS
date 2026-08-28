@@ -2181,7 +2181,7 @@ function createProjectActionMenu(
                 </span>
 
                 <span>
-                    Repository Files
+                     Project Repository
                 </span>
             </button>
 

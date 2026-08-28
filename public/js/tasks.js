@@ -2841,7 +2841,7 @@ function createActionMenu(task) {
                 class="task-action-item repository-files-action"
             >
                 <span class="task-action-icon">☰</span>
-                <span>Repository Files</span>
+                <span>Project Repository</span>
             </button>
 
             <button
