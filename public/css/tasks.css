@@ -536,16 +536,7 @@
     color: #166534;
 }
 
-.schedule-risk {
-    background: red;
-    color:white;
-}
 
-/* Delayed */
-.schedule-delayed {
-    background: #fecaca;
-    color: #991b1b;
-}
 
 .schedule-completed {
     background: #d9f7e8;
@@ -2360,15 +2351,16 @@ input.responsible-person-checkbox {
     line-height: 1.3;
 }
 
-/* At Risk and Delayed: both red, with Delayed slightly darker. */
+/* At Risk = RED */
 .schedule-risk {
-    background: #dc2626 !important;
-    color: #ffffff !important;
+    background: #fecaca !important;
+    color: #991b1b !important;
 }
 
+/* Delayed = PINK */
 .schedule-delayed {
-    background: #b91c1c !important;
-    color: #ffffff !important;
+    background: #fce7f3 !important;
+    color: #be185d !important;
 }
 
 /* Smaller screens keep the same readable table and use scrolling. */
