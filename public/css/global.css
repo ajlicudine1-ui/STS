@@ -48,27 +48,32 @@ body {
 .sidebar-logo-mark {
     width: 44px;
     height: 44px;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 44px;
-    border-radius: 12px;
-    background: #eef3e8;
-    color: #556b35;
-    font-size: 15px;
-    font-weight: 800;
-    overflow: hidden;
+
+    flex-shrink: 0;
+
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+
+    overflow: visible;
 }
 
-/* Keeps the PNG inside the original 44x44 logo box. */
 .sidebar-logo-image {
+    width: 44px;
+    height: 44px;
+
     display: block;
-    width: 100%;
-    height: 100%;
-    max-width: 44px;
-    max-height: 44px;
+
     object-fit: contain;
-    object-position: center;
+
+    background: transparent !important;
+    border: none !important;
+
+    border-radius: 0 !important;
 }
 
 .sidebar-brand-text {

@@ -1471,9 +1471,13 @@
 body.select-project-mode .dashboard-header,
 body.select-project-mode .stats {
     filter: blur(4px);
-    opacity: 0.30;
+    opacity: 0.25;
     pointer-events: none;
-    transition: filter 0.25s ease, opacity 0.25s ease;
+
+    transition: none !important;
+}
+.select-project-message {
+    transition: none !important;
 }
 
 /* Blur only the Projects card header, NOT the card/table parent. */
