@@ -2435,8 +2435,8 @@ function showSelectProjectGuide() {
     const target = actionsButton || firstProjectRow;
 
     target.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
+        behavior: "auto",
+        block: "nearest",
         inline: "nearest"
     });
 
