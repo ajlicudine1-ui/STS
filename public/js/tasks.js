@@ -2007,23 +2007,73 @@ function renderTaskRepositoryFiles(items) {
         return;
     }
 
+    /*
+     * A repository item is visible only when EVERY parent folder
+     * in its path is currently expanded. This makes all folders
+     * start fully collapsed when the modal is opened.
+     *
+     * We use both the native hidden attribute and inline
+     * display:none so this works even if an older tasks.css is
+     * still cached/deployed.
+     */
+    function isTaskRepositoryItemVisible(path) {
+
+        const parts =
+            normalizeTaskRepositoryPath(path)
+                .split("/")
+                .filter(Boolean);
+
+        if (parts.length <= 1) {
+            return true;
+        }
+
+        let ancestor = "";
+
+        for (
+            let index = 0;
+            index < parts.length - 1;
+            index += 1
+        ) {
+            ancestor = ancestor
+                ? `${ancestor}/${parts[index]}`
+                : parts[index];
+
+            if (
+                !expandedTaskRepositoryFolders.has(
+                    ancestor
+                )
+            ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     taskRepositoryFilesList.innerHTML = files
         .map(item => {
 
-            const path = normalizeTaskRepositoryPath(
-                item.relative_path || item.name || ""
-            );
-
-            const parentPath = getTaskRepositoryParentPath(path);
+            const path =
+                normalizeTaskRepositoryPath(
+                    item.relative_path ||
+                    item.name ||
+                    ""
+                );
 
             const depth = Math.max(
                 0,
                 path.split("/").filter(Boolean).length - 1
             );
 
-            const isFolder = Boolean(item.is_folder);
+            const isFolder =
+                Boolean(item.is_folder);
+
             const isExpanded =
-                isFolder && expandedTaskRepositoryFolders.has(path);
+                isFolder &&
+                expandedTaskRepositoryFolders.has(path);
+
+            const isVisible =
+                isTaskRepositoryItemVisible(path);
 
             const icon = isFolder
                 ? (isExpanded ? "📂" : "📁")
@@ -2034,7 +2084,9 @@ function renderTaskRepositoryFiles(items) {
                 : formatTaskRepositoryFileSize(item.size);
 
             const modified = item.modified_time
-                ? new Date(item.modified_time).toLocaleString()
+                ? new Date(
+                    item.modified_time
+                ).toLocaleString()
                 : "";
 
             const safeUrl = item.url
@@ -2045,11 +2097,12 @@ function renderTaskRepositoryFiles(items) {
                 <div
                     class="task-repository-file-row${isFolder ? " task-repository-folder-row" : ""}"
                     data-repository-path="${escapeHtml(path)}"
-                    data-repository-parent="${escapeHtml(parentPath)}"
                     data-repository-folder="${isFolder ? "true" : "false"}"
-                    style="--task-repository-depth:${depth}"
+                    style="--task-repository-depth:${depth};${isVisible ? "" : "display:none !important;"}"
+                    ${isVisible ? "" : "hidden"}
                 >
                     <div class="task-repository-file-main">
+
                         <span class="task-repository-folder-chevron">
                             ${isFolder ? (isExpanded ? "▾" : "▸") : ""}
                         </span>
@@ -2059,6 +2112,7 @@ function renderTaskRepositoryFiles(items) {
                         </span>
 
                         <div class="task-repository-file-info">
+
                             <div class="task-repository-file-name">
                                 ${escapeHtml(item.name || "-")}
                             </div>
@@ -2066,12 +2120,20 @@ function renderTaskRepositoryFiles(items) {
                             <div class="task-repository-file-path">
                                 ${escapeHtml(path)}
                             </div>
+
                         </div>
+
                     </div>
 
                     <div class="task-repository-file-meta">
-                        <span>${escapeHtml(sizeText)}</span>
-                        <span>${escapeHtml(modified)}</span>
+
+                        <span>
+                            ${escapeHtml(sizeText)}
+                        </span>
+
+                        <span>
+                            ${escapeHtml(modified)}
+                        </span>
 
                         ${
                             safeUrl
@@ -2087,71 +2149,59 @@ function renderTaskRepositoryFiles(items) {
                                 `
                                 : ""
                         }
+
                     </div>
                 </div>
             `;
         })
         .join("");
 
-    const rows = Array.from(
-        taskRepositoryFilesList.querySelectorAll(
-            ".task-repository-file-row"
-        )
-    );
-
-    function updateTaskRepositoryVisibility() {
-        rows.forEach(row => {
-            const path = row.dataset.repositoryPath || "";
-            const parts = path.split("/").filter(Boolean);
-
-            let visible = true;
-            let ancestor = "";
-
-            for (let i = 0; i < parts.length - 1; i += 1) {
-                ancestor = ancestor
-                    ? `${ancestor}/${parts[i]}`
-                    : parts[i];
-
-                if (!expandedTaskRepositoryFolders.has(ancestor)) {
-                    visible = false;
-                    break;
-                }
-            }
-
-            row.classList.toggle(
-                "task-repository-row-hidden",
-                !visible
-            );
-        });
-    }
-
     taskRepositoryFilesList
-        .querySelectorAll(".task-repository-folder-row")
+        .querySelectorAll(
+            ".task-repository-folder-row"
+        )
         .forEach(row => {
 
-            row.addEventListener("click", event => {
+            row.addEventListener(
+                "click",
+                event => {
 
-                if (
-                    event.target.closest(
-                        ".task-repository-file-open"
-                    )
-                ) {
-                    return;
-                }
+                    if (
+                        event.target.closest(
+                            ".task-repository-file-open"
+                        )
+                    ) {
+                        return;
+                    }
 
-                const path =
-                    row.dataset.repositoryPath || "";
+                    const path =
+                        normalizeTaskRepositoryPath(
+                            row.dataset.repositoryPath ||
+                            ""
+                        );
 
-                if (!path) {
-                    return;
-                }
+                    if (!path) {
+                        return;
+                    }
 
-                if (expandedTaskRepositoryFolders.has(path)) {
-                    expandedTaskRepositoryFolders.delete(path);
+                    if (
+                        expandedTaskRepositoryFolders.has(
+                            path
+                        )
+                    ) {
 
-                    // Also collapse nested folders so reopening starts clean.
-                    Array.from(expandedTaskRepositoryFolders)
-                        .forEach(expandedPath => {
+                        expandedTaskRepositoryFolders.delete(
+                            path
+                        );
+
+                        /*
+                         * Collapse every nested folder too, so
+                         * reopening the parent starts clean.
+                         */
+                        Array.from(
+                            expandedTaskRepositoryFolders
+                        ).forEach(expandedPath => {
+
                             if (
                                 expandedPath.startsWith(
                                     `${path}/`
@@ -2162,15 +2212,18 @@ function renderTaskRepositoryFiles(items) {
                                 );
                             }
                         });
-                } else {
-                    expandedTaskRepositoryFolders.add(path);
+
+                    } else {
+
+                        expandedTaskRepositoryFolders.add(
+                            path
+                        );
+                    }
+
+                    renderTaskRepositoryFiles(files);
                 }
-
-                renderTaskRepositoryFiles(files);
-            });
+            );
         });
-
-    updateTaskRepositoryVisibility();
 }
 
 async function loadTaskRepositoryFiles() {
