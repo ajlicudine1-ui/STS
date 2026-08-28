@@ -96,6 +96,69 @@ const supabase = createClient(
 
 
 // ============================================================
+// ID NUMBERING HELPER
+// Always uses the LOWEST available number.
+// Examples:
+//   no rows                  -> 001
+//   001, 002, 004 exist      -> 003
+//   002, 003 exist           -> 001
+// ============================================================
+
+async function getLowestAvailableFormattedId({
+    tableName,
+    columnName,
+    prefix
+}) {
+
+    const { data, error } = await supabase
+        .from(tableName)
+        .select(columnName);
+
+    if (error) {
+        throw error;
+    }
+
+    const usedNumbers = new Set();
+
+    for (const row of data || []) {
+
+        const value =
+            String(row?.[columnName] || "").trim();
+
+        const match =
+            value.match(
+                new RegExp(
+                    `^${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-(\\d+)$`,
+                    "i"
+                )
+            );
+
+        if (!match) {
+            continue;
+        }
+
+        const number =
+            Number.parseInt(match[1], 10);
+
+        if (
+            Number.isInteger(number) &&
+            number > 0
+        ) {
+            usedNumbers.add(number);
+        }
+    }
+
+    let nextNumber = 1;
+
+    while (usedNumbers.has(nextNumber)) {
+        nextNumber += 1;
+    }
+
+    return `${prefix}-${String(nextNumber).padStart(3, "0")}`;
+}
+
+
+// ============================================================
 // GOOGLE DRIVE CONNECTION
 // Uses OAuth refresh-token authentication.
 // ============================================================
@@ -795,7 +858,17 @@ app.post("/api/projects", async (req, res) => {
         }
 
 
+        const nextProjectId =
+            await getLowestAvailableFormattedId({
+                tableName: "projects",
+                columnName: "project_id",
+                prefix: "IDM"
+            });
+
         const projectData = {
+
+            project_id:
+                nextProjectId,
 
             project_name:
                 project_name.trim(),
@@ -1308,53 +1381,12 @@ app.get("/api/projects-next-id", async (req, res) => {
 
     try {
 
-        const { data, error } = await supabase
-            .from("projects")
-            .select("project_id");
-
-        if (error) {
-
-            console.error(
-                "Get next project ID error:",
-                error
-            );
-
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            });
-        }
-
-        let highestNumber = 0;
-
-        (data || []).forEach(project => {
-
-            const match = String(
-                project.project_id || ""
-            ).match(/^IDM-(\d+)$/);
-
-            if (!match) {
-                return;
-            }
-
-            const number =
-                Number.parseInt(
-                    match[1],
-                    10
-                );
-
-            if (
-                Number.isFinite(number) &&
-                number > highestNumber
-            ) {
-                highestNumber = number;
-            }
-        });
-
         const nextProjectId =
-            `IDM-${String(
-                highestNumber + 1
-            ).padStart(3, "0")}`;
+            await getLowestAvailableFormattedId({
+                tableName: "projects",
+                columnName: "project_id",
+                prefix: "IDM"
+            });
 
         res.json({
             success: true,
@@ -2159,7 +2191,17 @@ app.post(
             }
 
 
+            const nextTaskId =
+                await getLowestAvailableFormattedId({
+                    tableName: "tasks",
+                    columnName: "task_id",
+                    prefix: "TASK"
+                });
+
             const taskData = {
+
+                task_id:
+                    nextTaskId,
 
                 project_id:
                     projectId,
