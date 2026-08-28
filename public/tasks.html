@@ -1288,6 +1288,106 @@
 
 
 
+
+
+    <!-- =====================================================
+         TASK REPOSITORY FILE PICKERS
+         ===================================================== -->
+
+    <input
+        type="file"
+        id="taskRepositoryFileInput"
+        multiple
+        hidden
+    >
+
+    <input
+        type="file"
+        id="taskRepositoryFolderInput"
+        webkitdirectory
+        directory
+        multiple
+        hidden
+    >
+
+
+    <!-- =====================================================
+         TASK REPOSITORY FILES MODAL
+         ===================================================== -->
+
+    <div
+        class="modal"
+        id="taskRepositoryFilesModal"
+    >
+
+        <div class="modal-content task-repository-modal-content">
+
+            <div class="modal-header task-repository-header">
+
+                <div>
+                    <h2 id="taskRepositoryFilesModalTitle">
+                        Task Repository
+                    </h2>
+
+                    <p>
+                        Files and folders uploaded to this task's Google Drive repository.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeTaskRepositoryFilesModal"
+                    aria-label="Close"
+                    title="Close"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+            <div class="task-repository-toolbar">
+
+                <button
+                    type="button"
+                    class="task-repository-refresh-btn"
+                    id="refreshTaskRepositoryFilesBtn"
+                    title="Refresh"
+                    aria-label="Refresh"
+                >
+                    ↻
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-primary task-repository-drive-btn"
+                    id="openTaskRepositoryDriveBtn"
+                >
+                    Open in Google Drive
+                </button>
+
+            </div>
+
+            <div
+                class="task-repository-upload-progress"
+                id="taskRepositoryUploadProgress"
+                aria-live="polite"
+            ></div>
+
+            <div
+                class="task-repository-files-list"
+                id="taskRepositoryFilesList"
+            >
+                <div class="task-repository-empty">
+                    Select a task repository to view its files.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
     <!-- =====================================================
          JAVASCRIPT
          ===================================================== -->

@@ -1721,6 +1721,257 @@ app.get(
     }
 );
 
+
+
+// ============================================================
+// TASK REPOSITORY HELPERS
+// Each task already has its own Google Drive folder.
+// A child folder named "Task Repository" is created lazily so
+// existing tasks also work without any database migration.
+// ============================================================
+
+async function ensureTaskRepositoryFolder(taskId) {
+
+    const {
+        data: task,
+        error: taskError
+    } = await supabase
+        .from("tasks")
+        .select(
+            "task_id, project_id, task_activity, drive_folder_id, drive_folder_url"
+        )
+        .eq("task_id", taskId)
+        .single();
+
+    if (taskError || !task) {
+        const error = new Error("Task not found.");
+        error.statusCode = 404;
+        throw error;
+    }
+
+    if (!task.drive_folder_id) {
+        const error = new Error(
+            "This task does not have a Google Drive folder yet."
+        );
+        error.statusCode = 400;
+        throw error;
+    }
+
+    let repositoryFolder =
+        await findChildDriveFolder(
+            task.drive_folder_id,
+            "Task Repository"
+        );
+
+    if (!repositoryFolder) {
+        const created = await createDriveFolder({
+            name: "Task Repository",
+            parentFolderId: task.drive_folder_id
+        });
+
+        repositoryFolder = {
+            id: created.id,
+            name: created.name,
+            webViewLink: created.url
+        };
+    }
+
+    return {
+        task,
+        repository: {
+            id: repositoryFolder.id,
+            name:
+                repositoryFolder.name ||
+                "Task Repository",
+            url:
+                repositoryFolder.webViewLink ||
+                getDriveFolderUrl(
+                    repositoryFolder.id
+                )
+        }
+    };
+}
+
+
+// ============================================================
+// LIST TASK REPOSITORY CONTENTS
+// ============================================================
+
+app.get(
+    "/api/tasks/:taskId/repository/files",
+    async (req, res) => {
+
+        try {
+
+            const { taskId } = req.params;
+
+            const {
+                task,
+                repository
+            } = await ensureTaskRepositoryFolder(
+                taskId
+            );
+
+            const items =
+                await listDriveFolderContents(
+                    repository.id
+                );
+
+            return res.json({
+                success: true,
+                task: {
+                    task_id: task.task_id,
+                    project_id: task.project_id,
+                    task_activity: task.task_activity,
+                    drive_folder_url:
+                        task.drive_folder_url,
+                    repository_folder_id:
+                        repository.id,
+                    repository_folder_url:
+                        repository.url
+                },
+                items
+            });
+
+        } catch (error) {
+
+            console.error(
+                "LIST TASK REPOSITORY ERROR:",
+                error
+            );
+
+            return res
+                .status(error.statusCode || 500)
+                .json({
+                    success: false,
+                    error:
+                        error.statusCode
+                            ? error.message
+                            : "Could not load Task Repository files.",
+                    details:
+                        error.statusCode
+                            ? undefined
+                            : error.message
+                });
+        }
+    }
+);
+
+
+// ============================================================
+// UPLOAD FILE TO TASK REPOSITORY
+// ============================================================
+
+app.post(
+    "/api/tasks/:taskId/repository/upload",
+    express.raw({
+        type: "application/octet-stream",
+        limit: "25mb"
+    }),
+    async (req, res) => {
+
+        try {
+
+            const { taskId } = req.params;
+
+            const fileName =
+                decodeURIComponent(
+                    req.get("X-File-Name") || ""
+                ).trim();
+
+            const mimeType =
+                decodeURIComponent(
+                    req.get("X-File-Mime-Type") ||
+                    "application/octet-stream"
+                ).trim();
+
+            const relativePath =
+                decodeURIComponent(
+                    req.get("X-Relative-Path") || ""
+                ).trim();
+
+            if (!fileName) {
+                return res.status(400).json({
+                    success: false,
+                    error: "File name is required."
+                });
+            }
+
+            if (
+                !Buffer.isBuffer(req.body) ||
+                req.body.length === 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Uploaded file is empty."
+                });
+            }
+
+            const {
+                repository
+            } = await ensureTaskRepositoryFolder(
+                taskId
+            );
+
+            const destinationFolderId =
+                await ensureDriveFolderPath(
+                    repository.id,
+                    relativePath
+                );
+
+            const uploaded =
+                await uploadBufferToDrive({
+                    fileName,
+                    mimeType,
+                    buffer: req.body,
+                    parentFolderId:
+                        destinationFolderId
+                });
+
+            return res.status(201).json({
+                success: true,
+                message:
+                    "File uploaded successfully.",
+                repository_folder_url:
+                    repository.url,
+                file: {
+                    id: uploaded.id,
+                    name: uploaded.name,
+                    mime_type:
+                        uploaded.mimeType,
+                    url:
+                        uploaded.webViewLink ||
+                        null,
+                    relative_path:
+                        relativePath || null
+                }
+            });
+
+        } catch (error) {
+
+            console.error(
+                "TASK REPOSITORY UPLOAD ERROR:",
+                error
+            );
+
+            return res
+                .status(error.statusCode || 500)
+                .json({
+                    success: false,
+                    error:
+                        error.statusCode
+                            ? error.message
+                            : "File could not be uploaded to Task Repository.",
+                    details:
+                        error.statusCode
+                            ? undefined
+                            : error.message
+                });
+        }
+    }
+);
+
+
 // ============================================================
 // GET TASK HISTORY
 // ============================================================

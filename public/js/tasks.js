@@ -613,45 +613,6 @@ if (
     );
 }
 // ============================================================
-// CLOSE ALL ACTION MENUS
-// ============================================================
-
-function closeAllActionMenus() {
-
-    document
-        .querySelectorAll(".task-action-menu.show")
-        .forEach(menu => {
-
-            menu.classList.remove("show");
-
-
-            const trigger =
-                menu
-                    .parentElement
-                    ?.querySelector(
-                        ".task-action-trigger"
-                    );
-
-
-            if (trigger) {
-
-                trigger.setAttribute(
-                    "aria-expanded",
-                    "false"
-                );
-
-                trigger.classList.remove(
-                    "active"
-                );
-
-            }
-
-        });
-
-}
-
-
-// ============================================================
 // OPEN NEW TASK MODAL
 // ============================================================
 
@@ -1971,32 +1932,781 @@ async function loadTaskHistory(task) {
 
 
 // ============================================================
-// CREATE ACTION MENU
+// TASK REPOSITORY + ACTION MENU
 // ============================================================
+
+const taskRepositoryFilesModal =
+    document.getElementById("taskRepositoryFilesModal");
+
+const taskRepositoryFilesModalTitle =
+    document.getElementById("taskRepositoryFilesModalTitle");
+
+const closeTaskRepositoryFilesModalBtn =
+    document.getElementById("closeTaskRepositoryFilesModal");
+
+const taskRepositoryFilesList =
+    document.getElementById("taskRepositoryFilesList");
+
+const refreshTaskRepositoryFilesBtn =
+    document.getElementById("refreshTaskRepositoryFilesBtn");
+
+const openTaskRepositoryDriveBtn =
+    document.getElementById("openTaskRepositoryDriveBtn");
+
+const taskRepositoryUploadProgress =
+    document.getElementById("taskRepositoryUploadProgress");
+
+const taskRepositoryFileInput =
+    document.getElementById("taskRepositoryFileInput");
+
+const taskRepositoryFolderInput =
+    document.getElementById("taskRepositoryFolderInput");
+
+let currentRepositoryTask = null;
+
+
+function formatTaskRepositoryFileSize(bytes) {
+
+    if (
+        bytes === null ||
+        bytes === undefined ||
+        Number.isNaN(Number(bytes))
+    ) {
+        return "";
+    }
+
+    const size = Number(bytes);
+
+    if (size < 1024) {
+        return `${size} B`;
+    }
+
+    if (size < 1024 * 1024) {
+        return `${(size / 1024).toFixed(1)} KB`;
+    }
+
+    if (size < 1024 * 1024 * 1024) {
+        return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+}
+
+
+function renderTaskRepositoryFiles(items) {
+
+    if (!taskRepositoryFilesList) {
+        return;
+    }
+
+    const files = Array.isArray(items) ? items : [];
+
+    if (files.length === 0) {
+        taskRepositoryFilesList.innerHTML = `
+            <div class="task-repository-empty">
+                No uploaded files or folders yet.
+            </div>
+        `;
+        return;
+    }
+
+    taskRepositoryFilesList.innerHTML = files
+        .map(item => {
+
+            const depth = Math.max(
+                0,
+                String(
+                    item.relative_path ||
+                    item.name ||
+                    ""
+                ).split("/").length - 1
+            );
+
+            const icon = item.is_folder ? "📁" : "📄";
+
+            const sizeText = item.is_folder
+                ? ""
+                : formatTaskRepositoryFileSize(item.size);
+
+            const modified = item.modified_time
+                ? new Date(item.modified_time).toLocaleString()
+                : "";
+
+            const safeUrl = item.url
+                ? escapeHtml(item.url)
+                : "";
+
+            return `
+                <div
+                    class="task-repository-file-row"
+                    style="--task-repository-depth:${depth}"
+                >
+                    <div class="task-repository-file-main">
+                        <span class="task-repository-file-icon">
+                            ${icon}
+                        </span>
+
+                        <div class="task-repository-file-info">
+                            <div class="task-repository-file-name">
+                                ${escapeHtml(item.name || "-")}
+                            </div>
+
+                            <div class="task-repository-file-path">
+                                ${escapeHtml(item.relative_path || item.name || "")}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-repository-file-meta">
+                        <span>${escapeHtml(sizeText)}</span>
+                        <span>${escapeHtml(modified)}</span>
+
+                        ${
+                            safeUrl
+                                ? `
+                                    <a
+                                        class="task-repository-file-open"
+                                        href="${safeUrl}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Open
+                                    </a>
+                                `
+                                : ""
+                        }
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
+}
+
+
+async function loadTaskRepositoryFiles() {
+
+    if (!currentRepositoryTask?.task_id) {
+        return;
+    }
+
+    if (taskRepositoryFilesList) {
+        taskRepositoryFilesList.innerHTML = `
+            <div class="task-repository-empty">
+                Loading repository files...
+            </div>
+        `;
+    }
+
+    try {
+
+        const response = await fetch(
+            `/api/tasks/${encodeURIComponent(
+                currentRepositoryTask.task_id
+            )}/repository/files`
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.error ||
+                result.details ||
+                "Failed to load task repository files."
+            );
+        }
+
+        currentRepositoryTask = {
+            ...currentRepositoryTask,
+            ...(result.task || {})
+        };
+
+        renderTaskRepositoryFiles(result.items);
+
+    } catch (error) {
+
+        console.error(
+            "Load task repository files error:",
+            error
+        );
+
+        if (taskRepositoryFilesList) {
+            taskRepositoryFilesList.innerHTML = `
+                <div class="task-repository-empty task-repository-error">
+                    ${escapeHtml(error.message)}
+                </div>
+            `;
+        }
+    }
+}
+
+
+async function openTaskRepositoryFilesModal(task) {
+
+    if (!task?.task_id) {
+        return;
+    }
+
+    currentRepositoryTask = task;
+
+    if (taskRepositoryFilesModalTitle) {
+        taskRepositoryFilesModalTitle.textContent =
+            `${task.task_id} - Task Repository`;
+    }
+
+    if (taskRepositoryUploadProgress) {
+        taskRepositoryUploadProgress.textContent = "";
+    }
+
+    if (taskRepositoryFilesModal) {
+        taskRepositoryFilesModal.classList.add("show");
+    }
+
+    await loadTaskRepositoryFiles();
+}
+
+
+function closeTaskRepositoryFilesModal() {
+
+    if (taskRepositoryFilesModal) {
+        taskRepositoryFilesModal.classList.remove("show");
+    }
+
+    currentRepositoryTask = null;
+
+    if (taskRepositoryUploadProgress) {
+        taskRepositoryUploadProgress.textContent = "";
+    }
+}
+
+
+if (closeTaskRepositoryFilesModalBtn) {
+    closeTaskRepositoryFilesModalBtn.addEventListener(
+        "click",
+        closeTaskRepositoryFilesModal
+    );
+}
+
+
+if (taskRepositoryFilesModal) {
+    taskRepositoryFilesModal.addEventListener(
+        "click",
+        event => {
+            if (event.target === taskRepositoryFilesModal) {
+                closeTaskRepositoryFilesModal();
+            }
+        }
+    );
+}
+
+
+if (refreshTaskRepositoryFilesBtn) {
+    refreshTaskRepositoryFilesBtn.addEventListener(
+        "click",
+        loadTaskRepositoryFiles
+    );
+}
+
+
+if (openTaskRepositoryDriveBtn) {
+    openTaskRepositoryDriveBtn.addEventListener(
+        "click",
+        () => {
+
+            const url =
+                currentRepositoryTask?.repository_folder_url ||
+                currentRepositoryTask?.drive_folder_url;
+
+            if (!url) {
+                alert("Task Repository URL is not available.");
+                return;
+            }
+
+            window.open(
+                url,
+                "_blank",
+                "noopener,noreferrer"
+            );
+        }
+    );
+}
+
+
+async function uploadFileToTaskRepository(
+    taskId,
+    file,
+    relativePath = ""
+) {
+
+    const response = await fetch(
+        `/api/tasks/${encodeURIComponent(taskId)}/repository/upload`,
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/octet-stream",
+                "X-File-Name": encodeURIComponent(file.name),
+                "X-File-Mime-Type": encodeURIComponent(
+                    file.type || "application/octet-stream"
+                ),
+                "X-Relative-Path": encodeURIComponent(
+                    relativePath || ""
+                )
+            },
+
+            body: file
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            result.error ||
+            result.details ||
+            `Failed to upload ${file.name}.`
+        );
+    }
+
+    return result;
+}
+
+
+async function uploadTaskRepositorySelection(
+    task,
+    files,
+    isFolderSelection = false
+) {
+
+    if (!task?.task_id) {
+        throw new Error("Task ID is required for upload.");
+    }
+
+    const selectedFiles = Array.from(files || []);
+
+    if (selectedFiles.length === 0) {
+        return;
+    }
+
+    for (
+        let index = 0;
+        index < selectedFiles.length;
+        index += 1
+    ) {
+
+        const file = selectedFiles[index];
+        let relativePath = "";
+
+        if (isFolderSelection) {
+            const parts = String(
+                file.webkitRelativePath || ""
+            )
+                .split("/")
+                .filter(Boolean);
+
+            parts.pop();
+            relativePath = parts.join("/");
+        }
+
+        if (taskRepositoryUploadProgress) {
+            taskRepositoryUploadProgress.textContent =
+                `Uploading ${index + 1} of ${selectedFiles.length}: ${file.name}`;
+        }
+
+        await uploadFileToTaskRepository(
+            task.task_id,
+            file,
+            relativePath
+        );
+    }
+
+    if (taskRepositoryUploadProgress) {
+        taskRepositoryUploadProgress.textContent =
+            `${selectedFiles.length} upload${selectedFiles.length === 1 ? "" : "s"} completed.`;
+    }
+}
+
+
+if (taskRepositoryFileInput) {
+    taskRepositoryFileInput.addEventListener(
+        "change",
+        async () => {
+
+            const task = currentRepositoryTask;
+            const files = Array.from(
+                taskRepositoryFileInput.files || []
+            );
+
+            taskRepositoryFileInput.value = "";
+
+            if (!task?.task_id || files.length === 0) {
+                return;
+            }
+
+            try {
+                await uploadTaskRepositorySelection(
+                    task,
+                    files,
+                    false
+                );
+
+                alert(
+                    `${files.length} file${files.length === 1 ? "" : "s"} uploaded successfully!`
+                );
+
+                if (taskRepositoryFilesModal?.classList.contains("show")) {
+                    await loadTaskRepositoryFiles();
+                }
+
+            } catch (error) {
+                console.error("Task repository upload error:", error);
+                alert("Upload failed: " + error.message);
+            }
+        }
+    );
+}
+
+
+if (taskRepositoryFolderInput) {
+    taskRepositoryFolderInput.addEventListener(
+        "change",
+        async () => {
+
+            const task = currentRepositoryTask;
+            const files = Array.from(
+                taskRepositoryFolderInput.files || []
+            );
+
+            taskRepositoryFolderInput.value = "";
+
+            if (!task?.task_id || files.length === 0) {
+                return;
+            }
+
+            try {
+                await uploadTaskRepositorySelection(
+                    task,
+                    files,
+                    true
+                );
+
+                alert(
+                    `Folder uploaded successfully (${files.length} file${files.length === 1 ? "" : "s"}).`
+                );
+
+                if (taskRepositoryFilesModal?.classList.contains("show")) {
+                    await loadTaskRepositoryFiles();
+                }
+
+            } catch (error) {
+                console.error("Task repository folder upload error:", error);
+                alert("Folder upload failed: " + error.message);
+            }
+        }
+    );
+}
+
+
+// ============================================================
+// TASK ACTION MENU POSITIONING
+// ============================================================
+
+function closeAllActionMenus() {
+
+    document
+        .querySelectorAll(".task-action-menu.show")
+        .forEach(menu => {
+
+            menu.classList.remove(
+                "show",
+                "task-action-menu-portal"
+            );
+
+            menu.style.left = "";
+            menu.style.top = "";
+            menu.style.right = "";
+            menu.style.bottom = "";
+            menu.style.visibility = "";
+
+            const trigger = menu._taskActionTrigger;
+            const wrapper = menu._taskActionWrapper;
+
+            if (trigger) {
+                trigger.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+                trigger.classList.remove("active");
+            }
+
+            if (
+                wrapper &&
+                menu.parentElement !== wrapper
+            ) {
+                wrapper.appendChild(menu);
+            }
+        });
+}
+
+
+function openTaskActionMenu(trigger, menu) {
+
+    if (!trigger || !menu) {
+        return;
+    }
+
+    const triggerRect = trigger.getBoundingClientRect();
+
+    document.body.appendChild(menu);
+
+    menu.classList.add(
+        "task-action-menu-portal",
+        "show"
+    );
+
+    menu.style.visibility = "hidden";
+    menu.style.left = "0px";
+    menu.style.top = "0px";
+    menu.style.right = "auto";
+    menu.style.bottom = "auto";
+
+    const menuWidth = menu.offsetWidth;
+    const menuHeight = menu.offsetHeight;
+    const viewportPadding = 10;
+    const gap = 6;
+
+    let left = triggerRect.right - menuWidth;
+
+    left = Math.max(
+        viewportPadding,
+        Math.min(
+            left,
+            window.innerWidth -
+            menuWidth -
+            viewportPadding
+        )
+    );
+
+    let top = triggerRect.bottom + gap;
+
+    if (
+        top + menuHeight >
+        window.innerHeight - viewportPadding
+    ) {
+        top = triggerRect.top - menuHeight - gap;
+    }
+
+    top = Math.max(
+        viewportPadding,
+        Math.min(
+            top,
+            window.innerHeight -
+            menuHeight -
+            viewportPadding
+        )
+    );
+
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+    menu.style.visibility = "visible";
+
+    trigger.setAttribute("aria-expanded", "true");
+    trigger.classList.add("active");
+}
+
+
+function showTaskUploadOptionsInActionMenu(menu, task) {
+
+    if (!menu) {
+        return;
+    }
+
+    menu.innerHTML = `
+        <button
+            type="button"
+            class="task-upload-menu-close back-to-task-actions"
+            title="Back"
+            aria-label="Back"
+        >
+            ×
+        </button>
+
+        <button
+            type="button"
+            class="task-action-item choose-task-files"
+        >
+            <span class="task-action-icon">📄</span>
+            <span>Upload Files</span>
+        </button>
+
+        <button
+            type="button"
+            class="task-action-item choose-task-folder"
+        >
+            <span class="task-action-icon">📁</span>
+            <span>Upload Folder</span>
+        </button>
+    `;
+
+    const backButton =
+        menu.querySelector(".back-to-task-actions");
+
+    const chooseFiles =
+        menu.querySelector(".choose-task-files");
+
+    const chooseFolder =
+        menu.querySelector(".choose-task-folder");
+
+    if (backButton) {
+        backButton.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+                restoreTaskActionMenu(menu, task);
+            }
+        );
+    }
+
+    if (chooseFiles) {
+        chooseFiles.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+                currentRepositoryTask = task;
+
+                if (taskRepositoryFileInput) {
+                    taskRepositoryFileInput.value = "";
+                    taskRepositoryFileInput.click();
+                }
+
+                closeAllActionMenus();
+            }
+        );
+    }
+
+    if (chooseFolder) {
+        chooseFolder.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+                currentRepositoryTask = task;
+
+                if (taskRepositoryFolderInput) {
+                    taskRepositoryFolderInput.value = "";
+                    taskRepositoryFolderInput.click();
+                }
+
+                closeAllActionMenus();
+            }
+        );
+    }
+}
+
+
+function restoreTaskActionMenu(menu, task) {
+
+    if (!menu || !menu._originalActionHtml) {
+        return;
+    }
+
+    menu.innerHTML = menu._originalActionHtml;
+    bindTaskActionMenuItems(menu, task);
+}
+
+
+function bindTaskActionMenuItems(menu, task) {
+
+    if (!menu) {
+        return;
+    }
+
+    const reviewAction =
+        menu.querySelector(".review-action");
+
+    const repositoryFilesAction =
+        menu.querySelector(".repository-files-action");
+
+    const uploadRepositoryAction =
+        menu.querySelector(".upload-repository-action");
+
+    const editAction =
+        menu.querySelector(".edit-action");
+
+    const historyAction =
+        menu.querySelector(".history-action");
+
+    if (reviewAction) {
+        reviewAction.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+                closeAllActionMenus();
+                openReviewModal(task);
+            }
+        );
+    }
+
+    if (repositoryFilesAction) {
+        repositoryFilesAction.addEventListener(
+            "click",
+            async event => {
+                event.stopPropagation();
+                closeAllActionMenus();
+                await openTaskRepositoryFilesModal(task);
+            }
+        );
+    }
+
+    if (uploadRepositoryAction) {
+        uploadRepositoryAction.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+                currentRepositoryTask = task;
+                showTaskUploadOptionsInActionMenu(
+                    menu,
+                    task
+                );
+            }
+        );
+    }
+
+    if (editAction) {
+        editAction.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+                closeAllActionMenus();
+                openEditTaskModal(task);
+            }
+        );
+    }
+
+    if (historyAction) {
+        historyAction.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+                closeAllActionMenus();
+                loadTaskHistory(task);
+            }
+        );
+    }
+}
+
 
 function createActionMenu(task) {
 
-    const wrapper =
-        document.createElement(
-            "div"
-        );
-
-
-    wrapper.className =
-        "task-action-wrapper";
-
+    const wrapper = document.createElement("div");
+    wrapper.className = "task-action-wrapper";
 
     wrapper.innerHTML = `
-
-        <!-- ACTION BUTTON -->
-
         <button
             type="button"
             class="task-action-trigger"
             aria-label="Task actions"
             aria-expanded="false"
-            title="Actions">
-
+            title="Actions"
+        >
             <span class="task-action-label">
                 Actions
             </span>
@@ -2004,375 +2714,87 @@ function createActionMenu(task) {
             <span class="task-action-arrow">
                 ▾
             </span>
-
         </button>
-
-
-        <!-- ACTION MENU -->
 
         <div class="task-action-menu">
 
-
-            <!-- REVIEW -->
-
             <button
                 type="button"
-                class="task-action-item review-action">
-
-                <span class="task-action-icon">
-                    ✓
-                </span>
-
-                <span>
-                    Review
-                </span>
-
+                class="task-action-item review-action"
+            >
+                <span class="task-action-icon">✓</span>
+                <span>Review</span>
             </button>
 
-
-            <!-- REPOSITORY FILES -->
-
             <button
                 type="button"
-                class="task-action-item repository-files-action">
-
-                <span class="task-action-icon">
-                    ▣
-                </span>
-
-                <span>
-                    Repository Files
-                </span>
-
+                class="task-action-item repository-files-action"
+            >
+                <span class="task-action-icon">☰</span>
+                <span>Repository Files</span>
             </button>
 
-
-            <!-- UPLOAD FILES / FOLDER -->
-
             <button
                 type="button"
-                class="task-action-item upload-repository-action">
-
-                <span class="task-action-icon">
-                    ↑
-                </span>
-
-                <span>
-                    Upload Files / Folder
-                </span>
-
+                class="task-action-item upload-repository-action"
+            >
+                <span class="task-action-icon">↑</span>
+                <span>Upload Files / Folder</span>
             </button>
 
-
-            <!-- EDIT -->
-
             <button
                 type="button"
-                class="task-action-item edit-action">
-
-                <span class="task-action-icon">
-                    ✎
-                </span>
-
-                <span>
-                    Edit
-                </span>
-
+                class="task-action-item edit-action"
+            >
+                <span class="task-action-icon">✎</span>
+                <span>Edit</span>
             </button>
 
-
-            <!-- HISTORY -->
-
             <button
                 type="button"
-                class="task-action-item history-action">
-
-                <span class="task-action-icon">
-                    ↻
-                </span>
-
-                <span>
-                    History
-                </span>
-
+                class="task-action-item history-action"
+            >
+                <span class="task-action-icon">↻</span>
+                <span>History</span>
             </button>
 
         </div>
-
     `;
 
-
-    // ========================================================
-    // ELEMENTS
-    // ========================================================
-
     const trigger =
-        wrapper.querySelector(
-            ".task-action-trigger"
-        );
-
+        wrapper.querySelector(".task-action-trigger");
 
     const menu =
-        wrapper.querySelector(
-            ".task-action-menu"
-        );
+        wrapper.querySelector(".task-action-menu");
 
-
-    // ========================================================
-    // ACTION BUTTON
-    // ========================================================
+    if (menu) {
+        menu._taskActionWrapper = wrapper;
+        menu._taskActionTrigger = trigger;
+        menu._originalActionHtml = menu.innerHTML;
+    }
 
     if (trigger && menu) {
-
         trigger.addEventListener(
             "click",
             event => {
-
                 event.stopPropagation();
-
 
                 const wasOpen =
-                    menu.classList.contains(
-                        "show"
-                    );
-
-
-                // Close all menus first
+                    menu.classList.contains("show");
 
                 closeAllActionMenus();
-
-
-                // Open this menu
 
                 if (!wasOpen) {
-
-                    menu.classList.add(
-                        "show"
-                    );
-
-
-                    trigger.setAttribute(
-                        "aria-expanded",
-                        "true"
-                    );
-
-
-                    trigger.classList.add(
-                        "active"
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
-    // ========================================================
-    // REVIEW
-    // ========================================================
-
-    const reviewAction =
-        wrapper.querySelector(
-            ".review-action"
-        );
-
-
-    if (reviewAction) {
-
-        reviewAction.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                closeAllActionMenus();
-
-                openReviewModal(task);
-
-            }
-        );
-
-    }
-
-
-
-    // ========================================================
-    // TASK REPOSITORY FILES
-    // ========================================================
-
-    const repositoryFilesAction =
-        wrapper.querySelector(".repository-files-action");
-
-    if (repositoryFilesAction) {
-        repositoryFilesAction.addEventListener(
-            "click",
-            event => {
-                event.stopPropagation();
-                closeAllActionMenus();
-
-                if (typeof openTaskRepositoryFilesModal === "function") {
-                    openTaskRepositoryFilesModal(task);
-                    return;
-                }
-
-                // Fallback: use the task repository endpoint if the modal
-                // implementation is not yet present in this file.
-                window.dispatchEvent(
-                    new CustomEvent("open-task-repository", {
-                        detail: { task }
-                    })
-                );
-            }
-        );
-    }
-
-
-    // ========================================================
-    // TASK REPOSITORY UPLOAD SUBMENU
-    // ========================================================
-
-    const uploadRepositoryAction =
-        wrapper.querySelector(".upload-repository-action");
-
-    if (uploadRepositoryAction && menu) {
-        uploadRepositoryAction.addEventListener(
-            "click",
-            event => {
-                event.stopPropagation();
-
-                const originalMenuHtml = menu.innerHTML;
-
-                menu.innerHTML = `
-                    <button
-                        type="button"
-                        class="task-upload-menu-close"
-                        title="Back"
-                        aria-label="Back"
-                    >×</button>
-
-                    <button
-                        type="button"
-                        class="task-action-item choose-task-files"
-                    >
-                        <span class="task-action-icon">▤</span>
-                        <span>Upload Files</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        class="task-action-item choose-task-folder"
-                    >
-                        <span class="task-action-icon">▣</span>
-                        <span>Upload Folder</span>
-                    </button>
-                `;
-
-                const backBtn =
-                    menu.querySelector(".task-upload-menu-close");
-
-                const chooseFiles =
-                    menu.querySelector(".choose-task-files");
-
-                const chooseFolder =
-                    menu.querySelector(".choose-task-folder");
-
-                if (backBtn) {
-                    backBtn.addEventListener("click", e => {
-                        e.stopPropagation();
-                        menu.innerHTML = originalMenuHtml;
-                        // Re-render the action menu so all original listeners
-                        // are restored cleanly.
-                        const fresh = createActionMenu(task);
-                        wrapper.replaceWith(fresh);
-                        fresh.querySelector(".task-action-trigger")?.click();
-                    });
-                }
-
-                if (chooseFiles) {
-                    chooseFiles.addEventListener("click", e => {
-                        e.stopPropagation();
-                        window.dispatchEvent(
-                            new CustomEvent("task-repository-upload-files", {
-                                detail: { task }
-                            })
-                        );
-                    });
-                }
-
-                if (chooseFolder) {
-                    chooseFolder.addEventListener("click", e => {
-                        e.stopPropagation();
-                        window.dispatchEvent(
-                            new CustomEvent("task-repository-upload-folder", {
-                                detail: { task }
-                            })
-                        );
-                    });
+                    restoreTaskActionMenu(menu, task);
+                    openTaskActionMenu(trigger, menu);
                 }
             }
         );
     }
 
-
-    // ========================================================
-    // EDIT
-    // ========================================================
-
-    const editAction =
-        wrapper.querySelector(
-            ".edit-action"
-        );
-
-
-    if (editAction) {
-
-        editAction.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                closeAllActionMenus();
-
-                openEditTaskModal(task);
-
-            }
-        );
-
-    }
-
-
-    // ========================================================
-    // HISTORY
-    // ========================================================
-
-    const historyAction =
-        wrapper.querySelector(
-            ".history-action"
-        );
-
-
-    if (historyAction) {
-
-        historyAction.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                closeAllActionMenus();
-
-                loadTaskHistory(task);
-
-            }
-        );
-
-    }
+    bindTaskActionMenuItems(menu, task);
 
     return wrapper;
-
 }
 
 
@@ -2387,6 +2809,19 @@ document.addEventListener(
         closeAllActionMenus();
 
     }
+);
+
+
+window.addEventListener(
+    "resize",
+    closeAllActionMenus
+);
+
+
+window.addEventListener(
+    "scroll",
+    closeAllActionMenus,
+    true
 );
 
 
