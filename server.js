@@ -1773,10 +1773,15 @@ app.post(
             }
 
 
+            // Use the trusted server database client here. The plain Supabase
+            // client can be blocked by RLS for development-team accounts and
+            // incorrectly return "Project not found" for an assigned project.
+            const db = getDatabaseClient();
+
             const {
                 data: project,
                 error: projectError
-            } = await supabase
+            } = await db
                 .from("projects")
                 .select(
                     "project_id, repository_folder_id, repository_folder_url"

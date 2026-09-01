@@ -608,15 +608,32 @@ async function uploadFileToProjectRepository(
             }
         );
 
-    const result =
-        await response.json();
+    // Vercel/proxies may return a plain-text or HTML error (for example when
+    // a request is too large), so do not assume every response is JSON.
+    const responseText = await response.text();
+    let result = {};
+
+    if (responseText) {
+        try {
+            result = JSON.parse(responseText);
+        } catch (_) {
+            result = { error: responseText };
+        }
+    }
 
     if (!response.ok) {
-        throw new Error(
+        let message =
             result.error ||
             result.details ||
-            `Failed to upload ${file.name}.`
-        );
+            `Failed to upload ${file.name}.`;
+
+        // Give a useful message when the hosting platform rejects the request
+        // before Express can return the normal JSON error body.
+        if (response.status === 413 || /request entity too large|payload too large|body exceeded|request.*large/i.test(String(message))) {
+            message = `File "${file.name}" is too large for the deployment upload limit.`;
+        }
+
+        throw new Error(message);
     }
 
     return result;
