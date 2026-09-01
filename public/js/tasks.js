@@ -1116,14 +1116,7 @@ function openReviewModal(task) {
     // --------------------------------------------------------
     // EXISTING REVIEW DATA
     // --------------------------------------------------------
-
-    setValue(
-        "reviewedVerifiedBy",
-        task.reviewed_verified_by
-    );
-
-
-    setValue(
+setValue(
         "reviewResult",
         task.review_result
     );
@@ -3495,12 +3488,7 @@ if (taskForm) {
                     getValue(
                         "taskPriority"
                     ),
-
-
-                responsible_person:
-                    getSelectedResponsiblePersons(),
-
-                stakeholder_end_user:
+stakeholder_end_user:
                     getValue(
                         "stakeholderEndUser"
                     ).trim(),
@@ -3728,14 +3716,7 @@ if (reviewForm) {
             // ------------------------------------------------
 
             const reviewData = {
-
-                reviewed_verified_by:
-                    getValue(
-                        "reviewedVerifiedBy"
-                    ).trim(),
-
-
-                review_result:
+review_result:
                     getValue(
                         "reviewResult"
                     ),

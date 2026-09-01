@@ -646,6 +646,15 @@ async function loadUserContextFromToken(token) {
     };
 }
 
+function getLoggedInDisplayName(req) {
+    return String(
+        req.profile?.full_name ||
+        req.profile?.email ||
+        "System"
+    ).trim();
+}
+
+
 async function requireApiAuth(req, res, next) {
     try {
         const token = getBearerToken(req);
@@ -2720,9 +2729,7 @@ app.post(
                     priority || null,
 
                 responsible_person:
-                    responsible_person
-                        ? responsible_person.trim()
-                        : null,
+                    getLoggedInDisplayName(req),
 
                 role:
                     role || null,
@@ -2898,9 +2905,7 @@ app.post(
                         "Task created",
 
                     changedBy:
-                        req.profile?.full_name ||
-                        req.profile?.email ||
-                        "System"
+                        getLoggedInDisplayName(req)
                 });
 
             // ----------------------------------------------------
@@ -3068,9 +3073,7 @@ app.put(
                     priority || null,
 
                 responsible_person:
-                    responsible_person
-                        ? responsible_person.trim()
-                        : null,
+                    getLoggedInDisplayName(req),
 
                 role:
                     role || null,
@@ -3367,9 +3370,7 @@ app.put(
                         "Task information updated",
 
                     changedBy:
-                        req.profile?.full_name ||
-                        req.profile?.email ||
-                        "System"
+                        getLoggedInDisplayName(req)
                 });
 
             // ----------------------------------------------------
@@ -3480,23 +3481,13 @@ app.put(
             }
 
             const {
-                reviewed_verified_by,
                 review_result,
                 review_date,
                 remarks
             } = req.body;
 
-            if (
-                !reviewed_verified_by ||
-                !reviewed_verified_by.trim()
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    error:
-                        "Reviewed / Verified By is required."
-                });
-            }
+            const reviewed_verified_by =
+                getLoggedInDisplayName(req);
 
             const validResults = [
                 "Approved",
@@ -3530,7 +3521,7 @@ app.put(
             const reviewData = {
 
                 reviewed_verified_by:
-                    reviewed_verified_by.trim(),
+                    reviewed_verified_by,
 
                 review_result:
                     review_result,
@@ -3616,9 +3607,7 @@ app.put(
                         ),
 
                     changedBy:
-                        req.profile?.full_name ||
-                        req.profile?.email ||
-                        "System"
+                        getLoggedInDisplayName(req)
                 });
 
             if (!historyResult.success) {
@@ -3768,9 +3757,7 @@ app.delete(
                         "Task deleted",
 
                     changedBy:
-                        req.profile?.full_name ||
-                        req.profile?.email ||
-                        "System"
+                        getLoggedInDisplayName(req)
                 });
 
             if (!historyResult.success) {
