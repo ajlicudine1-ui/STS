@@ -94,6 +94,20 @@ const supabase = createClient(
     process.env.SUPABASE_KEY
 );
 
+// Separate privileged client used ONLY on the server for account management.
+// Add SUPABASE_SERVICE_ROLE_KEY to .env / Vercel Environment Variables.
+const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+    )
+    : null;
+
+function getDatabaseClient() {
+    return supabaseAdmin || supabase;
+}
+
 
 // ============================================================
 // ID NUMBERING HELPER
@@ -525,6 +539,356 @@ app.use(
 );
 
 // ============================================================
+// DEVT AUTHENTICATION / AUTHORIZATION
+// ============================================================
+
+function getBearerToken(req) {
+    const header = String(req.get("Authorization") || "");
+    const match = header.match(/^Bearer\s+(.+)$/i);
+    return match ? match[1].trim() : "";
+}
+
+async function loadUserContextFromToken(token) {
+    if (!token) return null;
+
+    const { data: authData, error: authError } =
+        await supabase.auth.getUser(token);
+
+    if (authError || !authData?.user) {
+        return null;
+    }
+
+    const db = getDatabaseClient();
+    const { data: profile, error: profileError } = await db
+        .from("profiles")
+        .select("user_id, full_name, email, role, is_active, created_at, updated_at")
+        .eq("user_id", authData.user.id)
+        .maybeSingle();
+
+    if (profileError || !profile || profile.is_active === false) {
+        return null;
+    }
+
+    return {
+        user: authData.user,
+        profile
+    };
+}
+
+async function requireApiAuth(req, res, next) {
+    try {
+        const token = getBearerToken(req);
+        const context = await loadUserContextFromToken(token);
+
+        if (!context) {
+            return res.status(401).json({
+                success: false,
+                error: "Authentication required."
+            });
+        }
+
+        req.authUser = context.user;
+        req.profile = context.profile;
+        req.accessToken = token;
+        next();
+    } catch (error) {
+        console.error("AUTH MIDDLEWARE ERROR:", error);
+        res.status(401).json({ success: false, error: "Invalid session." });
+    }
+}
+
+async function userCanAccessProject(userId, projectId) {
+    if (!userId || !projectId) return false;
+
+    const db = getDatabaseClient();
+    const { data, error } = await db
+        .from("project_members")
+        .select("project_member_id")
+        .eq("project_id", projectId)
+        .eq("user_id", userId)
+        .limit(1);
+
+    if (error) throw error;
+    return Array.isArray(data) && data.length > 0;
+}
+
+async function getTaskProjectId(taskId) {
+    const db = getDatabaseClient();
+    const { data, error } = await db
+        .from("tasks")
+        .select("project_id")
+        .eq("task_id", taskId)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data?.project_id || null;
+}
+
+async function authorizeApiRequest(req, res, next) {
+    try {
+        if (req.profile?.role === "admin") {
+            return next();
+        }
+
+        if (req.profile?.role !== "development_team") {
+            return res.status(403).json({ success: false, error: "Access denied." });
+        }
+
+        const p = req.path;
+        const method = req.method.toUpperCase();
+
+        // Dashboard is filtered inside the dashboard route.
+        if (p === "/dashboard" && method === "GET") return next();
+        if (p === "/auth/me" || p === "/auth/logout") return next();
+
+        // Development-team users cannot manage projects/accounts/members.
+        if (p === "/projects-next-id" || p.startsWith("/development-team") || p.startsWith("/project-members")) {
+            return res.status(403).json({ success: false, error: "Administrator access required." });
+        }
+        if (p === "/projects" && method === "POST") {
+            return res.status(403).json({ success: false, error: "Administrator access required." });
+        }
+
+        const projectMatch = p.match(/^\/projects\/([^/]+)(?:\/|$)/);
+        if (projectMatch) {
+            const projectId = decodeURIComponent(projectMatch[1]);
+
+            // Editing/deleting project details is admin-only.
+            if ((method === "PUT" || method === "DELETE") && p === `/projects/${projectMatch[1]}`) {
+                return res.status(403).json({ success: false, error: "Administrator access required." });
+            }
+
+            // Member management is admin-only; reading members is allowed for assigned users.
+            if (p.endsWith("/members") && method !== "GET") {
+                return res.status(403).json({ success: false, error: "Administrator access required." });
+            }
+
+            const allowed = await userCanAccessProject(req.authUser.id, projectId);
+            if (!allowed) {
+                return res.status(403).json({ success: false, error: "You are not assigned to this project." });
+            }
+            return next();
+        }
+
+        const taskMatch = p.match(/^\/tasks\/([^/]+)(?:\/|$)/);
+        if (taskMatch) {
+            const taskId = decodeURIComponent(taskMatch[1]);
+            const projectId = await getTaskProjectId(taskId);
+            const allowed = projectId && await userCanAccessProject(req.authUser.id, projectId);
+            if (!allowed) {
+                return res.status(403).json({ success: false, error: "You are not assigned to this task's project." });
+            }
+            return next();
+        }
+
+        // Allow authenticated common/report endpoints. Add stricter rules later if needed.
+        return next();
+    } catch (error) {
+        console.error("AUTHORIZATION ERROR:", error);
+        res.status(500).json({ success: false, error: "Unable to verify access." });
+    }
+}
+
+// Public login endpoint.
+app.post("/api/auth/login", async (req, res) => {
+    try {
+        const email = String(req.body.email || "").trim().toLowerCase();
+        const password = String(req.body.password || "");
+
+        if (!email || !password) {
+            return res.status(400).json({ success: false, error: "Email and password are required." });
+        }
+
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error || !data?.session || !data?.user) {
+            return res.status(401).json({ success: false, error: "Invalid email or password." });
+        }
+
+        const db = getDatabaseClient();
+        const { data: profile, error: profileError } = await db
+            .from("profiles")
+            .select("user_id, full_name, email, role, is_active")
+            .eq("user_id", data.user.id)
+            .maybeSingle();
+
+        if (profileError || !profile) {
+            return res.status(403).json({ success: false, error: "This account has no DevT profile." });
+        }
+        if (profile.is_active === false) {
+            return res.status(403).json({ success: false, error: "This account is inactive." });
+        }
+
+        res.json({
+            success: true,
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+            expires_at: data.session.expires_at,
+            profile
+        });
+    } catch (error) {
+        console.error("LOGIN ERROR:", error);
+        res.status(500).json({ success: false, error: "Unable to sign in." });
+    }
+});
+
+// Everything below /api requires a valid DevT account.
+app.use("/api", requireApiAuth);
+app.use("/api", authorizeApiRequest);
+
+app.get("/api/auth/me", async (req, res) => {
+    res.json({ success: true, profile: req.profile });
+});
+
+app.post("/api/auth/logout", async (req, res) => {
+    try {
+        await supabase.auth.admin?.signOut?.(req.accessToken);
+    } catch (_) {
+        // Client-side token removal is enough if server sign-out is unavailable.
+    }
+    res.json({ success: true });
+});
+
+// ============================================================
+// DEVELOPMENT TEAM ACCOUNT MANAGEMENT (ADMIN ONLY)
+// ============================================================
+
+app.get("/api/development-team", async (req, res) => {
+    if (req.profile.role !== "admin") {
+        return res.status(403).json({ success: false, error: "Administrator access required." });
+    }
+
+    try {
+        const db = getDatabaseClient();
+        const { data, error } = await db
+            .from("profiles")
+            .select("user_id, full_name, email, role, is_active, created_at, updated_at")
+            .eq("role", "development_team")
+            .order("full_name", { ascending: true });
+
+        if (error) throw error;
+        res.json({ success: true, members: data || [] });
+    } catch (error) {
+        console.error("GET DEVELOPMENT TEAM ERROR:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post("/api/development-team", async (req, res) => {
+    if (req.profile.role !== "admin") {
+        return res.status(403).json({ success: false, error: "Administrator access required." });
+    }
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, error: "SUPABASE_SERVICE_ROLE_KEY is not configured." });
+    }
+
+    const fullName = String(req.body.full_name || "").trim();
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const password = String(req.body.password || "");
+
+    if (!fullName || !email || password.length < 8) {
+        return res.status(400).json({
+            success: false,
+            error: "Full name, a valid email, and a password of at least 8 characters are required."
+        });
+    }
+
+    let createdUserId = null;
+    try {
+        const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,
+            user_metadata: { full_name: fullName, role: "development_team" }
+        });
+        if (createError) throw createError;
+
+        createdUserId = created.user.id;
+        const { data: profile, error: profileError } = await supabaseAdmin
+            .from("profiles")
+            .insert([{
+                user_id: createdUserId,
+                full_name: fullName,
+                email,
+                role: "development_team",
+                is_active: true
+            }])
+            .select("user_id, full_name, email, role, is_active, created_at")
+            .single();
+
+        if (profileError) throw profileError;
+
+        res.status(201).json({ success: true, member: profile });
+    } catch (error) {
+        if (createdUserId && supabaseAdmin) {
+            try { await supabaseAdmin.auth.admin.deleteUser(createdUserId); } catch (_) {}
+        }
+        console.error("CREATE DEVELOPMENT TEAM ERROR:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.patch("/api/development-team/:userId", async (req, res) => {
+    if (req.profile.role !== "admin") {
+        return res.status(403).json({ success: false, error: "Administrator access required." });
+    }
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, error: "SUPABASE_SERVICE_ROLE_KEY is not configured." });
+    }
+
+    try {
+        const userId = req.params.userId;
+        const fullName = String(req.body.full_name || "").trim();
+        const email = String(req.body.email || "").trim().toLowerCase();
+        const password = String(req.body.password || "");
+        const isActive = req.body.is_active !== false;
+
+        if (!fullName || !email) {
+            return res.status(400).json({ success: false, error: "Full name and email are required." });
+        }
+        if (password && password.length < 8) {
+            return res.status(400).json({ success: false, error: "New password must be at least 8 characters." });
+        }
+
+        const authUpdate = { email, user_metadata: { full_name: fullName, role: "development_team" } };
+        if (password) authUpdate.password = password;
+
+        const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(userId, authUpdate);
+        if (authError) throw authError;
+
+        const { data, error } = await supabaseAdmin
+            .from("profiles")
+            .update({ full_name: fullName, email, is_active: isActive, updated_at: new Date().toISOString() })
+            .eq("user_id", userId)
+            .select("user_id, full_name, email, role, is_active, created_at, updated_at")
+            .single();
+        if (error) throw error;
+
+        res.json({ success: true, member: data });
+    } catch (error) {
+        console.error("UPDATE DEVELOPMENT TEAM ERROR:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.delete("/api/development-team/:userId", async (req, res) => {
+    if (req.profile.role !== "admin") {
+        return res.status(403).json({ success: false, error: "Administrator access required." });
+    }
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, error: "SUPABASE_SERVICE_ROLE_KEY is not configured." });
+    }
+
+    try {
+        const { error } = await supabaseAdmin.auth.admin.deleteUser(req.params.userId);
+        if (error) throw error;
+        res.json({ success: true, message: "Development team account deleted." });
+    } catch (error) {
+        console.error("DELETE DEVELOPMENT TEAM ERROR:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================================
 // TASK HISTORY HELPER
 // ============================================================
 
@@ -716,102 +1080,79 @@ app.get("/api/test", async (req, res) => {
 // ============================================================
 
 app.get("/api/dashboard", async (req, res) => {
-
     try {
-
-        const {
-            data: projects,
-            error: projectsError
-        } = await supabase
+        const db = getDatabaseClient();
+        let projectQuery = db
             .from("projects")
             .select("*")
-            .order("created_at", {
-                ascending: false
-            });
+            .order("created_at", { ascending: false });
 
-        if (projectsError) {
-            throw projectsError;
-        }
-
-        const {
-            count: totalTasks,
-            error: tasksError
-        } = await supabase
-            .from("tasks")
-            .select("*", {
-                count: "exact",
-                head: true
-            });
-
-        if (tasksError) {
-            throw tasksError;
-        }
-
-        const totalProjects =
-            projects.length;
-
-        const activeProjects =
-            projects.filter(
-                project =>
-                    project.project_status ===
-                    "Active"
-            ).length;
-
-        const completedProjects =
-            projects.filter(
-                project =>
-                    project.project_status ===
-                    "Completed"
-            ).length;
-
-        // Attach development-team members to every project for the dashboard table.
-        const projectIds = projects.map(project => project.project_id);
-        let members = [];
-
-        if (projectIds.length > 0) {
-            const { data: memberRows, error: membersError } = await supabase
+        let allowedProjectIds = null;
+        if (req.profile.role === "development_team") {
+            const { data: assignments, error: assignmentError } = await db
                 .from("project_members")
-                .select("project_id, member_name, member_role")
+                .select("project_id")
+                .eq("user_id", req.authUser.id);
+            if (assignmentError) throw assignmentError;
+            allowedProjectIds = [...new Set((assignments || []).map(row => row.project_id).filter(Boolean))];
+
+            if (allowedProjectIds.length === 0) {
+                return res.json({
+                    success: true,
+                    viewer: req.profile,
+                    totalProjects: 0,
+                    activeProjects: 0,
+                    completedProjects: 0,
+                    totalTasks: 0,
+                    projects: []
+                });
+            }
+            projectQuery = projectQuery.in("project_id", allowedProjectIds);
+        }
+
+        const { data: projects, error: projectsError } = await projectQuery;
+        if (projectsError) throw projectsError;
+
+        const projectIds = (projects || []).map(project => project.project_id);
+
+        let totalTasks = 0;
+        if (projectIds.length > 0) {
+            const { count, error: tasksError } = await db
+                .from("tasks")
+                .select("*", { count: "exact", head: true })
+                .in("project_id", projectIds);
+            if (tasksError) throw tasksError;
+            totalTasks = count || 0;
+        }
+
+        let members = [];
+        if (projectIds.length > 0) {
+            const { data: memberRows, error: membersError } = await db
+                .from("project_members")
+                .select("project_id, user_id, member_name, member_role")
                 .in("project_id", projectIds)
                 .order("created_at", { ascending: true });
-
-            if (membersError) {
-                throw membersError;
-            }
-
+            if (membersError) throw membersError;
             members = memberRows || [];
         }
 
-        const projectsWithMembers = projects.map(project => ({
+        const projectsWithMembers = (projects || []).map(project => ({
             ...project,
-            development_team: members.filter(
-                member => member.project_id === project.project_id
-            )
+            development_team: members.filter(member => member.project_id === project.project_id)
         }));
 
         res.json({
             success: true,
-            totalProjects,
-            activeProjects,
-            completedProjects,
-            totalTasks: totalTasks || 0,
+            viewer: req.profile,
+            totalProjects: projectsWithMembers.length,
+            activeProjects: projectsWithMembers.filter(p => p.project_status === "Active").length,
+            completedProjects: projectsWithMembers.filter(p => p.project_status === "Completed").length,
+            totalTasks,
             projects: projectsWithMembers
         });
-
     } catch (error) {
-
-        console.error(
-            "Dashboard error:",
-            error
-        );
-
-        res.status(500).json({
-            success: false,
-            error: error.message,
-            code: error.code,
-            details: error.details,
-            hint: error.hint
-        });
+        console.error("Dashboard error:", error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -1044,6 +1385,7 @@ app.post("/api/projects", async (req, res) => {
             ? development_team
                 .map(member => ({
                     project_id: projectRecord.project_id,
+                    user_id: member?.user_id || null,
                     member_name: String(member?.name || member?.member_name || "").trim(),
                     member_role: String(member?.role || member?.member_role || "").trim() || null
                 }))
@@ -1537,6 +1879,7 @@ app.put(
                 ? development_team
                     .map(member => ({
                         project_id: projectId,
+                        user_id: member?.user_id || null,
                         member_name: String(member?.name || member?.member_name || "").trim(),
                         member_role: String(member?.role || member?.member_role || "").trim() || null
                     }))
@@ -3365,7 +3708,7 @@ app.get("/api/projects/:projectId/members", async (req, res) => {
 
         const { data, error } = await supabase
             .from("project_members")
-            .select("project_member_id, project_id, member_name, member_role, created_at")
+            .select("project_member_id, project_id, user_id, member_name, member_role, created_at")
             .eq("project_id", projectId)
             .order("created_at", { ascending: true });
 
@@ -3383,6 +3726,7 @@ app.post("/api/projects/:projectId/members", async (req, res) => {
         const { projectId } = req.params;
         const memberName = String(req.body.member_name || req.body.name || "").trim();
         const memberRole = String(req.body.member_role || req.body.role || "").trim();
+        const userId = req.body.user_id || null;
 
         if (!memberName) {
             return res.status(400).json({
@@ -3395,10 +3739,11 @@ app.post("/api/projects/:projectId/members", async (req, res) => {
             .from("project_members")
             .insert([{
                 project_id: projectId,
+                user_id: userId,
                 member_name: memberName,
                 member_role: memberRole || null
             }])
-            .select("project_member_id, project_id, member_name, member_role, created_at")
+            .select("project_member_id, project_id, user_id, member_name, member_role, created_at")
             .single();
 
         if (error) throw error;
@@ -3428,7 +3773,7 @@ app.put("/api/project-members/:memberId", async (req, res) => {
             .from("project_members")
             .update({ member_name: memberName, member_role: memberRole || null })
             .eq("project_member_id", memberId)
-            .select("project_member_id, project_id, member_name, member_role, created_at")
+            .select("project_member_id, project_id, user_id, member_name, member_role, created_at")
             .single();
 
         if (error) throw error;

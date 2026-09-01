@@ -9,6 +9,7 @@
     <link rel="icon" type="image/png" href="/images/DT%20LOGO.png">
 
     <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/sidebar-account.css">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/repository-close-fix.css">
 </head>
@@ -245,44 +246,19 @@
                     >
 
                 </div>
-
                 <!-- DEVELOPMENT TEAM -->
-                <div class="form-group">
-
-                    <label>
-                        Development Team
-                    </label>
-
+                <div class="form-group" id="developmentTeamFormGroup">
+                    <label>Development Team</label>
+                    <div class="team-help">Select existing DevT accounts. Create accounts from Development Team in the sidebar.</div>
                     <div id="developmentTeamContainer">
-
                         <div class="team-member-row">
-
-                            <input
-                                type="text"
-                                class="team-member-name"
-                                placeholder="Team member name"
-                            >
-
-                            <button
-                                type="button"
-                                class="remove-team-member-btn"
-                                aria-label="Remove team member"
-                            >
-                                &times;
-                            </button>
-
+                            <select class="team-member-account">
+                                <option value="">Select development team member</option>
+                            </select>
+                            <button type="button" class="remove-team-member-btn" aria-label="Remove team member">&times;</button>
                         </div>
-
                     </div>
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        id="addTeamMemberBtn"
-                    >
-                        + Add Team Member
-                    </button>
-
+                    <button type="button" class="btn btn-secondary" id="addTeamMemberBtn">+ Add Team Member</button>
                 </div>
 
                 <!-- =========================================

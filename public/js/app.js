@@ -133,158 +133,120 @@ function getProjectStatusClass(status) {
 
 
 // ============================================================
-// DEVELOPMENT TEAM - FREE TEXT INPUT
+// DEVELOPMENT TEAM - ACCOUNT SELECTOR
 // ============================================================
 
+let developmentTeamAccounts = [];
+let isAdminViewer = true;
+
+async function loadDevelopmentTeamAccounts() {
+    if (!isAdminViewer) {
+        developmentTeamAccounts = [];
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/development-team");
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Unable to load development team accounts.");
+        developmentTeamAccounts = Array.isArray(result.members)
+            ? result.members.filter(member => member.is_active !== false)
+            : [];
+        refreshTeamAccountSelects();
+    } catch (error) {
+        console.error("Load development team accounts error:", error);
+        developmentTeamAccounts = [];
+    }
+}
+
+function buildTeamAccountOptions(selectedUserId = "", legacyName = "") {
+    const selected = String(selectedUserId || "");
+    const options = ['<option value="">Select development team member</option>'];
+
+    if (!selected && legacyName) {
+        options.push(`<option value="" selected disabled>${escapeHtml(legacyName)} (legacy name - create/link an account)</option>`);
+    }
+
+    for (const member of developmentTeamAccounts) {
+        const value = String(member.user_id || "");
+        const isSelected = value && value === selected ? " selected" : "";
+        options.push(`<option value="${escapeHtml(value)}"${isSelected}>${escapeHtml(member.full_name || member.email || "Unnamed member")}</option>`);
+    }
+    return options.join("");
+}
+
+function refreshTeamAccountSelects() {
+    if (!developmentTeamContainer) return;
+    developmentTeamContainer.querySelectorAll(".team-member-account").forEach(select => {
+        const current = select.value || select.dataset.selectedUserId || "";
+        const legacyName = select.dataset.legacyName || "";
+        select.innerHTML = buildTeamAccountOptions(current, legacyName);
+        if (current) select.value = current;
+    });
+}
+
 function createTeamMemberRow(member = null) {
+    const row = document.createElement("div");
+    row.className = "team-member-row";
 
-    const row =
-        document.createElement("div");
-
-    row.className =
-        "team-member-row";
+    const selectedUserId = member?.user_id || "";
+    const legacyName = member?.member_name || member?.name || "";
 
     row.innerHTML = `
-        <input
-            type="text"
-            class="team-member-name"
-            placeholder="Enter team member name"
-        >
-
-        <button
-            type="button"
-            class="remove-team-member-btn"
-            aria-label="Remove team member"
-        >
-            &times;
-        </button>
+        <select class="team-member-account" data-selected-user-id="${escapeHtml(selectedUserId)}" data-legacy-name="${escapeHtml(legacyName)}">
+            ${buildTeamAccountOptions(selectedUserId, legacyName)}
+        </select>
+        <button type="button" class="remove-team-member-btn" aria-label="Remove team member">&times;</button>
     `;
 
-    const nameInput =
-        row.querySelector(
-            ".team-member-name"
-        );
-
-    const removeButton =
-        row.querySelector(
-            ".remove-team-member-btn"
-        );
-
-    if (nameInput) {
-        nameInput.value =
-            member?.member_name ||
-            member?.name ||
-            "";
-    }
-
+    const removeButton = row.querySelector(".remove-team-member-btn");
     if (removeButton) {
-        removeButton.addEventListener(
-            "click",
-            () => {
-
-                row.remove();
-
-                ensureAtLeastOneTeamRow();
-            }
-        );
+        removeButton.addEventListener("click", () => {
+            row.remove();
+            ensureAtLeastOneTeamRow();
+        });
     }
-
     return row;
 }
 
 function clearDevelopmentTeamRows() {
-
-    if (!developmentTeamContainer) {
-        return;
-    }
-
-    developmentTeamContainer.innerHTML =
-        "";
+    if (developmentTeamContainer) developmentTeamContainer.innerHTML = "";
 }
-
 
 function ensureAtLeastOneTeamRow() {
-
-    if (!developmentTeamContainer) {
-        return;
-    }
-
-    const rows =
-        developmentTeamContainer.querySelectorAll(
-            ".team-member-row"
-        );
-
-    if (rows.length === 0) {
-
-        developmentTeamContainer.appendChild(
-            createTeamMemberRow()
-        );
+    if (!developmentTeamContainer || !isAdminViewer) return;
+    if (developmentTeamContainer.querySelectorAll(".team-member-row").length === 0) {
+        developmentTeamContainer.appendChild(createTeamMemberRow());
     }
 }
-
 
 function addTeamMemberRow(member = null) {
-
-    if (!developmentTeamContainer) {
-        return;
-    }
-
-    developmentTeamContainer.appendChild(
-        createTeamMemberRow(member)
-    );
+    if (!developmentTeamContainer) return;
+    developmentTeamContainer.appendChild(createTeamMemberRow(member));
 }
-
 
 if (addTeamMemberBtn) {
-
-    addTeamMemberBtn.addEventListener(
-        "click",
-        () => {
-
-            addTeamMemberRow();
-
-        }
-    );
+    addTeamMemberBtn.addEventListener("click", () => addTeamMemberRow());
 }
 
-
-// ============================================================
-// COLLECT DEVELOPMENT TEAM
-// ============================================================
-
 function collectDevelopmentTeam() {
-
-    if (!developmentTeamContainer) {
-        return [];
-    }
-
+    if (!developmentTeamContainer) return [];
     const members = [];
+    const used = new Set();
 
-    const rows =
-        developmentTeamContainer.querySelectorAll(
-            ".team-member-row"
-        );
+    for (const row of developmentTeamContainer.querySelectorAll(".team-member-row")) {
+        const select = row.querySelector(".team-member-account");
+        const userId = select?.value || "";
+        if (!userId || used.has(userId)) continue;
 
-    for (const row of rows) {
-
-        const nameInput =
-            row.querySelector(
-                ".team-member-name"
-            );
-
-        const memberName =
-            nameInput?.value.trim() || "";
-
-        if (!memberName) {
-            continue;
-        }
-
+        const account = developmentTeamAccounts.find(member => member.user_id === userId);
+        if (!account) continue;
+        used.add(userId);
         members.push({
-            member_name:
-                memberName
+            user_id: userId,
+            member_name: account.full_name || account.email
         });
     }
-
     return members;
 }
 
@@ -2182,18 +2144,14 @@ function createProjectActionMenu(
                 </span>
             </button>
 
+            ${isAdminViewer ? `
             <button
                 type="button"
                 class="project-action-item edit-project-action"
             >
-                <span class="project-action-icon">
-                    ✎
-                </span>
-
-                <span>
-                    Edit
-                </span>
-            </button>
+                <span class="project-action-icon">✎</span>
+                <span>Edit</span>
+            </button>` : ""}
 
         </div>
     `;
@@ -2299,6 +2257,15 @@ async function loadDashboard() {
 
         if (!response.ok) {
             throw new Error(data.error || "Failed to load dashboard data.");
+        }
+
+        isAdminViewer = data.viewer?.role === "admin";
+        if (newProjectBtn) newProjectBtn.hidden = !isAdminViewer;
+        if (addTeamMemberBtn) addTeamMemberBtn.hidden = !isAdminViewer;
+        const teamGroup = document.getElementById("developmentTeamFormGroup");
+        if (teamGroup) teamGroup.hidden = !isAdminViewer;
+        if (isAdminViewer && developmentTeamAccounts.length === 0) {
+            await loadDevelopmentTeamAccounts();
         }
 
         const totalProjects = document.getElementById("totalProjects");

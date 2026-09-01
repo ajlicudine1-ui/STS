@@ -1594,3 +1594,30 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
     background: #e1eadf;
     color: #1b5e20;
 }
+
+
+/* ============================================================
+   DEVELOPMENT TEAM ACCOUNT SELECTOR
+   ============================================================ */
+.team-member-row .team-member-account {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #374151;
+    font: inherit;
+}
+.team-member-row .team-member-account:focus {
+    outline: none;
+    border-color: #2e7d32;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.10);
+}
+.team-help {
+    margin: -2px 0 10px;
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.45;
+}
