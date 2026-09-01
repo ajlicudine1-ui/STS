@@ -10,7 +10,6 @@
         content="width=device-width, initial-scale=1.0">
 
     <title>STS - Project Tasks</title>
-    <link rel="icon" type="image/png" href="/images/DT%20LOGO.png">
 
     <!-- =====================================================
          SHARED CSS
@@ -221,7 +220,7 @@
                             </th>
 
                             <th>
-                                Development Team
+                                Responsible Person
                             </th>
 
                             <th>
@@ -466,20 +465,20 @@
                                         Select Priority
                                     </option>
 
-                                    <option value="Low">
-                                        Low
-                                    </option>
-
-                                    <option value="Medium">
-                                        Medium
+                                    <option value="Urgent">
+                                        Urgent
                                     </option>
 
                                     <option value="High">
                                         High
                                     </option>
 
-                                    <option value="Critical">
-                                        Critical
+                                    <option value="Normal">
+                                        Normal
+                                    </option>
+
+                                    <option value="Low">
+                                        Low
                                     </option>
 
                                 </select>
@@ -530,7 +529,7 @@
                         <div class="form-group">
 
                             <label for="stakeholderEndUser">
-                                End User (If applicable)
+                                Stakeholder (If applicable)
                             </label>
 
                             <input
@@ -802,7 +801,7 @@
                     <div class="form-group">
 
                         <label>
-                            Development Team
+                            Responsible Person
                         </label>
 
                         <div
@@ -1204,8 +1203,9 @@
                             <th>Action</th>
                             <th>Status</th>
                             <th>Progress</th>
-                            <th>Development Team</th>
+                            <th>Responsible Person</th>
                             <th>Remarks</th>
+                            <th>Updated / Reviewed By</th>
                         </tr>
                     </thead>
 
@@ -1216,7 +1216,7 @@
 
                         <tr>
 
-                            <td colspan="7">
+                            <td colspan="8">
 
 
                                 <div class="history-empty">
@@ -1287,95 +1287,6 @@
 
     </div>
 
-
-
-
-
-    <!-- =====================================================
-         TASK REPOSITORY FILE PICKERS
-         ===================================================== -->
-
-    <input
-        type="file"
-        id="taskRepositoryFileInput"
-        multiple
-        hidden
-    >
-
-    <input
-        type="file"
-        id="taskRepositoryFolderInput"
-        webkitdirectory
-        directory
-        multiple
-        hidden
-    >
-
-
-    <!-- =====================================================
-         TASK REPOSITORY FILES MODAL
-         ===================================================== -->
-
-    <div
-        class="modal"
-        id="taskRepositoryFilesModal"
-    >
-
-        <div class="modal-content task-repository-modal-content">
-
-            <div class="modal-header task-repository-header">
-
-                <div>
-                    <h2 id="taskRepositoryFilesModalTitle">
-                        Task Repository
-                    </h2>
-
-                    <p>
-                        Files and folders uploaded to this task's Google Drive repository.
-                    </p>
-                </div>
-            </div>
-
-            <div class="task-repository-toolbar">
-
-                <button
-                    type="button"
-                    class="task-repository-refresh-btn"
-                    id="refreshTaskRepositoryFilesBtn"
-                    title="Refresh"
-                    aria-label="Refresh"
-                >
-                    ↻
-                </button>
-
-                <button
-                    type="button"
-                    class="btn btn-primary task-repository-drive-btn"
-                    id="openTaskRepositoryDriveBtn"
-                >
-                    Open in Google Drive
-                </button>
-
-            </div>
-
-            <div
-                class="task-repository-upload-progress"
-                id="taskRepositoryUploadProgress"
-                aria-live="polite"
-            ></div>
-
-            <div
-                class="task-repository-files-list"
-                id="taskRepositoryFilesList"
-            >
-                <div class="task-repository-empty">
-                    Select a task repository to view its files.
-                </div>
-            </div>
-
-        </div>
-
-    </div>
 
 
     <!-- =====================================================

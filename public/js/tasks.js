@@ -24,69 +24,6 @@ if (!projectId) {
 }
 
 
-
-
-// ============================================================
-// LOAD SELECTED PROJECT NAME FOR PAGE TITLE
-// ============================================================
-
-async function loadProjectPageTitle() {
-
-    const projectTitle =
-        document.getElementById("projectTitle");
-
-    if (!projectId || !projectTitle) {
-        return;
-    }
-
-    try {
-
-        const response = await fetch("/api/dashboard");
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                data.error ||
-                data.message ||
-                "Failed to load project name."
-            );
-        }
-
-        const projects = Array.isArray(data.projects)
-            ? data.projects
-            : Array.isArray(data)
-                ? data
-                : [];
-
-        const project = projects.find(
-            item =>
-                String(item.project_id || "").trim() ===
-                String(projectId).trim()
-        );
-
-        if (!project) {
-            return;
-        }
-
-        const projectName = String(
-            project.project_name ||
-            project.system_application_name ||
-            project.name ||
-            "Project"
-        ).trim();
-
-        projectTitle.textContent = `${projectName} Tasks`;
-        document.title = `${projectName} Tasks`;
-
-    } catch (error) {
-
-        console.error(
-            "Load project page title error:",
-            error
-        );
-    }
-}
-
 // ============================================================
 // TASK MODAL ELEMENTS
 // ============================================================
@@ -262,7 +199,23 @@ function getStatusClass(status) {
 
 function getScheduleStatus(task) {
 
-    if (!task || !task.due_date) {
+    if (!task) {
+        return "-";
+    }
+
+    const percentComplete =
+        Number(task.percent_complete ?? 0);
+
+    // When BOTH the task status and progress are complete,
+    // Schedule Status must display as Completed.
+    if (
+        task.status === "Completed" &&
+        percentComplete >= 100
+    ) {
+        return "Completed";
+    }
+
+    if (!task.due_date) {
         return "-";
     }
 
@@ -347,6 +300,9 @@ function getScheduleStatusClass(scheduleStatus) {
 
         case "Delayed":
             return "schedule-delayed";
+
+        case "Completed":
+            return "schedule-completed";
 
         default:
             return "";
@@ -1275,7 +1231,7 @@ function closeHistoryModal() {
 
         taskHistoryTable.innerHTML = `
             <tr>
-                <td colspan="7">
+                <td colspan="8">
                     No history found.
                 </td>
             </tr>
@@ -1448,7 +1404,7 @@ async function loadTaskHistory(task) {
 
         taskHistoryTable.innerHTML = `
             <tr>
-                <td colspan="7">
+                <td colspan="8">
 
                     <div class="history-empty">
 
@@ -1546,7 +1502,7 @@ async function loadTaskHistory(task) {
 
                 taskHistoryTable.innerHTML = `
                     <tr>
-                        <td colspan="7">
+                        <td colspan="8">
 
                             <div class="history-empty">
 
@@ -1770,6 +1726,15 @@ async function loadTaskHistory(task) {
 
 
                         // ------------------------------------
+                        // UPDATED / REVIEWED BY
+                        // ------------------------------------
+
+                        const changedBy =
+                            item.changed_by ||
+                            "System";
+
+
+                        // ------------------------------------
                         // RETURN HISTORY ROW
                         // ------------------------------------
 
@@ -1923,6 +1888,18 @@ async function loadTaskHistory(task) {
 
                                 </td>
 
+
+                                <!-- UPDATED / REVIEWED BY -->
+                                <td>
+
+                                    <span class="history-responsible-person">
+                                        ${escapeHtml(
+                                            changedBy
+                                        )}
+                                    </span>
+
+                                </td>
+
                             </tr>
                         `;
 
@@ -1944,7 +1921,7 @@ async function loadTaskHistory(task) {
             taskHistoryTable.innerHTML = `
                 <tr>
 
-                    <td colspan="7">
+                    <td colspan="8">
 
                         <div class="history-empty">
 
@@ -3910,7 +3887,6 @@ if (reviewForm) {
 document.addEventListener(
     "DOMContentLoaded",
     async () => {
-        await loadProjectPageTitle();
         await loadProjectMembers();
         await loadTasks();
     }
