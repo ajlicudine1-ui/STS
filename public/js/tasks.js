@@ -1699,13 +1699,13 @@ async function loadTaskHistory(task) {
 
 
                         // ------------------------------------
-                        // RESPONSIBLE PERSON
+                        // DEVELOPMENT TEAM
+                        // Pulled from all members assigned to
+                        // this task's project by the server.
                         // ------------------------------------
 
-                        const responsiblePerson =
-                            item.responsible_person ||
-                            item.new_responsible_person ||
-                            task.responsible_person ||
+                        const developmentTeam =
+                            item.development_team ||
                             "-";
 
 
@@ -1858,12 +1858,12 @@ async function loadTaskHistory(task) {
                                 </td>
 
 
-                                <!-- RESPONSIBLE PERSON -->
+                                <!-- DEVELOPMENT TEAM -->
                                 <td>
 
                                     <span class="history-responsible-person">
                                         ${escapeHtml(
-                                            responsiblePerson
+                                            developmentTeam
                                         )}
                                     </span>
 

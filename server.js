@@ -2534,10 +2534,81 @@ app.get(
                 taskId
             );
 
+            const db =
+                getDatabaseClient();
+
+            // Find the project that owns this task.
+            const {
+                data: taskRecord,
+                error: taskError
+            } = await db
+                .from("tasks")
+                .select("task_id, project_id")
+                .eq(
+                    "task_id",
+                    taskId
+                )
+                .maybeSingle();
+
+            if (
+                taskError ||
+                !taskRecord
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Task not found."
+                });
+            }
+
+
+            // Pull every Development Team member assigned
+            // to the task's project.
+            const {
+                data: projectMembers,
+                error: membersError
+            } = await db
+                .from("project_members")
+                .select(
+                    "user_id, member_name, created_at"
+                )
+                .eq(
+                    "project_id",
+                    taskRecord.project_id
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: true
+                    }
+                );
+
+            if (membersError) {
+                throw membersError;
+            }
+
+
+            const developmentTeam =
+                (projectMembers || [])
+                    .map(member =>
+                        String(
+                            member.member_name ||
+                            ""
+                        ).trim()
+                    )
+                    .filter(Boolean)
+                    .filter(
+                        (name, index, list) =>
+                            list.indexOf(name) === index
+                    )
+                    .join(", ");
+
+
             const {
                 data,
                 error
-            } = await supabase
+            } = await db
                 .from("task_history")
                 .select("*")
                 .eq(
@@ -2567,9 +2638,19 @@ app.get(
                 });
             }
 
+
+            const historyWithDevelopmentTeam =
+                (data || []).map(item => ({
+                    ...item,
+
+                    development_team:
+                        developmentTeam || "-"
+                }));
+
+
             console.log(
                 "History records found:",
-                data?.length || 0
+                historyWithDevelopmentTeam.length
             );
 
             res.json({
@@ -2577,7 +2658,7 @@ app.get(
                 success: true,
 
                 history:
-                    data || []
+                    historyWithDevelopmentTeam
             });
 
         } catch (error) {
