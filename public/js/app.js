@@ -2684,81 +2684,219 @@ document.addEventListener(
 );
 
 // ============================================================
-// SELECT PROJECT FOCUS MODE
+// SELECT PROJECT FOCUS MODE - INSTANT
 // ============================================================
 
 function initializeSelectProjectMode() {
-    const params = new URLSearchParams(window.location.search);
 
-    if (params.get("select_project") !== "1") {
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    if (
+        params.get("select_project") !== "1"
+    ) {
         return;
     }
 
-    const waitForProjects = setInterval(() => {
-        const tableBody = document.getElementById("projectsTable");
-        const firstAction = document.querySelector(".project-action-trigger");
 
-        if (!tableBody || !firstAction) {
-            return;
-        }
+    // Show the guide/focus state immediately.
+    document.body.classList.add(
+        "select-project-mode"
+    );
 
-        const tableContainer = tableBody.closest(".table-container");
+
+    let message =
+        document.querySelector(
+            ".select-project-message"
+        );
+
+    if (!message) {
+
+        message =
+            document.createElement(
+                "div"
+            );
+
+        message.className =
+            "select-project-message";
+
+        message.innerHTML = `
+            <div class="select-project-message-icon">☷</div>
+
+            <div class="select-project-message-text">
+                <strong>Select a project first</strong>
+                <span>
+                    Choose the project you want, then click
+                    <b>Actions</b> → <b>View Tasks</b>.
+                </span>
+            </div>
+
+            <button
+                type="button"
+                class="select-project-message-close"
+                aria-label="Close"
+                title="Close"
+            >×</button>
+        `;
+
+        document.body.appendChild(
+            message
+        );
+    }
+
+
+    const closeGuide = () => {
+
+        document.body.classList.remove(
+            "select-project-mode"
+        );
+
+        document
+            .querySelectorAll(
+                ".select-project-focus-table"
+            )
+            .forEach(element => {
+                element.classList.remove(
+                    "select-project-focus-table"
+                );
+            });
+
+        message?.remove();
+
+        const cleanUrl =
+            new URL(
+                window.location.href
+            );
+
+        cleanUrl.searchParams.delete(
+            "select_project"
+        );
+
+        window.history.replaceState(
+            {},
+            document.title,
+            cleanUrl.pathname +
+            cleanUrl.search +
+            cleanUrl.hash
+        );
+    };
+
+
+    const closeButton =
+        message.querySelector(
+            ".select-project-message-close"
+        );
+
+    if (closeButton) {
+
+        const cleanCloseButton =
+            closeButton.cloneNode(true);
+
+        closeButton.replaceWith(
+            cleanCloseButton
+        );
+
+        cleanCloseButton.addEventListener(
+            "click",
+            closeGuide
+        );
+    }
+
+
+    const focusProjectTable = () => {
+
+        const tableBody =
+            document.getElementById(
+                "projectsTable"
+            );
+
+        const tableContainer =
+            tableBody?.closest(
+                ".table-container"
+            );
 
         if (!tableContainer) {
-            return;
+            return false;
         }
 
-        clearInterval(waitForProjects);
+        // Focus the table container immediately, even before
+        // project rows finish loading.
+        tableContainer.classList.add(
+            "select-project-focus-table"
+        );
 
-        document.body.classList.add("select-project-mode");
-        tableContainer.classList.add("select-project-focus-table");
+        const firstAction =
+            tableContainer.querySelector(
+                ".project-action-trigger"
+            );
+
+        if (!firstAction) {
+            return false;
+        }
 
         tableContainer.scrollIntoView({
             behavior: "auto",
             block: "center"
         });
 
-        if (!document.querySelector(".select-project-message")) {
-            const message = document.createElement("div");
-            message.className = "select-project-message";
-            message.innerHTML = `
-                <div class="select-project-message-icon">☷</div>
+        return true;
+    };
 
-                <div class="select-project-message-text">
-                    <strong>Select a project first</strong>
-                    <span>Choose the project you want, then click <b>Actions</b> → <b>View Tasks</b>.</span>
-                </div>
 
-                <button
-                    type="button"
-                    class="select-project-message-close"
-                    aria-label="Close"
-                    title="Close"
-                >×</button>
-            `;
+    if (focusProjectTable()) {
+        return;
+    }
 
-            document.body.appendChild(message);
 
-            const closeButton = message.querySelector(".select-project-message-close");
+    const tableBody =
+        document.getElementById(
+            "projectsTable"
+        );
 
-            if (closeButton) {
-                closeButton.addEventListener("click", () => {
-                    document.body.classList.remove("select-project-mode");
-                    tableContainer.classList.remove("select-project-focus-table");
-                    message.remove();
+    if (tableBody) {
 
-                    const cleanUrl = new URL(window.location.href);
-                    cleanUrl.searchParams.delete("select_project");
-                    window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search);
-                });
+        const observer =
+            new MutationObserver(() => {
+
+                if (focusProjectTable()) {
+                    observer.disconnect();
+                }
+            });
+
+        observer.observe(
+            tableBody,
+            {
+                childList: true,
+                subtree: true
             }
-        }
-    }, 100);
+        );
+
+        setTimeout(
+            () => observer.disconnect(),
+            10000
+        );
+
+        return;
+    }
+
+
+    // Fallback only if the expected table is temporarily missing.
+    const fallback =
+        setInterval(() => {
+
+            if (focusProjectTable()) {
+                clearInterval(fallback);
+            }
+
+        }, 50);
 
     setTimeout(() => {
-        clearInterval(waitForProjects);
+        clearInterval(fallback);
     }, 10000);
 }
+
 
 document.addEventListener(
     "DOMContentLoaded",
