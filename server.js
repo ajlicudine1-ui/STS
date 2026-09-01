@@ -2245,9 +2245,72 @@ app.get(
                 });
             }
 
+
+            // Pull every Development Team member connected
+            // to this project once, then attach the same team
+            // to each task returned for the project.
+            const {
+                data: projectMembers,
+                error: membersError
+            } = await db
+                .from("project_members")
+                .select(
+                    "user_id, member_name, created_at"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: true
+                    }
+                );
+
+            if (membersError) {
+
+                console.error(
+                    "Get project development team error:",
+                    membersError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: membersError.message
+                });
+            }
+
+
+            const developmentTeam =
+                (projectMembers || [])
+                    .map(member =>
+                        String(
+                            member.member_name ||
+                            ""
+                        ).trim()
+                    )
+                    .filter(Boolean)
+                    .filter(
+                        (name, index, list) =>
+                            list.indexOf(name) === index
+                    )
+                    .join(", ");
+
+
+            const tasksWithDevelopmentTeam =
+                (data || []).map(task => ({
+                    ...task,
+
+                    development_team:
+                        developmentTeam || "-"
+                }));
+
+
             res.json({
                 success: true,
-                tasks: data || []
+                tasks:
+                    tasksWithDevelopmentTeam
             });
 
         } catch (error) {
