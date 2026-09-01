@@ -297,8 +297,26 @@ function configureSidebar(
         );
 
     if (teamLink) {
+
+        const isAdmin =
+            profile.role === "admin";
+
+        // `hidden` can be visually overridden by `.nav-item { display:flex; }`
+        // in some stylesheet combinations, so enforce visibility explicitly.
         teamLink.hidden =
-            profile.role !== "admin";
+            !isAdmin;
+
+        teamLink.style.display =
+            isAdmin
+                ? ""
+                : "none";
+
+        teamLink.setAttribute(
+            "aria-hidden",
+            isAdmin
+                ? "false"
+                : "true"
+        );
     }
 
 
