@@ -136,20 +136,28 @@ function getUserDatabaseClient(accessToken) {
 
 // ============================================================
 // ID NUMBERING HELPER
-// Always uses the LOWEST available number.
-// Examples:
-//   no rows                  -> 001
-//   001, 002, 004 exist      -> 003
-//   002, 003 exist           -> 001
+// Uses the LOWEST available number and reads with the server-side
+// database client so RLS cannot make existing IDs look "missing".
+//
+// Project examples for 2026:
+//   no matching rows                  -> IDM-2026-001
+//   001, 002, 004 exist              -> IDM-2026-003
+//   002, 003 exist                   -> IDM-2026-001
+//
+// Task IDs keep their existing format:
+//   TASK-001, TASK-002, ...
 // ============================================================
 
 async function getLowestAvailableFormattedId({
     tableName,
     columnName,
-    prefix
+    prefix,
+    year = null
 }) {
 
-    const { data, error } = await supabase
+    const db = getDatabaseClient();
+
+    const { data, error } = await db
         .from(tableName)
         .select(columnName);
 
@@ -159,25 +167,50 @@ async function getLowestAvailableFormattedId({
 
     const usedNumbers = new Set();
 
+    const safePrefix =
+        String(prefix || "")
+            .replace(
+                /[.*+?^${}()|[\]\\]/g,
+                "\\$&"
+            );
+
+    const normalizedYear =
+        year !== null &&
+        year !== undefined &&
+        String(year).trim()
+            ? String(year).trim()
+            : null;
+
+    const idPattern =
+        normalizedYear
+            ? new RegExp(
+                `^${safePrefix}-${normalizedYear}-(\\d+)$`,
+                "i"
+            )
+            : new RegExp(
+                `^${safePrefix}-(\\d+)$`,
+                "i"
+            );
+
     for (const row of data || []) {
 
         const value =
-            String(row?.[columnName] || "").trim();
+            String(
+                row?.[columnName] || ""
+            ).trim();
 
         const match =
-            value.match(
-                new RegExp(
-                    `^${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-(\\d+)$`,
-                    "i"
-                )
-            );
+            value.match(idPattern);
 
         if (!match) {
             continue;
         }
 
         const number =
-            Number.parseInt(match[1], 10);
+            Number.parseInt(
+                match[1],
+                10
+            );
 
         if (
             Number.isInteger(number) &&
@@ -189,11 +222,19 @@ async function getLowestAvailableFormattedId({
 
     let nextNumber = 1;
 
-    while (usedNumbers.has(nextNumber)) {
+    while (
+        usedNumbers.has(nextNumber)
+    ) {
         nextNumber += 1;
     }
 
-    return `${prefix}-${String(nextNumber).padStart(3, "0")}`;
+    const serial =
+        String(nextNumber)
+            .padStart(3, "0");
+
+    return normalizedYear
+        ? `${prefix}-${normalizedYear}-${serial}`
+        : `${prefix}-${serial}`;
 }
 
 
@@ -1245,60 +1286,122 @@ app.post("/api/projects", async (req, res) => {
         }
 
 
-        const nextProjectId =
-            await getLowestAvailableFormattedId({
-                tableName: "projects",
-                columnName: "project_id",
-                prefix: "IDM"
-            });
+        // Project IDs use the current year:
+        // IDM-2026-001, IDM-2026-002, ...
+        //
+        // The ID is generated again if another request happens to claim
+        // the same number between generation and insert.
+        const projectYear =
+            new Date().getFullYear();
 
-        const projectData = {
+        const db =
+            getDatabaseClient();
 
-            project_id:
-                nextProjectId,
+        let data = null;
+        let error = null;
+        let projectData = null;
 
-            project_name:
-                project_name.trim(),
+        const maxIdAttempts = 10;
 
-            project_url:
-                project_url
-                    ? project_url.trim()
-                    : null,
+        for (
+            let attempt = 1;
+            attempt <= maxIdAttempts;
+            attempt += 1
+        ) {
 
-            project_owner:
-                project_owner
-                    ? project_owner.trim()
-                    : null,
+            const nextProjectId =
+                await getLowestAvailableFormattedId({
+                    tableName: "projects",
+                    columnName: "project_id",
+                    prefix: "IDM",
+                    year: projectYear
+                });
 
-            version:
-                version
-                    ? String(version).trim()
-                    : null,
+            projectData = {
 
-            project_status:
-                project_status ||
-                "Not Started",
+                project_id:
+                    nextProjectId,
 
-            date_opened:
-                date_opened || null,
+                project_name:
+                    project_name.trim(),
 
-            date_closed:
-                date_closed || null
+                project_url:
+                    project_url
+                        ? project_url.trim()
+                        : null,
 
-        };
+                project_owner:
+                    project_owner
+                        ? project_owner.trim()
+                        : null,
+
+                version:
+                    version
+                        ? String(version).trim()
+                        : null,
+
+                project_status:
+                    project_status ||
+                    "Not Started",
+
+                date_opened:
+                    date_opened || null,
+
+                date_closed:
+                    date_closed || null
+
+            };
 
 
-        const {
-            data,
-            error
-        } = await supabase
-            .from("projects")
-            .insert([projectData])
-            .select()
-            .single();
+            const insertResult =
+                await db
+                    .from("projects")
+                    .insert([projectData])
+                    .select()
+                    .single();
+
+            data =
+                insertResult.data;
+
+            error =
+                insertResult.error;
 
 
-        if (error) {
+            if (!error) {
+                break;
+            }
+
+
+            // PostgreSQL unique_violation. Retry only when the
+            // duplicate is related to project_id.
+            const duplicateProjectId =
+                error.code === "23505" &&
+                (
+                    String(error.message || "")
+                        .toLowerCase()
+                        .includes("project_id") ||
+                    String(error.details || "")
+                        .toLowerCase()
+                        .includes("project_id")
+                );
+
+            if (
+                duplicateProjectId &&
+                attempt < maxIdAttempts
+            ) {
+                console.warn(
+                    `Project ID ${nextProjectId} was already claimed. Generating another ID...`
+                );
+
+                continue;
+            }
+
+
+            break;
+        }
+
+
+        if (error || !data) {
 
             console.error(
                 "SUPABASE INSERT ERROR:",
@@ -1307,14 +1410,18 @@ app.post("/api/projects", async (req, res) => {
 
             return res.status(500).json({
                 success: false,
-                error: error.message,
-                code: error.code,
-                details: error.details,
-                hint: error.hint
+                error:
+                    error?.message ||
+                    "Unable to create a unique Project ID.",
+                code:
+                    error?.code || null,
+                details:
+                    error?.details || null,
+                hint:
+                    error?.hint || null
             });
 
         }
-
 
         // ----------------------------------------------------
         // CREATE GOOGLE DRIVE PROJECT FOLDER
@@ -1773,7 +1880,8 @@ app.get("/api/projects-next-id", async (req, res) => {
             await getLowestAvailableFormattedId({
                 tableName: "projects",
                 columnName: "project_id",
-                prefix: "IDM"
+                prefix: "IDM",
+                year: new Date().getFullYear()
             });
 
         res.json({
