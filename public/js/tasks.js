@@ -3738,20 +3738,9 @@ review_result:
 
             // ------------------------------------------------
             // VALIDATION
+            // Reviewer identity is taken automatically from
+            // the currently logged-in DevT account.
             // ------------------------------------------------
-
-            if (
-                !reviewData.reviewed_verified_by
-            ) {
-
-                alert(
-                    "Please enter the name of the reviewer."
-                );
-
-                return;
-
-            }
-
 
             if (
                 !reviewData.review_result
