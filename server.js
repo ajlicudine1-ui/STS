@@ -108,6 +108,31 @@ function getDatabaseClient() {
     return supabaseAdmin || supabase;
 }
 
+// Creates a short-lived client that sends the signed-in user's access token
+// to PostgREST. This lets RLS policies such as auth.uid() = user_id work
+// even when SUPABASE_SERVICE_ROLE_KEY is not configured on the deployment.
+function getUserDatabaseClient(accessToken) {
+    if (!accessToken) {
+        return getDatabaseClient();
+    }
+
+    return createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_KEY,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            },
+            global: {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            }
+        }
+    );
+}
+
 
 // ============================================================
 // ID NUMBERING HELPER
@@ -558,14 +583,19 @@ async function loadUserContextFromToken(token) {
         return null;
     }
 
-    const db = getDatabaseClient();
+    const db = supabaseAdmin || getUserDatabaseClient(token);
     const { data: profile, error: profileError } = await db
         .from("profiles")
         .select("user_id, full_name, email, role, is_active, created_at, updated_at")
         .eq("user_id", authData.user.id)
         .maybeSingle();
 
-    if (profileError || !profile || profile.is_active === false) {
+    if (profileError) {
+        console.error("PROFILE LOOKUP ERROR:", profileError);
+        return null;
+    }
+
+    if (!profile || profile.is_active === false) {
         return null;
     }
 
@@ -704,15 +734,31 @@ app.post("/api/auth/login", async (req, res) => {
             return res.status(401).json({ success: false, error: "Invalid email or password." });
         }
 
-        const db = getDatabaseClient();
+        // Profile lookup must run as either the privileged server client
+        // or the newly authenticated user. Using the plain anonymous client
+        // can be blocked by RLS and incorrectly look like the profile is missing.
+        const db = supabaseAdmin ||
+            getUserDatabaseClient(data.session.access_token);
+
         const { data: profile, error: profileError } = await db
             .from("profiles")
             .select("user_id, full_name, email, role, is_active")
             .eq("user_id", data.user.id)
             .maybeSingle();
 
-        if (profileError || !profile) {
-            return res.status(403).json({ success: false, error: "This account has no DevT profile." });
+        if (profileError) {
+            console.error("LOGIN PROFILE LOOKUP ERROR:", profileError);
+            return res.status(500).json({
+                success: false,
+                error: "Unable to load this account's DevT profile."
+            });
+        }
+
+        if (!profile) {
+            return res.status(403).json({
+                success: false,
+                error: "This account has no DevT profile."
+            });
         }
         if (profile.is_active === false) {
             return res.status(403).json({ success: false, error: "This account is inactive." });
