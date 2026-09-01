@@ -16,6 +16,12 @@ let editingProjectId = null;
 
 const projectModal = document.getElementById("projectModal");
 const newProjectBtn = document.getElementById("newProjectBtn");
+
+// Admin-only control: keep hidden until /api/dashboard confirms the viewer is admin.
+if (newProjectBtn) {
+    newProjectBtn.hidden = true;
+    newProjectBtn.style.display = "none";
+}
 const closeProjectModalBtn = document.getElementById("closeProjectModal");
 const cancelProjectBtn = document.getElementById("cancelProjectBtn");
 
@@ -2275,7 +2281,10 @@ async function loadDashboard() {
         }
 
         isAdminViewer = data.viewer?.role === "admin";
-        if (newProjectBtn) newProjectBtn.hidden = !isAdminViewer;
+        if (newProjectBtn) {
+            newProjectBtn.hidden = !isAdminViewer;
+            newProjectBtn.style.display = isAdminViewer ? "" : "none";
+        }
         if (addTeamMemberBtn) addTeamMemberBtn.hidden = !isAdminViewer;
         const teamGroup = document.getElementById("developmentTeamFormGroup");
         if (teamGroup) teamGroup.hidden = !isAdminViewer;
