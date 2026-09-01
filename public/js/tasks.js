@@ -1084,7 +1084,7 @@ function openReviewModal(task) {
     if (reviewResponsiblePerson) {
 
         reviewResponsiblePerson.textContent =
-            task.responsible_person || "-";
+            task.development_team || "-";
 
     }
 
@@ -3334,11 +3334,11 @@ async function loadTasks() {
                 </td>
 
 
-                <!-- RESPONSIBLE PERSON -->
+                <!-- DEVELOPMENT TEAM -->
 
                 <td>
                     ${escapeHtml(
-                        task.responsible_person || "-"
+                        task.development_team || "-"
                     )}
                 </td>
 
