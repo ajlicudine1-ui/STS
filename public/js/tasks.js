@@ -2757,10 +2757,13 @@ function showTaskUploadOptionsInActionMenu(menu, task) {
                 event.stopPropagation();
                 currentRepositoryTask = task;
 
-                if (taskRepositoryFileInput) {
-                    taskRepositoryFileInput.value = "";
-                    taskRepositoryFileInput.click();
+                if (!taskRepositoryFileInput) {
+                    alert("Task file picker is unavailable. Please refresh the page.");
+                    return;
                 }
+
+                taskRepositoryFileInput.value = "";
+                taskRepositoryFileInput.click();
 
                 closeAllActionMenus();
             }
@@ -2774,10 +2777,13 @@ function showTaskUploadOptionsInActionMenu(menu, task) {
                 event.stopPropagation();
                 currentRepositoryTask = task;
 
-                if (taskRepositoryFolderInput) {
-                    taskRepositoryFolderInput.value = "";
-                    taskRepositoryFolderInput.click();
+                if (!taskRepositoryFolderInput) {
+                    alert("Task folder picker is unavailable. Please refresh the page.");
+                    return;
                 }
+
+                taskRepositoryFolderInput.value = "";
+                taskRepositoryFolderInput.click();
 
                 closeAllActionMenus();
             }
@@ -2835,6 +2841,12 @@ function bindTaskActionMenuItems(menu, task) {
             async event => {
                 event.stopPropagation();
                 closeAllActionMenus();
+
+                if (!taskRepositoryFilesModal) {
+                    alert("Task Repository window is unavailable. Please refresh the page.");
+                    return;
+                }
+
                 await openTaskRepositoryFilesModal(task);
             }
         );
@@ -2915,7 +2927,7 @@ function createActionMenu(task) {
                 class="task-action-item repository-files-action"
             >
                 <span class="task-action-icon">☰</span>
-                <span>Project Repository</span>
+                <span>Task Repository</span>
             </button>
 
             <button
