@@ -428,4 +428,28 @@ a:hover {
     .form-row {
         grid-template-columns: 1fr;
     }
+
+
+    /* ============================================================
+   SIDEBAR USER / LOGOUT - ALWAYS AT BOTTOM
+   ============================================================ */
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-nav {
+    flex-shrink: 0;
+}
+
+/* Works whether your wrapper is named sidebar-account,
+   sidebar-footer, sidebar-user-section, or sidebar-profile */
+.sidebar-account,
+.sidebar-footer,
+.sidebar-user-section,
+.sidebar-profile {
+    margin-top: auto !important;
+    flex-shrink: 0;
+}
 }
