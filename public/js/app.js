@@ -1394,12 +1394,27 @@ if (versionGuideToggle && versionGuideDropdown) {
 // ============================================================
 
 function resetProjectModal() {
+
     editingProjectId = null;
 
     if (projectForm) {
         projectForm.reset();
-        setProjectValue("projectVersion", "v1.0");
+
+        setProjectValue(
+            "projectVersion",
+            "v1.0"
+        );
     }
+
+    const today =
+        new Date()
+            .toISOString()
+            .split("T")[0];
+
+    setProjectValue(
+        "dateOpened",
+        today
+    );
 
     setProjectValue(
         "projectId",
