@@ -10,14 +10,20 @@
     const TOKEN_KEY = "devt_access_token";
     const PROFILE_KEY = "devt_profile";
 
+    // Authentication is tab-scoped. Remove old shared auth values left by
+    // previous localStorage-based versions so Admin/User roles cannot leak
+    // between browser tabs.
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(PROFILE_KEY);
+
     function getToken() {
-        return localStorage.getItem(TOKEN_KEY) || "";
+        return sessionStorage.getItem(TOKEN_KEY) || "";
     }
 
     function getProfile() {
         try {
             return JSON.parse(
-                localStorage.getItem(PROFILE_KEY) || "null"
+                sessionStorage.getItem(PROFILE_KEY) || "null"
             );
         } catch (_) {
             return null;
@@ -27,14 +33,14 @@
     function setSession(token, profile) {
 
         if (token) {
-            localStorage.setItem(
+            sessionStorage.setItem(
                 TOKEN_KEY,
                 token
             );
         }
 
         if (profile) {
-            localStorage.setItem(
+            sessionStorage.setItem(
                 PROFILE_KEY,
                 JSON.stringify(profile)
             );
@@ -42,8 +48,8 @@
     }
 
     function clearSession() {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(PROFILE_KEY);
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(PROFILE_KEY);
     }
 
     window.fetch = async function(input, init = {}) {
@@ -152,7 +158,7 @@
                 );
             }
 
-            localStorage.setItem(
+            sessionStorage.setItem(
                 PROFILE_KEY,
                 JSON.stringify(
                     result.profile
