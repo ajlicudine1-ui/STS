@@ -1030,10 +1030,13 @@ async function createTaskHistory({
             historyData
         );
 
+        const db =
+            getDatabaseClient();
+
         const {
             data,
             error
-        } = await supabase
+        } = await db
             .from("task_history")
             .insert([historyData])
             .select()
@@ -2206,10 +2209,13 @@ app.get(
             const { projectId } =
                 req.params;
 
+            const db =
+                getDatabaseClient();
+
             const {
                 data,
                 error
-            } = await supabase
+            } = await db
                 .from("tasks")
                 .select("*")
                 .eq(
@@ -2602,6 +2608,12 @@ app.post(
             const { projectId } =
                 req.params;
 
+            // All database work below runs through the trusted server client.
+            // Authorization has already verified that the logged-in user can
+            // access this project.
+            const db =
+                getDatabaseClient();
+
             console.log(
                 "=============================================="
             );
@@ -2661,7 +2673,7 @@ app.post(
             const {
                 data: project,
                 error: projectError
-            } = await supabase
+            } = await db
                 .from("projects")
                 .select(
                     "project_id, project_name, drive_folder_id, drive_folder_url"
@@ -2766,7 +2778,7 @@ app.post(
             const {
                 data,
                 error
-            } = await supabase
+            } = await db
                 .from("tasks")
                 .insert([taskData])
                 .select()
@@ -2814,7 +2826,7 @@ app.post(
                 const {
                     data: updatedTask,
                     error: driveUpdateError
-                } = await supabase
+                } = await db
                     .from("tasks")
                     .update({
                         drive_folder_id:
@@ -2855,7 +2867,7 @@ app.post(
                 }
 
 
-                await supabase
+                await db
                     .from("tasks")
                     .delete()
                     .eq(
