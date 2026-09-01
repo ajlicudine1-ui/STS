@@ -2898,7 +2898,8 @@ app.post(
                         "Task created",
 
                     changedBy:
-                        taskRecord.responsible_person ||
+                        req.profile?.full_name ||
+                        req.profile?.email ||
                         "System"
                 });
 
@@ -3366,8 +3367,8 @@ app.put(
                         "Task information updated",
 
                     changedBy:
-                        data.responsible_person ||
-                        oldTask.responsible_person ||
+                        req.profile?.full_name ||
+                        req.profile?.email ||
                         "System"
                 });
 
@@ -3615,7 +3616,9 @@ app.put(
                         ),
 
                     changedBy:
-                        reviewed_verified_by.trim()
+                        req.profile?.full_name ||
+                        req.profile?.email ||
+                        "System"
                 });
 
             if (!historyResult.success) {
@@ -3765,7 +3768,8 @@ app.delete(
                         "Task deleted",
 
                     changedBy:
-                        task.responsible_person ||
+                        req.profile?.full_name ||
+                        req.profile?.email ||
                         "System"
                 });
 
