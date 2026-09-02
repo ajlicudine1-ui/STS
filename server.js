@@ -786,7 +786,7 @@ app.post("/api/auth/login", async (req, res) => {
         if (!fullName || !password) {
             return res.status(400).json({
                 success: false,
-                error: "Full name and password are required."
+                error: "Username and password are required."
             });
         }
 
@@ -818,14 +818,14 @@ app.post("/api/auth/login", async (req, res) => {
         if (!matchingProfiles || matchingProfiles.length === 0) {
             return res.status(401).json({
                 success: false,
-                error: "Invalid full name or password."
+                error: "Invalid username or password."
             });
         }
 
         if (matchingProfiles.length > 1) {
             return res.status(409).json({
                 success: false,
-                error: "More than one account uses this full name. Please ask the administrator to make the account names unique."
+                error: "More than one account uses this username. Please ask the administrator to make the account names unique."
             });
         }
 
@@ -834,7 +834,7 @@ app.post("/api/auth/login", async (req, res) => {
         if (!loginProfile.email) {
             return res.status(401).json({
                 success: false,
-                error: "Invalid full name or password."
+                error: "Invalid username or password."
             });
         }
 
@@ -856,7 +856,7 @@ app.post("/api/auth/login", async (req, res) => {
         if (error || !data?.session || !data?.user) {
             return res.status(401).json({
                 success: false,
-                error: "Invalid full name or password."
+                error: "Invalid username or password."
             });
         }
 

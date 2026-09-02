@@ -60,7 +60,7 @@ form.addEventListener(
 
             if (!enteredFullName) {
                 throw new Error(
-                    "Please enter your full name."
+                    "Please enter your username."
                 );
             }
 
