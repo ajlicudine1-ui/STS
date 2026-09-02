@@ -1,157 +1,141 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width,initial-scale=1.0"
-    >
-
-    <meta
-        name="description"
-        content="Official sign-in page for the DevT Development Tracker project and task management system."
-    >
-
-    <title>DevT | Authorized Sign In</title>
-
-    <link
-        rel="icon"
-        type="image/png"
-        href="/images/DT%20LOGO.png"
-    >
-
-    <link
-        rel="stylesheet"
-        href="/css/login.css"
-    >
-</head>
-
-<body>
-
-    <main class="login-shell">
-
-        <section class="login-card">
-
-            <div class="login-brand">
-
-                <img
-                    src="/images/DT%20LOGO.png"
-                    alt="DevT Development Tracker logo"
-                >
-
-                <div>
-                    <h1>DevT</h1>
-                    <p>Development Tracker</p>
-                </div>
-
-            </div>
-
-
-            <div class="login-heading">
-
-                <h2>Authorized Sign In</h2>
-
-                <p>
-                    Sign in using the DevT account provided by your
-                    Development Tracker administrator.
-                </p>
-
-            </div>
-
-
-            <div
-                class="login-security-note"
-                role="note"
-            >
-                <strong>Official DevT access page.</strong>
-
-                <p>
-                    This system is for authorized DevT users only.
-                    DevT only requests the username and password created
-                    for your Development Tracker account. Do not enter
-                    banking, social-media, email, or other third-party
-                    passwords on this page.
-                </p>
-            </div>
-
-
-            <form
-                id="loginForm"
-                autocomplete="on"
-            >
-
-                <label>
-                    Username
-
-                    <input
-                        type="text"
-                        id="fullName"
-                        name="username"
-                        autocomplete="username"
-                        required
-                        placeholder="Enter your DevT username"
-                    >
-                </label>
-
-
-                <label>
-                    Password
-
-                    <div class="password-field">
-
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            autocomplete="current-password"
-                            required
-                            placeholder="Enter your DevT password"
-                        >
-
-                        <button
-                            type="button"
-                            id="togglePassword"
-                            aria-label="Show password"
-                        >
-                            Show
-                        </button>
-
-                    </div>
-
-                </label>
-
-
-                <div
-                    id="loginError"
-                    class="login-error"
-                    aria-live="polite"
-                ></div>
-
-
-                <button
-                    type="submit"
-                    class="login-btn"
-                    id="loginBtn"
-                >
-                    Sign In
-                </button>
-
-            </form>
-
-
-            <p class="login-access-note">
-                Account access is created and managed by the DevT administrator.
-            </p>
-
-        </section>
-
-    </main>
-
-
-    <script src="/js/login.js"></script>
-
-</body>
-
+<!DOCTYPE html> 
+<html lang="en"> 
+ 
+<head> 
+    <meta charset="UTF-8"> 
+ 
+    <meta 
+        name="viewport" 
+        content="width=device-width,initial-scale=1.0" 
+    > 
+ 
+    <meta 
+        name="description" 
+        content="Official sign-in page for the DevT Development Tracker project and task management system." 
+    > 
+ 
+    <title>DevT | Sign In</title> 
+ 
+    <link 
+        rel="icon" 
+        type="image/png" 
+        href="/images/DT%20LOGO.png" 
+    > 
+ 
+    <link 
+        rel="stylesheet" 
+        href="/css/login.css" 
+    > 
+</head> 
+ 
+<body> 
+ 
+    <main class="login-shell"> 
+ 
+        <section class="login-card"> 
+ 
+            <div class="login-brand"> 
+ 
+                <img 
+                    src="/images/DT%20LOGO.png" 
+                    alt="DevT Development Tracker logo" 
+                > 
+ 
+                <div> 
+                    <h1>DevT</h1> 
+                    <p>Development Tracker</p> 
+                </div> 
+ 
+            </div> 
+ 
+ 
+            <div class="login-heading"> 
+ 
+                <h2>Welcome back</h2> 
+ 
+                <p> 
+                    Sign in using your DevT account to access your 
+                    assigned projects and tasks. 
+                </p> 
+ 
+            </div> 
+ 
+ 
+            <form 
+                id="loginForm" 
+                autocomplete="on" 
+            > 
+ 
+                <label> 
+                    Username 
+ 
+                    <input 
+                        type="text" 
+                        id="fullName" 
+                        name="username" 
+                        autocomplete="username" 
+                        required 
+                        placeholder="Enter your DevT username" 
+                    > 
+                </label> 
+ 
+ 
+                <label> 
+                    Password 
+ 
+                    <div class="password-field"> 
+ 
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            autocomplete="current-password" 
+                            required 
+                            placeholder="Enter your DevT password" 
+                        > 
+ 
+                        <button 
+                            type="button" 
+                            id="togglePassword" 
+                            aria-label="Show password" 
+                        > 
+                            Show 
+                        </button> 
+ 
+                    </div> 
+ 
+                </label> 
+ 
+ 
+                <div 
+                    id="loginError" 
+                    class="login-error" 
+                    aria-live="polite" 
+                ></div> 
+ 
+ 
+                <button 
+                    type="submit" 
+                    class="login-btn" 
+                    id="loginBtn" 
+                > 
+                    Sign In 
+                </button> 
+ 
+            </form> 
+ 
+ 
+            <p class="login-access-note"> 
+                Authorized DevT users only. 
+            </p> 
+ 
+        </section> 
+ 
+    </main> 
+ 
+ 
+    <script src="/js/login.js"></script> 
+ 
+</body> 
+ 
 </html>
