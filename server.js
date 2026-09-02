@@ -797,6 +797,19 @@ async function authorizeApiRequest(req, res, next) {
         const taskMatch = p.match(/^\/tasks\/([^/]+)(?:\/|$)/);
         if (taskMatch) {
             const taskId = decodeURIComponent(taskMatch[1]);
+
+            // Task deletion is administrator-only.
+            // Admin users already returned next() at the top of this middleware.
+            if (
+                method === "DELETE" &&
+                p === `/tasks/${taskMatch[1]}`
+            ) {
+                return res.status(403).json({
+                    success: false,
+                    error: "Administrator access required."
+                });
+            }
+
             const projectId = await getTaskProjectId(taskId);
             const allowed = projectId && await userCanAccessProject(req.authUser.id, projectId);
             if (!allowed) {
@@ -2012,13 +2025,27 @@ app.post(
                     "project_id",
                     projectId
                 )
-                .single();
+                .maybeSingle();
 
 
-            if (
-                projectError ||
-                !project
-            ) {
+            if (projectError) {
+
+                console.error(
+                    "PROJECT REPOSITORY UPLOAD LOOKUP ERROR:",
+                    projectError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to load the project.",
+                    details:
+                        projectError.message
+                });
+            }
+
+
+            if (!project) {
 
                 return res.status(404).json({
                     success: false,
@@ -2873,10 +2900,24 @@ app.get(
                 )
                 .maybeSingle();
 
-            if (
-                taskError ||
-                !taskRecord
-            ) {
+            if (taskError) {
+
+                console.error(
+                    "GET TASK HISTORY LOOKUP ERROR:",
+                    taskError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to load the task.",
+                    details:
+                        taskError.message
+                });
+            }
+
+
+            if (!taskRecord) {
 
                 return res.status(404).json({
                     success: false,
@@ -3396,6 +3437,11 @@ app.put(
         try {
             const { taskId } = req.params;
 
+            // Authorization already verified access. Use the trusted
+            // server-side client so RLS cannot hide an existing task.
+            const db =
+                getDatabaseClient();
+
             console.log(
                 "=============================================="
             );
@@ -3413,11 +3459,11 @@ app.put(
             const {
                 data: oldTask,
                 error: oldTaskError
-            } = await supabase
+            } = await db
                 .from("tasks")
                 .select("*")
                 .eq("task_id", taskId)
-                .single();
+                .maybeSingle();
 
             if (oldTaskError) {
                 console.error(
@@ -3425,9 +3471,20 @@ app.put(
                     oldTaskError
                 );
 
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to load the task.",
+                    details:
+                        oldTaskError.message
+                });
+            }
+
+            if (!oldTask) {
                 return res.status(404).json({
                     success: false,
-                    error: "Task not found."
+                    error:
+                        "Task not found."
                 });
             }
 
@@ -3530,12 +3587,12 @@ app.put(
             const {
                 data,
                 error
-            } = await supabase
+            } = await db
                 .from("tasks")
                 .update(taskData)
                 .eq("task_id", taskId)
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
                 console.error(
@@ -3549,6 +3606,14 @@ app.put(
                     code: error.code,
                     details: error.details,
                     hint: error.hint
+                });
+            }
+
+            if (!data) {
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Task not found."
                 });
             }
 
@@ -3870,17 +3935,22 @@ app.put(
             const { taskId } =
                 req.params;
 
+            // Authorization already verified access. Use the trusted
+            // server-side client so RLS cannot hide an existing task.
+            const db =
+                getDatabaseClient();
+
             const {
                 data: oldTask,
                 error: oldTaskError
-            } = await supabase
+            } = await db
                 .from("tasks")
                 .select("*")
                 .eq(
                     "task_id",
                     taskId
                 )
-                .single();
+                .maybeSingle();
 
             if (oldTaskError) {
 
@@ -3888,6 +3958,17 @@ app.put(
                     "GET TASK FOR REVIEW ERROR:",
                     oldTaskError
                 );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to load the task.",
+                    details:
+                        oldTaskError.message
+                });
+            }
+
+            if (!oldTask) {
 
                 return res.status(404).json({
                     success: false,
@@ -3954,7 +4035,7 @@ app.put(
             const {
                 data,
                 error
-            } = await supabase
+            } = await db
                 .from("tasks")
                 .update(reviewData)
                 .eq(
@@ -3962,7 +4043,7 @@ app.put(
                     taskId
                 )
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
 
@@ -3977,6 +4058,15 @@ app.put(
                     code: error.code,
                     details: error.details,
                     hint: error.hint
+                });
+            }
+
+            if (!data) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Task not found."
                 });
             }
 
@@ -4080,6 +4170,8 @@ app.put(
 
 // ============================================================
 // DELETE TASK
+// Admin-only access is enforced by authorizeApiRequest().
+// Duplicate DELETE requests are treated as success.
 // ============================================================
 
 app.delete(
@@ -4090,6 +4182,9 @@ app.delete(
 
             const { taskId } =
                 req.params;
+
+            const db =
+                getDatabaseClient();
 
             console.log(
                 "=============================================="
@@ -4115,23 +4210,40 @@ app.delete(
             const {
                 data: task,
                 error: taskError
-            } = await supabase
+            } = await db
                 .from("tasks")
                 .select("*")
                 .eq(
                     "task_id",
                     taskId
                 )
-                .single();
+                .maybeSingle();
 
-            if (taskError || !task) {
+            if (taskError) {
 
-                return res.status(404).json({
+                console.error(
+                    "SUPABASE TASK LOOKUP ERROR:",
+                    taskError
+                );
 
+                return res.status(500).json({
                     success: false,
+                    error: taskError.message,
+                    code: taskError.code,
+                    details: taskError.details,
+                    hint: taskError.hint
+                });
+            }
 
-                    error:
-                        "Task not found."
+            // If the browser accidentally sent DELETE twice, the second
+            // request should not show a false "Task not found." failure.
+            if (!task) {
+
+                return res.json({
+                    success: true,
+                    already_deleted: true,
+                    message:
+                        "Task was already deleted."
                 });
             }
 
@@ -4201,40 +4313,68 @@ app.delete(
             // ----------------------------------------------------
 
             const {
-                error
-            } = await supabase
+                data: deletedTask,
+                error: deleteError
+            } = await db
                 .from("tasks")
                 .delete()
                 .eq(
                     "task_id",
                     taskId
-                );
+                )
+                .select("*")
+                .maybeSingle();
 
-            if (error) {
+            if (deleteError) {
 
                 console.error(
                     "SUPABASE TASK DELETE ERROR:",
-                    error
+                    deleteError
                 );
 
                 return res.status(500).json({
                     success: false,
-                    error: error.message,
-                    code: error.code,
-                    details: error.details,
-                    hint: error.hint
+                    error: deleteError.message,
+                    code: deleteError.code,
+                    details: deleteError.details,
+                    hint: deleteError.hint
                 });
+            }
+
+            if (!deletedTask) {
+
+                return res.json({
+                    success: true,
+                    already_deleted: true,
+                    message:
+                        "Task was already deleted."
+                });
+            }
+
+            // The Task Repository is inside the task Drive folder, so
+            // deleting this folder removes the task's repository as well.
+            if (deletedTask.drive_folder_id) {
+
+                await deleteDriveFolder(
+                    deletedTask.drive_folder_id
+                );
             }
 
             res.json({
 
                 success: true,
 
+                already_deleted:
+                    false,
+
                 message:
                     "Task deleted successfully.",
 
                 historyRecorded:
-                    true
+                    true,
+
+                task:
+                    deletedTask
             });
 
         } catch (error) {
@@ -4252,7 +4392,6 @@ app.delete(
     }
 );
 
-// ============================================================
 // USERS TABLE REMOVED
 // Project owners and development-team members are now free-text.
 // ============================================================
@@ -4266,8 +4405,9 @@ app.delete(
 app.get("/api/projects/:projectId/members", async (req, res) => {
     try {
         const { projectId } = req.params;
+        const db = getDatabaseClient();
 
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from("project_members")
             .select("project_member_id, project_id, user_id, member_name, member_role, created_at")
             .eq("project_id", projectId)
@@ -4288,6 +4428,7 @@ app.post("/api/projects/:projectId/members", async (req, res) => {
         const memberName = String(req.body.member_name || req.body.name || "").trim();
         const memberRole = String(req.body.member_role || req.body.role || "").trim();
         const userId = req.body.user_id || null;
+        const db = getDatabaseClient();
 
         if (!memberName) {
             return res.status(400).json({
@@ -4296,7 +4437,7 @@ app.post("/api/projects/:projectId/members", async (req, res) => {
             });
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from("project_members")
             .insert([{
                 project_id: projectId,
@@ -4325,12 +4466,13 @@ app.put("/api/project-members/:memberId", async (req, res) => {
         const { memberId } = req.params;
         const memberName = String(req.body.member_name || req.body.name || "").trim();
         const memberRole = String(req.body.member_role || req.body.role || "").trim();
+        const db = getDatabaseClient();
 
         if (!memberName) {
             return res.status(400).json({ success: false, error: "Team member name is required." });
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from("project_members")
             .update({ member_name: memberName, member_role: memberRole || null })
             .eq("project_member_id", memberId)
@@ -4349,7 +4491,9 @@ app.put("/api/project-members/:memberId", async (req, res) => {
 app.delete("/api/project-members/:memberId", async (req, res) => {
     try {
         const { memberId } = req.params;
-        const { data, error } = await supabase
+        const db = getDatabaseClient();
+
+        const { data, error } = await db
             .from("project_members")
             .delete()
             .eq("project_member_id", memberId)
