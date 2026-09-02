@@ -3,7 +3,9 @@
     left: 20px;
     right: 20px;
     bottom: 22px;
-    padding: 14px;
+
+    padding: 14px 0 0 0;
+
     border-top: 1px solid #e7ebf0;
     box-sizing: border-box;
 }
@@ -12,8 +14,12 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
+
+    padding: 0 10px;
     margin-bottom: 10px;
+
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 .sidebar-account-text strong {
@@ -30,14 +36,22 @@
 }
 
 .sidebar-logout-btn {
+    display: block;
+
     width: 100%;
     height: 36px;
+
+    padding: 0 14px;
     box-sizing: border-box;
+
     border: 1px solid #d8dee8;
     border-radius: 9px;
+
     background: #fff;
     color: #64748b;
+
     font-weight: 700;
+    text-align: center;
     cursor: pointer;
 }
 
