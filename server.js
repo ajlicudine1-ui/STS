@@ -1622,7 +1622,7 @@ app.post("/api/projects", async (req, res) => {
             const {
                 data: updatedProject,
                 error: driveUpdateError
-            } = await supabase
+            } = await db
                 .from("projects")
                 .update({
                     drive_folder_id:
@@ -1646,11 +1646,18 @@ app.post("/api/projects", async (req, res) => {
                     data.project_id
                 )
                 .select()
-                .single();
+                .maybeSingle();
 
 
             if (driveUpdateError) {
                 throw driveUpdateError;
+            }
+
+
+            if (!updatedProject) {
+                throw new Error(
+                    `Project ${data.project_id} was created, but its Google Drive folder information could not be saved.`
+                );
             }
 
 
@@ -1673,7 +1680,7 @@ app.post("/api/projects", async (req, res) => {
             }
 
 
-            await supabase
+            await db
                 .from("projects")
                 .delete()
                 .eq(
@@ -1709,7 +1716,7 @@ app.post("/api/projects", async (req, res) => {
             : [];
 
         if (teamMembers.length > 0) {
-            const { error: membersError } = await supabase
+            const { error: membersError } = await db
                 .from("project_members")
                 .insert(teamMembers);
 
@@ -1721,7 +1728,7 @@ app.post("/api/projects", async (req, res) => {
                     projectDriveFolder?.id
                 );
 
-                await supabase
+                await db
                     .from("projects")
                     .delete()
                     .eq("project_id", projectRecord.project_id);

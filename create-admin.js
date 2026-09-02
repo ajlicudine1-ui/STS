@@ -32,6 +32,7 @@ const fullName =
     ).trim();
 
 
+
 /* ============================================================
    VALIDATE ENVIRONMENT VARIABLES
    ============================================================ */
@@ -41,7 +42,9 @@ if (!url || !serviceKey) {
     throw new Error(
         "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required."
     );
+
 }
+
 
 
 if (!userId) {
@@ -49,7 +52,9 @@ if (!userId) {
     throw new Error(
         "ADMIN_USER_ID is required."
     );
+
 }
+
 
 
 if (!email) {
@@ -57,7 +62,9 @@ if (!email) {
     throw new Error(
         "ADMIN_EMAIL is required."
     );
+
 }
+
 
 
 /* ============================================================
@@ -77,6 +84,7 @@ const admin =
     );
 
 
+
 /* ============================================================
    UPDATE ADMIN
    ============================================================ */
@@ -86,6 +94,7 @@ const admin =
     console.log(
         "Updating admin account..."
     );
+
 
 
     /* ========================================================
@@ -102,11 +111,16 @@ const admin =
 
             full_name: fullName,
 
+            name: fullName,
+
+            display_name: fullName,
+
             role: "admin"
 
         }
 
     };
+
 
 
     /*
@@ -125,6 +139,7 @@ const admin =
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
 
+
         if (!strongPassword.test(password)) {
 
             throw new Error(
@@ -134,10 +149,12 @@ const admin =
         }
 
 
+
         authUpdate.password =
             password;
 
     }
+
 
 
     const {
@@ -150,11 +167,13 @@ const admin =
         );
 
 
+
     if (updateError) {
 
         throw updateError;
 
     }
+
 
 
     if (!updatedUser?.user) {
@@ -166,9 +185,11 @@ const admin =
     }
 
 
+
     console.log(
         "Supabase Auth user updated."
     );
+
 
 
     /* ========================================================
@@ -211,6 +232,7 @@ const admin =
             );
 
 
+
     if (profileError) {
 
         throw profileError;
@@ -218,9 +240,11 @@ const admin =
     }
 
 
+
     console.log(
         "Admin profile updated."
     );
+
 
 
     /* ========================================================
@@ -258,6 +282,7 @@ const admin =
     );
 
 })()
+
 .catch(error => {
 
     console.error(
