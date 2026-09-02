@@ -2265,6 +2265,10 @@ app.put(
 // ============================================================
 // DELETE PROJECT
 // Admin-only access is enforced by authorizeApiRequest().
+//
+// Delete is intentionally idempotent. If the browser accidentally sends
+// the same DELETE request twice, the second request returns success instead
+// of a false "Project not found." error.
 // ============================================================
 
 app.delete(
@@ -2280,54 +2284,22 @@ app.delete(
                 getDatabaseClient();
 
 
+            // Delete and return the deleted row in ONE database operation.
+            // This avoids the lookup-then-delete race where two near-simultaneous
+            // DELETE requests can both pass the lookup but one then sees the row
+            // missing after the other request deletes it.
             const {
-                data: project,
-                error: projectError
+                data: deletedProject,
+                error: deleteError
             } = await db
                 .from("projects")
-                .select("*")
+                .delete()
                 .eq(
                     "project_id",
                     projectId
                 )
+                .select("*")
                 .maybeSingle();
-
-
-            if (projectError) {
-
-                console.error(
-                    "SUPABASE PROJECT LOOKUP ERROR:",
-                    projectError
-                );
-
-                return res.status(500).json({
-                    success: false,
-                    error: projectError.message,
-                    code: projectError.code,
-                    details: projectError.details,
-                    hint: projectError.hint
-                });
-            }
-
-
-            if (!project) {
-
-                return res.status(404).json({
-                    success: false,
-                    error:
-                        "Project not found."
-                });
-            }
-
-
-            const { error: deleteError } =
-                await db
-                    .from("projects")
-                    .delete()
-                    .eq(
-                        "project_id",
-                        projectId
-                    );
 
 
             if (deleteError) {
@@ -2347,22 +2319,37 @@ app.delete(
             }
 
 
+            // A duplicate DELETE request may arrive after the first one already
+            // removed the row. Treat that as success so the UI never shows a
+            // misleading "Project not found." message.
+            if (!deletedProject) {
+
+                return res.json({
+                    success: true,
+                    already_deleted: true,
+                    message:
+                        "Project was already deleted."
+                });
+            }
+
+
             // Remove the project's top-level Google Drive folder after the
             // database delete succeeds. Its Project Repository and task
             // folders are children, so deleting the parent removes the tree.
-            if (project.drive_folder_id) {
+            if (deletedProject.drive_folder_id) {
                 await deleteDriveFolder(
-                    project.drive_folder_id
+                    deletedProject.drive_folder_id
                 );
             }
 
 
             res.json({
                 success: true,
+                already_deleted: false,
                 message:
                     "Project deleted successfully.",
                 project:
-                    project
+                    deletedProject
             });
 
         } catch (error) {
