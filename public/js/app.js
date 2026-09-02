@@ -183,11 +183,61 @@ function buildTeamAccountOptions(selectedUserId = "", legacyName = "") {
 
 function refreshTeamAccountSelects() {
     if (!developmentTeamContainer) return;
-    developmentTeamContainer.querySelectorAll(".team-member-account").forEach(select => {
-        const current = select.value || select.dataset.selectedUserId || "";
-        const legacyName = select.dataset.legacyName || "";
-        select.innerHTML = buildTeamAccountOptions(current, legacyName);
-        if (current) select.value = current;
+
+    const selects =
+        Array.from(
+            developmentTeamContainer.querySelectorAll(
+                ".team-member-account"
+            )
+        );
+
+    const selectedIds =
+        new Set(
+            selects
+                .map(select =>
+                    String(select.value || "").trim()
+                )
+                .filter(Boolean)
+        );
+
+    selects.forEach(select => {
+
+        const current =
+            String(
+                select.value ||
+                select.dataset.selectedUserId ||
+                ""
+            ).trim();
+
+        const legacyName =
+            select.dataset.legacyName || "";
+
+        select.innerHTML =
+            buildTeamAccountOptions(
+                current,
+                legacyName
+            );
+
+        if (current) {
+            select.value = current;
+        }
+
+        Array.from(select.options)
+            .forEach(option => {
+
+                const optionValue =
+                    String(
+                        option.value || ""
+                    ).trim();
+
+                if (!optionValue) {
+                    return;
+                }
+
+                option.disabled =
+                    optionValue !== current &&
+                    selectedIds.has(optionValue);
+            });
     });
 }
 
@@ -205,13 +255,43 @@ function createTeamMemberRow(member = null) {
         <button type="button" class="remove-team-member-btn" aria-label="Remove team member">&times;</button>
     `;
 
-    const removeButton = row.querySelector(".remove-team-member-btn");
-    if (removeButton) {
-        removeButton.addEventListener("click", () => {
-            row.remove();
-            ensureAtLeastOneTeamRow();
-        });
+    const accountSelect =
+        row.querySelector(
+            ".team-member-account"
+        );
+
+    if (accountSelect) {
+        accountSelect.addEventListener(
+            "change",
+            () => {
+
+                accountSelect.dataset.selectedUserId =
+                    accountSelect.value || "";
+
+                refreshTeamAccountSelects();
+            }
+        );
     }
+
+    const removeButton =
+        row.querySelector(
+            ".remove-team-member-btn"
+        );
+
+    if (removeButton) {
+        removeButton.addEventListener(
+            "click",
+            () => {
+
+                row.remove();
+
+                ensureAtLeastOneTeamRow();
+
+                refreshTeamAccountSelects();
+            }
+        );
+    }
+
     return row;
 }
 
@@ -228,7 +308,12 @@ function ensureAtLeastOneTeamRow() {
 
 function addTeamMemberRow(member = null) {
     if (!developmentTeamContainer) return;
-    developmentTeamContainer.appendChild(createTeamMemberRow(member));
+
+    developmentTeamContainer.appendChild(
+        createTeamMemberRow(member)
+    );
+
+    refreshTeamAccountSelects();
 }
 
 if (addTeamMemberBtn) {
@@ -1607,9 +1692,6 @@ setProjectValue(
 
         members.forEach(member => {
             addTeamMemberRow({
-                user_id:
-                    member.user_id || "",
-
                 member_name:
                     member.member_name || ""
             });
@@ -2594,9 +2676,7 @@ console.log(
 
 
         alert(
-            (editingProjectId
-                ? "Error updating project: "
-                : "Error creating project: ") +
+            "Error creating project: " +
             error.message
         );
 
