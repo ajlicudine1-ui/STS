@@ -1,13 +1,20 @@
 const form = document.getElementById("loginForm");
+
 const errorBox = document.getElementById("loginError");
+
 const loginBtn = document.getElementById("loginBtn");
+
 const password = document.getElementById("password");
 
+const username = document.getElementById("username");
+
 const TOKEN_KEY = "devt_access_token";
+
 const PROFILE_KEY = "devt_profile";
 
 // Remove auth values from the old shared localStorage implementation.
 // Component HTML caches use different keys and are not affected.
+
 localStorage.removeItem(TOKEN_KEY);
 localStorage.removeItem(PROFILE_KEY);
 
@@ -31,6 +38,7 @@ document
 
 
 // A session belongs only to this browser tab.
+
 if (sessionStorage.getItem(TOKEN_KEY)) {
     window.location.replace("/");
 }
@@ -43,15 +51,27 @@ form.addEventListener(
         event.preventDefault();
 
         errorBox.textContent = "";
+
         loginBtn.disabled = true;
+
         loginBtn.textContent = "Signing in...";
 
         try {
 
             // Clear any previous account in THIS TAB before starting
             // a new login, so role-specific UI cannot carry over.
+
             sessionStorage.removeItem(TOKEN_KEY);
             sessionStorage.removeItem(PROFILE_KEY);
+
+            const enteredUsername =
+                username.value.trim();
+
+            if (!enteredUsername) {
+                throw new Error(
+                    "Please enter your username."
+                );
+            }
 
             const response =
                 await fetch(
@@ -66,11 +86,8 @@ form.addEventListener(
 
                         body:
                             JSON.stringify({
-                                email:
-                                    document
-                                        .getElementById("email")
-                                        .value
-                                        .trim(),
+                                username:
+                                    enteredUsername,
 
                                 password:
                                     password.value
@@ -78,13 +95,28 @@ form.addEventListener(
                     }
                 );
 
-            const result =
-                await response.json();
+            let result = {};
+
+            const responseText =
+                await response.text();
+
+            try {
+                result =
+                    responseText
+                        ? JSON.parse(responseText)
+                        : {};
+            } catch {
+                throw new Error(
+                    response.ok
+                        ? "The server returned an invalid response."
+                        : responseText || "Sign in failed."
+                );
+            }
 
             if (!response.ok) {
                 throw new Error(
                     result.error ||
-                    "Sign in failed."
+                    "Invalid username or password."
                 );
             }
 
@@ -114,6 +146,7 @@ form.addEventListener(
         } catch (error) {
 
             // Do not leave a partial/stale role in this tab.
+
             sessionStorage.removeItem(TOKEN_KEY);
             sessionStorage.removeItem(PROFILE_KEY);
 
@@ -123,6 +156,7 @@ form.addEventListener(
         } finally {
 
             loginBtn.disabled = false;
+
             loginBtn.textContent = "Sign In";
         }
     }
