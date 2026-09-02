@@ -232,6 +232,23 @@ function openNew() {
     ).required = true;
 
 
+    /* Reset Confirm Password text for Add Member */
+
+    document.getElementById(
+        "confirmPasswordLabel"
+    ).textContent =
+        "Confirm Password *";
+
+    document.getElementById(
+        "memberConfirmPassword"
+    ).placeholder =
+        "Re-enter temporary password";
+
+    document.getElementById(
+        "confirmPasswordHint"
+    ).textContent =
+        "Re-enter the temporary password to confirm.";
+
     document.getElementById(
         "activeField"
     ).hidden = true;
@@ -322,21 +339,34 @@ function openEdit(id) {
     ).required = false;
 
 
-    /* Hide Confirm Password when editing */
+    /* Show Confirm New Password when editing */
 
     document.getElementById(
         "confirmPasswordField"
-    ).hidden = true;
+    ).hidden = false;
 
+    document.getElementById(
+        "confirmPasswordLabel"
+    ).textContent =
+        "Confirm New Password";
 
     document.getElementById(
         "memberConfirmPassword"
     ).required = false;
 
-
     document.getElementById(
         "memberConfirmPassword"
     ).value = "";
+
+    document.getElementById(
+        "memberConfirmPassword"
+    ).placeholder =
+        "Re-enter new password";
+
+    document.getElementById(
+        "confirmPasswordHint"
+    ).textContent =
+    "Required only when changing the password.";
 
 
     document.getElementById(
@@ -543,27 +573,52 @@ form.addEventListener(
 
 
         /* ====================================================
-           EDIT PASSWORD VALIDATION
-           ==================================================== */
+   EDIT PASSWORD VALIDATION
+   ==================================================== */
 
         const strongPassword =
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
-        if (
-            id &&
-            password &&
-            !strongPassword.test(password)
-        ) {
+        if (id && password) {
 
-            err.textContent =
-                "New password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character.";
+            if (!strongPassword.test(password)) {
 
-            document.getElementById(
-                "memberPassword"
-            ).focus();
+                err.textContent =
+                    "New password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character.";
 
-            return;
+                document.getElementById(
+                    "memberPassword"
+                ).focus();
+
+                return;
+            }
+
+            if (!confirmPassword) {
+
+                err.textContent =
+                    "Please confirm the new password.";
+
+                document.getElementById(
+                    "memberConfirmPassword"
+                ).focus();
+
+                return;
+            }
+
+            if (password !== confirmPassword) {
+
+                err.textContent =
+                    "Passwords do not match.";
+
+                document.getElementById(
+                    "memberConfirmPassword"
+                ).focus();
+
+                return;
+            }
         }
+
+    
 
 
         /* ====================================================
