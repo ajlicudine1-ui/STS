@@ -1607,6 +1607,9 @@ setProjectValue(
 
         members.forEach(member => {
             addTeamMemberRow({
+                user_id:
+                    member.user_id || "",
+
                 member_name:
                     member.member_name || ""
             });
@@ -2591,7 +2594,9 @@ console.log(
 
 
         alert(
-            "Error creating project: " +
+            (editingProjectId
+                ? "Error updating project: "
+                : "Error creating project: ") +
             error.message
         );
 

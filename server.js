@@ -1988,10 +1988,13 @@ app.put(
             };
 
 
+            const db =
+                getDatabaseClient();
+
             const {
                 data,
                 error
-            } = await supabase
+            } = await db
                 .from("projects")
                 .update(projectData)
                 .eq(
@@ -1999,7 +2002,7 @@ app.put(
                     projectId
                 )
                 .select()
-                .single();
+                .maybeSingle();
 
 
             if (error) {
@@ -2033,7 +2036,7 @@ app.put(
 
             // Replace this project's development team with the current
             // manually entered rows from the form.
-            const { error: deleteMembersError } = await supabase
+            const { error: deleteMembersError } = await db
                 .from("project_members")
                 .delete()
                 .eq("project_id", projectId);
@@ -2058,7 +2061,7 @@ app.put(
                 : [];
 
             if (teamMembers.length > 0) {
-                const { error: insertMembersError } = await supabase
+                const { error: insertMembersError } = await db
                     .from("project_members")
                     .insert(teamMembers);
 
