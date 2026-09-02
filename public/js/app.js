@@ -234,9 +234,14 @@ function refreshTeamAccountSelects() {
                     return;
                 }
 
-                option.disabled =
+                // Completely hide accounts that are already
+                // selected in another Development Team row.
+                if (
                     optionValue !== current &&
-                    selectedIds.has(optionValue);
+                    selectedIds.has(optionValue)
+                ) {
+                    option.remove();
+                }
             });
     });
 }
