@@ -753,6 +753,19 @@ async function authorizeApiRequest(req, res, next) {
         const taskMatch = p.match(/^\/tasks\/([^/]+)(?:\/|$)/);
         if (taskMatch) {
             const taskId = decodeURIComponent(taskMatch[1]);
+
+            // Deleting a task is administrator-only.
+            // Admin requests already returned next() at the top of this middleware.
+            if (
+                method === "DELETE" &&
+                p === `/tasks/${taskMatch[1]}`
+            ) {
+                return res.status(403).json({
+                    success: false,
+                    error: "Administrator access required."
+                });
+            }
+
             const projectId = await getTaskProjectId(taskId);
             const allowed = projectId && await userCanAccessProject(req.authUser.id, projectId);
             if (!allowed) {
@@ -3992,6 +4005,7 @@ app.put(
 
 // ============================================================
 // DELETE TASK
+// Admin-only access is enforced by authorizeApiRequest().
 // ============================================================
 
 app.delete(
@@ -4002,6 +4016,9 @@ app.delete(
 
             const { taskId } =
                 req.params;
+
+            const db =
+                getDatabaseClient();
 
             console.log(
                 "=============================================="
@@ -4027,23 +4044,41 @@ app.delete(
             const {
                 data: task,
                 error: taskError
-            } = await supabase
+            } = await db
                 .from("tasks")
                 .select("*")
                 .eq(
                     "task_id",
                     taskId
                 )
-                .single();
+                .maybeSingle();
 
-            if (taskError || !task) {
+            if (taskError) {
 
-                return res.status(404).json({
+                console.error(
+                    "SUPABASE TASK LOOKUP ERROR:",
+                    taskError
+                );
 
+                return res.status(500).json({
                     success: false,
+                    error: taskError.message,
+                    code: taskError.code,
+                    details: taskError.details,
+                    hint: taskError.hint
+                });
+            }
 
-                    error:
-                        "Task not found."
+            // A duplicate DELETE request may arrive after the first request
+            // already removed the task. Treat that as success so the UI does
+            // not show a misleading "Task not found." error.
+            if (!task) {
+
+                return res.json({
+                    success: true,
+                    already_deleted: true,
+                    message:
+                        "Task was already deleted."
                 });
             }
 
@@ -4113,40 +4148,69 @@ app.delete(
             // ----------------------------------------------------
 
             const {
-                error
-            } = await supabase
+                data: deletedTask,
+                error: deleteError
+            } = await db
                 .from("tasks")
                 .delete()
                 .eq(
                     "task_id",
                     taskId
-                );
+                )
+                .select("*")
+                .maybeSingle();
 
-            if (error) {
+            if (deleteError) {
 
                 console.error(
                     "SUPABASE TASK DELETE ERROR:",
-                    error
+                    deleteError
                 );
 
                 return res.status(500).json({
                     success: false,
-                    error: error.message,
-                    code: error.code,
-                    details: error.details,
-                    hint: error.hint
+                    error: deleteError.message,
+                    code: deleteError.code,
+                    details: deleteError.details,
+                    hint: deleteError.hint
                 });
+            }
+
+            // If another request deleted the row between the lookup and this
+            // delete, return success instead of a false not-found error.
+            if (!deletedTask) {
+
+                return res.json({
+                    success: true,
+                    already_deleted: true,
+                    message:
+                        "Task was already deleted."
+                });
+            }
+
+            // Remove this task's Google Drive folder too. Task Repository is
+            // a child of this folder, so the whole task folder tree is removed.
+            if (deletedTask.drive_folder_id) {
+                await deleteDriveFolder(
+                    deletedTask.drive_folder_id
+                );
             }
 
             res.json({
 
                 success: true,
 
+                already_deleted:
+                    false,
+
                 message:
                     "Task deleted successfully.",
 
                 historyRecorded:
-                    true
+                    true,
+
+                task:
+                    deletedTask
             });
 
         } catch (error) {

@@ -77,6 +77,50 @@ let currentHistoryTaskId = null;
 
 
 // ============================================================
+// VIEWER / PERMISSIONS
+// ============================================================
+
+let isAdminViewer = false;
+
+
+async function loadTaskViewerContext() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/auth/me"
+            );
+
+        const result =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.error ||
+                "Unable to verify the current account."
+            );
+        }
+
+        isAdminViewer =
+            result.profile?.role ===
+            "admin";
+
+    } catch (error) {
+
+        console.error(
+            "Load task viewer context error:",
+            error
+        );
+
+        // Fail closed: never show destructive Admin controls unless
+        // the server confirms that the signed-in account is an Admin.
+        isAdminViewer = false;
+    }
+}
+
+
+// ============================================================
 // HELPER - GET ELEMENT
 // ============================================================
 
@@ -2796,6 +2840,111 @@ function restoreTaskActionMenu(menu, task) {
 }
 
 
+async function deleteTask(
+    task
+) {
+
+    if (
+        !isAdminViewer ||
+        !task?.task_id
+    ) {
+        return;
+    }
+
+
+    const taskLabel =
+        String(
+            task.task_activity ||
+            task.task_id
+        ).trim();
+
+
+    const confirmed =
+        window.confirm(
+            `Delete ${task.task_id} - ${taskLabel}?\n\nThis will permanently delete the task and its Task Repository folder from Google Drive.`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/tasks/${encodeURIComponent(
+                    task.task_id
+                )}`,
+                {
+                    method:
+                        "DELETE"
+                }
+            );
+
+
+        const responseText =
+            await response.text();
+
+
+        let result = {};
+
+
+        if (responseText) {
+
+            try {
+
+                result =
+                    JSON.parse(
+                        responseText
+                    );
+
+            } catch (_) {
+
+                result = {
+                    error:
+                        responseText
+                };
+            }
+        }
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.error ||
+                result.details ||
+                `Server returned ${response.status}.`
+            );
+        }
+
+
+        alert(
+            result.already_deleted
+                ? "Task was already deleted."
+                : "Task deleted successfully!"
+        );
+
+
+        await loadTasks();
+
+    } catch (error) {
+
+        console.error(
+            "Delete task error:",
+            error
+        );
+
+
+        alert(
+            "Unable to delete task: " +
+            error.message
+        );
+    }
+}
+
+
 function bindTaskActionMenuItems(menu, task) {
 
     if (!menu) {
@@ -2816,6 +2965,9 @@ function bindTaskActionMenuItems(menu, task) {
 
     const historyAction =
         menu.querySelector(".history-action");
+
+    const deleteAction =
+        menu.querySelector(".delete-action");
 
     if (reviewAction) {
         reviewAction.addEventListener(
@@ -2877,6 +3029,17 @@ function bindTaskActionMenuItems(menu, task) {
                 event.stopPropagation();
                 closeAllActionMenus();
                 loadTaskHistory(task);
+            }
+        );
+    }
+
+    if (deleteAction) {
+        deleteAction.addEventListener(
+            "click",
+            async event => {
+                event.stopPropagation();
+                closeAllActionMenus();
+                await deleteTask(task);
             }
         );
     }
@@ -2946,6 +3109,40 @@ function createActionMenu(task) {
                 <span class="task-action-icon">↻</span>
                 <span>History</span>
             </button>
+
+            ${isAdminViewer ? `
+            <button
+                type="button"
+                class="task-action-item delete-action"
+                style="color: #dc2626;"
+            >
+                <span
+                    class="task-action-icon"
+                    style="color: #dc2626; display: inline-flex; align-items: center;"
+                >
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                    >
+                        <path d="M3 6h18"></path>
+                        <path d="M8 6V4h8v2"></path>
+                        <path d="M19 6l-1 14H6L5 6"></path>
+                        <path d="M10 11v5"></path>
+                        <path d="M14 11v5"></path>
+                    </svg>
+                </span>
+                <span style="color: #dc2626;">
+                    Delete
+                </span>
+            </button>
+            ` : ""}
 
         </div>
     `;
@@ -3854,6 +4051,7 @@ review_result:
 document.addEventListener(
     "DOMContentLoaded",
     async () => {
+        await loadTaskViewerContext();
         await loadProjectMembers();
         await loadTasks();
     }
