@@ -2264,6 +2264,7 @@ app.put(
 
 // ============================================================
 // DELETE PROJECT
+// Admin-only access is enforced by authorizeApiRequest().
 // ============================================================
 
 app.delete(
@@ -2275,73 +2276,93 @@ app.delete(
             const { projectId } =
                 req.params;
 
+            const db =
+                getDatabaseClient();
+
 
             const {
                 data: project,
                 error: projectError
-            } = await supabase
+            } = await db
                 .from("projects")
                 .select("*")
                 .eq(
                     "project_id",
                     projectId
                 )
-                .single();
+                .maybeSingle();
 
 
-            if (
-                projectError ||
-                !project
-            ) {
+            if (projectError) {
+
+                console.error(
+                    "SUPABASE PROJECT LOOKUP ERROR:",
+                    projectError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: projectError.message,
+                    code: projectError.code,
+                    details: projectError.details,
+                    hint: projectError.hint
+                });
+            }
+
+
+            if (!project) {
 
                 return res.status(404).json({
                     success: false,
                     error:
                         "Project not found."
                 });
-
             }
 
 
-            const {
-                error
-            } = await supabase
-                .from("projects")
-                .delete()
-                .eq(
-                    "project_id",
-                    projectId
-                );
+            const { error: deleteError } =
+                await db
+                    .from("projects")
+                    .delete()
+                    .eq(
+                        "project_id",
+                        projectId
+                    );
 
 
-            if (error) {
+            if (deleteError) {
 
                 console.error(
                     "SUPABASE PROJECT DELETE ERROR:",
-                    error
+                    deleteError
                 );
 
                 return res.status(500).json({
                     success: false,
-                    error: error.message,
-                    code: error.code,
-                    details: error.details,
-                    hint: error.hint
+                    error: deleteError.message,
+                    code: deleteError.code,
+                    details: deleteError.details,
+                    hint: deleteError.hint
                 });
+            }
 
+
+            // Remove the project's top-level Google Drive folder after the
+            // database delete succeeds. Its Project Repository and task
+            // folders are children, so deleting the parent removes the tree.
+            if (project.drive_folder_id) {
+                await deleteDriveFolder(
+                    project.drive_folder_id
+                );
             }
 
 
             res.json({
-
                 success: true,
-
                 message:
                     "Project deleted successfully.",
-
                 project:
                     project
-
             });
 
         } catch (error) {
@@ -2355,9 +2376,7 @@ app.delete(
                 success: false,
                 error: error.message
             });
-
         }
-
     }
 );
 

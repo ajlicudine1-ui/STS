@@ -2383,9 +2383,10 @@ function createProjectActionMenu(
             <button
                 type="button"
                 class="project-action-item delete-project-action"
+                style="color: #dc2626;"
             >
-                <span class="project-action-icon">🗑</span>
-                <span>Delete Project</span>
+                <span class="project-action-icon" style="color: #dc2626;">🗑</span>
+                <span>Delete</span>
             </button>` : ""}
 
         </div>
