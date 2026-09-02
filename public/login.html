@@ -9,7 +9,12 @@
         content="width=device-width,initial-scale=1.0"
     >
 
-    <title>DevT | Sign In</title>
+    <meta
+        name="description"
+        content="Official sign-in page for the DevT Development Tracker project and task management system."
+    >
+
+    <title>DevT | Authorized Sign In</title>
 
     <link
         rel="icon"
@@ -33,7 +38,7 @@
 
                 <img
                     src="/images/DT%20LOGO.png"
-                    alt="DevT Logo"
+                    alt="DevT Development Tracker logo"
                 >
 
                 <div>
@@ -46,16 +51,36 @@
 
             <div class="login-heading">
 
-                <h2>Welcome back</h2>
+                <h2>Authorized Sign In</h2>
 
                 <p>
-                    Sign in to access your assigned projects and tasks.
+                    Sign in using the DevT account provided by your
+                    Development Tracker administrator.
                 </p>
 
             </div>
 
 
-            <form id="loginForm">
+            <div
+                class="login-security-note"
+                role="note"
+            >
+                <strong>Official DevT access page.</strong>
+
+                <p>
+                    This system is for authorized DevT users only.
+                    DevT only requests the username and password created
+                    for your Development Tracker account. Do not enter
+                    banking, social-media, email, or other third-party
+                    passwords on this page.
+                </p>
+            </div>
+
+
+            <form
+                id="loginForm"
+                autocomplete="on"
+            >
 
                 <label>
                     Username
@@ -63,9 +88,10 @@
                     <input
                         type="text"
                         id="fullName"
-                        autocomplete="name"
+                        name="username"
+                        autocomplete="username"
                         required
-                        placeholder="Enter your full name"
+                        placeholder="Enter your DevT username"
                     >
                 </label>
 
@@ -78,9 +104,10 @@
                         <input
                             type="password"
                             id="password"
+                            name="password"
                             autocomplete="current-password"
                             required
-                            placeholder="Enter your password"
+                            placeholder="Enter your DevT password"
                         >
 
                         <button
@@ -112,6 +139,11 @@
                 </button>
 
             </form>
+
+
+            <p class="login-access-note">
+                Account access is created and managed by the DevT administrator.
+            </p>
 
         </section>
 

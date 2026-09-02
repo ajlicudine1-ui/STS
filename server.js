@@ -598,6 +598,50 @@ async function uploadBufferToDrive({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+// ============================================================
+// BASIC SECURITY HEADERS
+// ============================================================
+// These headers make the application's identity/authentication pages
+// less ambiguous to browsers and prevent sensitive login responses from
+// being cached. They do not change the DevT authentication flow.
+
+app.use((req, res, next) => {
+
+    res.setHeader(
+        "X-Content-Type-Options",
+        "nosniff"
+    );
+
+    res.setHeader(
+        "X-Frame-Options",
+        "DENY"
+    );
+
+    res.setHeader(
+        "Referrer-Policy",
+        "strict-origin-when-cross-origin"
+    );
+
+    if (
+        req.path === "/login.html" ||
+        req.path.startsWith("/api/auth/")
+    ) {
+        res.setHeader(
+            "Cache-Control",
+            "no-store, no-cache, must-revalidate, private"
+        );
+
+        res.setHeader(
+            "Pragma",
+            "no-cache"
+        );
+    }
+
+    next();
+});
+
+
 app.use(
     express.static(
         path.join(__dirname, "public")
