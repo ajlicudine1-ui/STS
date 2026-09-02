@@ -627,7 +627,7 @@ async function loadUserContextFromToken(token) {
     const db = supabaseAdmin || getUserDatabaseClient(token);
     const { data: profile, error: profileError } = await db
         .from("profiles")
-        .select("user_id, full_name, email, role, is_active, created_at, updated_at")
+        .select("user_id, full_name, username, email, role, is_active, created_at, updated_at")
         .eq("user_id", authData.user.id)
         .maybeSingle();
 
@@ -770,29 +770,68 @@ async function authorizeApiRequest(req, res, next) {
 }
 
 // Public login endpoint.
+// Users sign in with username + password. Supabase Auth still uses the
+// account email internally, so the server resolves username -> email first.
 app.post("/api/auth/login", async (req, res) => {
     try {
-        const email = String(req.body.email || "").trim().toLowerCase();
+        const username = String(req.body.username || "").trim().toLowerCase();
         const password = String(req.body.password || "");
 
-        if (!email || !password) {
-            return res.status(400).json({ success: false, error: "Email and password are required." });
+        if (!username || !password) {
+            return res.status(400).json({
+                success: false,
+                error: "Username and password are required."
+            });
         }
 
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const db = getDatabaseClient();
+
+        const { data: loginProfile, error: usernameError } = await db
+            .from("profiles")
+            .select("user_id, full_name, username, email, role, is_active")
+            .ilike("username", username)
+            .maybeSingle();
+
+        if (usernameError) {
+            console.error("LOGIN USERNAME LOOKUP ERROR:", usernameError);
+            return res.status(500).json({
+                success: false,
+                error: "Unable to verify this username."
+            });
+        }
+
+        if (!loginProfile?.email) {
+            return res.status(401).json({
+                success: false,
+                error: "Invalid username or password."
+            });
+        }
+
+        if (loginProfile.is_active === false) {
+            return res.status(403).json({
+                success: false,
+                error: "This account is inactive."
+            });
+        }
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: loginProfile.email,
+            password
+        });
+
         if (error || !data?.session || !data?.user) {
-            return res.status(401).json({ success: false, error: "Invalid email or password." });
+            return res.status(401).json({
+                success: false,
+                error: "Invalid username or password."
+            });
         }
 
-        // Profile lookup must run as either the privileged server client
-        // or the newly authenticated user. Using the plain anonymous client
-        // can be blocked by RLS and incorrectly look like the profile is missing.
-        const db = supabaseAdmin ||
+        const profileDb = supabaseAdmin ||
             getUserDatabaseClient(data.session.access_token);
 
-        const { data: profile, error: profileError } = await db
+        const { data: profile, error: profileError } = await profileDb
             .from("profiles")
-            .select("user_id, full_name, email, role, is_active")
+            .select("user_id, full_name, username, email, role, is_active")
             .eq("user_id", data.user.id)
             .maybeSingle();
 
@@ -810,8 +849,12 @@ app.post("/api/auth/login", async (req, res) => {
                 error: "This account has no DevT profile."
             });
         }
+
         if (profile.is_active === false) {
-            return res.status(403).json({ success: false, error: "This account is inactive." });
+            return res.status(403).json({
+                success: false,
+                error: "This account is inactive."
+            });
         }
 
         res.json({
@@ -821,11 +864,17 @@ app.post("/api/auth/login", async (req, res) => {
             expires_at: data.session.expires_at,
             profile
         });
+
     } catch (error) {
         console.error("LOGIN ERROR:", error);
-        res.status(500).json({ success: false, error: "Unable to sign in." });
+
+        res.status(500).json({
+            success: false,
+            error: "Unable to sign in."
+        });
     }
 });
+
 
 // Everything below /api requires a valid DevT account.
 app.use("/api", requireApiAuth);
@@ -857,7 +906,7 @@ app.get("/api/development-team", async (req, res) => {
         const db = getDatabaseClient();
         const { data, error } = await db
             .from("profiles")
-            .select("user_id, full_name, email, role, is_active, created_at, updated_at")
+            .select("user_id, full_name, username, email, role, is_active, created_at, updated_at")
             .eq("role", "development_team")
             .order("full_name", { ascending: true });
 
@@ -871,100 +920,244 @@ app.get("/api/development-team", async (req, res) => {
 
 app.post("/api/development-team", async (req, res) => {
     if (req.profile.role !== "admin") {
-        return res.status(403).json({ success: false, error: "Administrator access required." });
+        return res.status(403).json({
+            success: false,
+            error: "Administrator access required."
+        });
     }
+
     if (!supabaseAdmin) {
-        return res.status(500).json({ success: false, error: "SUPABASE_SERVICE_ROLE_KEY is not configured." });
+        return res.status(500).json({
+            success: false,
+            error: "SUPABASE_SERVICE_ROLE_KEY is not configured."
+        });
     }
 
     const fullName = String(req.body.full_name || "").trim();
+    const username = String(req.body.username || "").trim().toLowerCase();
     const email = String(req.body.email || "").trim().toLowerCase();
     const password = String(req.body.password || "");
 
-    if (!fullName || !email || password.length < 8) {
+    const usernamePattern = /^[a-z0-9._-]{3,30}$/;
+    const strongPassword =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+    if (!fullName || !username || !email || !password) {
         return res.status(400).json({
             success: false,
-            error: "Full name, a valid email, and a password of at least 8 characters are required."
+            error: "Full name, username, email, and password are required."
+        });
+    }
+
+    if (!usernamePattern.test(username)) {
+        return res.status(400).json({
+            success: false,
+            error: "Username must be 3-30 characters and may contain only letters, numbers, dots, underscores, and hyphens."
+        });
+    }
+
+    if (!strongPassword.test(password)) {
+        return res.status(400).json({
+            success: false,
+            error: "Password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character."
+        });
+    }
+
+    const { data: existingUsername, error: usernameCheckError } =
+        await supabaseAdmin
+            .from("profiles")
+            .select("user_id")
+            .ilike("username", username)
+            .limit(1);
+
+    if (usernameCheckError) {
+        return res.status(500).json({
+            success: false,
+            error: usernameCheckError.message
+        });
+    }
+
+    if ((existingUsername || []).length > 0) {
+        return res.status(409).json({
+            success: false,
+            error: "That username is already in use."
         });
     }
 
     let createdUserId = null;
+
     try {
-        const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
-            email,
-            password,
-            email_confirm: true,
-            user_metadata: { full_name: fullName, role: "development_team" }
-        });
+        const { data: created, error: createError } =
+            await supabaseAdmin.auth.admin.createUser({
+                email,
+                password,
+                email_confirm: true,
+                user_metadata: {
+                    full_name: fullName,
+                    username,
+                    role: "development_team"
+                }
+            });
+
         if (createError) throw createError;
 
         createdUserId = created.user.id;
-        const { data: profile, error: profileError } = await supabaseAdmin
-            .from("profiles")
-            .insert([{
-                user_id: createdUserId,
-                full_name: fullName,
-                email,
-                role: "development_team",
-                is_active: true
-            }])
-            .select("user_id, full_name, email, role, is_active, created_at")
-            .single();
+
+        const { data: profile, error: profileError } =
+            await supabaseAdmin
+                .from("profiles")
+                .insert([{
+                    user_id: createdUserId,
+                    full_name: fullName,
+                    username,
+                    email,
+                    role: "development_team",
+                    is_active: true
+                }])
+                .select("user_id, full_name, username, email, role, is_active, created_at")
+                .single();
 
         if (profileError) throw profileError;
 
-        res.status(201).json({ success: true, member: profile });
+        res.status(201).json({
+            success: true,
+            member: profile
+        });
+
     } catch (error) {
         if (createdUserId && supabaseAdmin) {
-            try { await supabaseAdmin.auth.admin.deleteUser(createdUserId); } catch (_) {}
+            try {
+                await supabaseAdmin.auth.admin.deleteUser(createdUserId);
+            } catch (_) {}
         }
+
         console.error("CREATE DEVELOPMENT TEAM ERROR:", error);
-        res.status(500).json({ success: false, error: error.message });
+
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
     }
 });
 
+
 app.patch("/api/development-team/:userId", async (req, res) => {
     if (req.profile.role !== "admin") {
-        return res.status(403).json({ success: false, error: "Administrator access required." });
+        return res.status(403).json({
+            success: false,
+            error: "Administrator access required."
+        });
     }
+
     if (!supabaseAdmin) {
-        return res.status(500).json({ success: false, error: "SUPABASE_SERVICE_ROLE_KEY is not configured." });
+        return res.status(500).json({
+            success: false,
+            error: "SUPABASE_SERVICE_ROLE_KEY is not configured."
+        });
     }
 
     try {
         const userId = req.params.userId;
         const fullName = String(req.body.full_name || "").trim();
+        const username = String(req.body.username || "").trim().toLowerCase();
         const email = String(req.body.email || "").trim().toLowerCase();
         const password = String(req.body.password || "");
         const isActive = req.body.is_active !== false;
 
-        if (!fullName || !email) {
-            return res.status(400).json({ success: false, error: "Full name and email are required." });
-        }
-        if (password && password.length < 8) {
-            return res.status(400).json({ success: false, error: "New password must be at least 8 characters." });
+        const usernamePattern = /^[a-z0-9._-]{3,30}$/;
+        const strongPassword =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+        if (!fullName || !username || !email) {
+            return res.status(400).json({
+                success: false,
+                error: "Full name, username, and email are required."
+            });
         }
 
-        const authUpdate = { email, user_metadata: { full_name: fullName, role: "development_team" } };
-        if (password) authUpdate.password = password;
+        if (!usernamePattern.test(username)) {
+            return res.status(400).json({
+                success: false,
+                error: "Username must be 3-30 characters and may contain only letters, numbers, dots, underscores, and hyphens."
+            });
+        }
 
-        const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(userId, authUpdate);
+        if (password && !strongPassword.test(password)) {
+            return res.status(400).json({
+                success: false,
+                error: "New password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character."
+            });
+        }
+
+        const { data: duplicateUsername, error: usernameCheckError } =
+            await supabaseAdmin
+                .from("profiles")
+                .select("user_id")
+                .ilike("username", username)
+                .neq("user_id", userId)
+                .limit(1);
+
+        if (usernameCheckError) throw usernameCheckError;
+
+        if ((duplicateUsername || []).length > 0) {
+            return res.status(409).json({
+                success: false,
+                error: "That username is already in use."
+            });
+        }
+
+        const authUpdate = {
+            email,
+            user_metadata: {
+                full_name: fullName,
+                username,
+                role: "development_team"
+            }
+        };
+
+        if (password) {
+            authUpdate.password = password;
+        }
+
+        const { error: authError } =
+            await supabaseAdmin.auth.admin.updateUserById(
+                userId,
+                authUpdate
+            );
+
         if (authError) throw authError;
 
-        const { data, error } = await supabaseAdmin
-            .from("profiles")
-            .update({ full_name: fullName, email, is_active: isActive, updated_at: new Date().toISOString() })
-            .eq("user_id", userId)
-            .select("user_id, full_name, email, role, is_active, created_at, updated_at")
-            .single();
+        const { data, error } =
+            await supabaseAdmin
+                .from("profiles")
+                .update({
+                    full_name: fullName,
+                    username,
+                    email,
+                    is_active: isActive,
+                    updated_at: new Date().toISOString()
+                })
+                .eq("user_id", userId)
+                .select("user_id, full_name, username, email, role, is_active, created_at, updated_at")
+                .single();
+
         if (error) throw error;
 
-        res.json({ success: true, member: data });
+        res.json({
+            success: true,
+            member: data
+        });
+
     } catch (error) {
         console.error("UPDATE DEVELOPMENT TEAM ERROR:", error);
-        res.status(500).json({ success: false, error: error.message });
+
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
     }
 });
+
 
 app.delete("/api/development-team/:userId", async (req, res) => {
     if (req.profile.role !== "admin") {
