@@ -977,6 +977,139 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 
+// Public session refresh endpoint.
+// This must stay ABOVE app.use("/api", requireApiAuth) because the
+// access token may already be expired when this endpoint is called.
+app.post("/api/auth/refresh", async (req, res) => {
+
+    try {
+
+        const refreshToken =
+            String(
+                req.body.refresh_token ||
+                ""
+            ).trim();
+
+        if (!refreshToken) {
+
+            return res.status(400).json({
+                success: false,
+                error:
+                    "Refresh token is required."
+            });
+
+        }
+
+        const {
+            data,
+            error
+        } = await supabase.auth.refreshSession({
+            refresh_token:
+                refreshToken
+        });
+
+        if (
+            error ||
+            !data?.session ||
+            !data?.user
+        ) {
+
+            console.warn(
+                "SESSION REFRESH FAILED:",
+                error?.message ||
+                "No refreshed session returned."
+            );
+
+            return res.status(401).json({
+                success: false,
+                error:
+                    "Session expired. Please sign in again."
+            });
+
+        }
+
+        const profileDb =
+            supabaseAdmin ||
+            getUserDatabaseClient(
+                data.session.access_token
+            );
+
+        const {
+            data: profile,
+            error: profileError
+        } = await profileDb
+            .from("profiles")
+            .select(
+                "user_id, full_name, email, role, is_active"
+            )
+            .eq(
+                "user_id",
+                data.user.id
+            )
+            .maybeSingle();
+
+        if (profileError) {
+
+            console.error(
+                "REFRESH PROFILE LOOKUP ERROR:",
+                profileError
+            );
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Unable to refresh this DevT session."
+            });
+
+        }
+
+        if (
+            !profile ||
+            profile.is_active === false
+        ) {
+
+            return res.status(403).json({
+                success: false,
+                error:
+                    "This DevT account is unavailable or inactive."
+            });
+
+        }
+
+        return res.json({
+            success: true,
+
+            access_token:
+                data.session.access_token,
+
+            refresh_token:
+                data.session.refresh_token,
+
+            expires_at:
+                data.session.expires_at,
+
+            profile:
+                profile
+        });
+
+    } catch (error) {
+
+        console.error(
+            "REFRESH SESSION ERROR:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error:
+                "Unable to refresh session."
+        });
+
+    }
+
+});
+
+
 // Everything below /api requires a valid DevT account.
 app.use("/api", requireApiAuth);
 app.use("/api", authorizeApiRequest);

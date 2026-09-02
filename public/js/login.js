@@ -26,11 +26,16 @@ const fullName =
 const TOKEN_KEY =
     "devt_access_token";
 
+const REFRESH_TOKEN_KEY =
+    "devt_refresh_token";
+
 const PROFILE_KEY =
     "devt_profile";
 
 
+
 // Remove auth values from the old shared localStorage implementation.
+
 // Component HTML caches use different keys and are not affected.
 
 localStorage.removeItem(
@@ -38,8 +43,13 @@ localStorage.removeItem(
 );
 
 localStorage.removeItem(
+    REFRESH_TOKEN_KEY
+);
+
+localStorage.removeItem(
     PROFILE_KEY
 );
+
 
 
 document
@@ -48,6 +58,7 @@ document
     )
     ?.addEventListener(
         "click",
+
         event => {
 
             const showing =
@@ -66,12 +77,15 @@ document
 
             event.currentTarget.setAttribute(
                 "aria-label",
+
                 showing
                     ? "Show password"
                     : "Hide password"
             );
+
         }
     );
+
 
 
 // A session belongs only to this browser tab.
@@ -85,11 +99,14 @@ if (
     window.location.replace(
         "/"
     );
+
 }
+
 
 
 form.addEventListener(
     "submit",
+
     async event => {
 
         event.preventDefault();
@@ -106,10 +123,15 @@ form.addEventListener(
         try {
 
             // Clear any previous account in THIS TAB before starting
+
             // a new login, so role-specific UI cannot carry over.
 
             sessionStorage.removeItem(
                 TOKEN_KEY
+            );
+
+            sessionStorage.removeItem(
+                REFRESH_TOKEN_KEY
             );
 
             sessionStorage.removeItem(
@@ -124,6 +146,7 @@ form.addEventListener(
                 throw new Error(
                     "Please enter your DevT username."
                 );
+
             }
 
             if (!password.value) {
@@ -131,11 +154,13 @@ form.addEventListener(
                 throw new Error(
                     "Please enter your DevT password."
                 );
+
             }
 
             const response =
                 await fetch(
                     "/api/auth/login",
+
                     {
                         method:
                             "POST",
@@ -147,11 +172,13 @@ form.addEventListener(
 
                         body:
                             JSON.stringify({
+
                                 username:
                                     enteredUsername,
 
                                 password:
                                     password.value
+
                             })
                     }
                 );
@@ -178,6 +205,7 @@ form.addEventListener(
                         : responseText ||
                             "Sign in failed."
                 );
+
             }
 
             if (!response.ok) {
@@ -186,21 +214,29 @@ form.addEventListener(
                     result.error ||
                     "Invalid username or password."
                 );
+
             }
 
             if (
                 !result.access_token ||
+                !result.refresh_token ||
                 !result.profile
             ) {
 
                 throw new Error(
                     "The server did not return a complete DevT session."
                 );
+
             }
 
             sessionStorage.setItem(
                 TOKEN_KEY,
                 result.access_token
+            );
+
+            sessionStorage.setItem(
+                REFRESH_TOKEN_KEY,
+                result.refresh_token
             );
 
             sessionStorage.setItem(
@@ -223,6 +259,10 @@ form.addEventListener(
             );
 
             sessionStorage.removeItem(
+                REFRESH_TOKEN_KEY
+            );
+
+            sessionStorage.removeItem(
                 PROFILE_KEY
             );
 
@@ -236,6 +276,9 @@ form.addEventListener(
 
             loginBtn.textContent =
                 "Sign In";
+
         }
+
     }
+
 );

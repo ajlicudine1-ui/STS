@@ -8,12 +8,14 @@
     const originalFetch = window.fetch.bind(window);
 
     const TOKEN_KEY = "devt_access_token";
+    const REFRESH_TOKEN_KEY = "devt_refresh_token";
     const PROFILE_KEY = "devt_profile";
 
     // Authentication is tab-scoped. Remove old shared auth values left by
     // previous localStorage-based versions so Admin/User roles cannot leak
     // between browser tabs.
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(PROFILE_KEY);
 
     function getToken() {
@@ -30,12 +32,29 @@
         }
     }
 
-    function setSession(token, profile) {
+    function getRefreshToken() {
+        return sessionStorage.getItem(
+            REFRESH_TOKEN_KEY
+        ) || "";
+    }
+
+    function setSession(
+        token,
+        refreshToken,
+        profile
+    ) {
 
         if (token) {
             sessionStorage.setItem(
                 TOKEN_KEY,
                 token
+            );
+        }
+
+        if (refreshToken) {
+            sessionStorage.setItem(
+                REFRESH_TOKEN_KEY,
+                refreshToken
             );
         }
 
@@ -49,8 +68,125 @@
 
     function clearSession() {
         sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(REFRESH_TOKEN_KEY);
         sessionStorage.removeItem(PROFILE_KEY);
     }
+
+
+    // Only one refresh request should run at a time. If several API
+    // requests receive 401 together, they all wait for this same refresh.
+    let refreshPromise =
+        null;
+
+
+    async function refreshSession() {
+
+        if (refreshPromise) {
+            return refreshPromise;
+        }
+
+        refreshPromise =
+            (async () => {
+
+                const refreshToken =
+                    getRefreshToken();
+
+                if (!refreshToken) {
+                    return false;
+                }
+
+                try {
+
+                    const response =
+                        await originalFetch(
+                            "/api/auth/refresh",
+                            {
+                                method:
+                                    "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        refresh_token:
+                                            refreshToken
+                                    })
+                            }
+                        );
+
+                    const responseText =
+                        await response.text();
+
+                    let result = {};
+
+                    try {
+                        result =
+                            responseText
+                                ? JSON.parse(
+                                    responseText
+                                )
+                                : {};
+                    } catch (_) {
+                        return false;
+                    }
+
+                    if (
+                        !response.ok ||
+                        !result.access_token ||
+                        !result.refresh_token
+                    ) {
+                        return false;
+                    }
+
+                    setSession(
+                        result.access_token,
+                        result.refresh_token,
+                        result.profile ||
+                        getProfile()
+                    );
+
+                    return true;
+
+                } catch (_) {
+
+                    return false;
+
+                }
+
+            })();
+
+        try {
+
+            return await refreshPromise;
+
+        } finally {
+
+            refreshPromise =
+                null;
+
+        }
+    }
+
+
+    function redirectToLogin() {
+
+        clearSession();
+
+        if (
+            window.location.pathname !==
+            "/login.html"
+        ) {
+
+            window.location.replace(
+                "/login.html"
+            );
+
+        }
+    }
+
 
     window.fetch = async function(input, init = {}) {
 
@@ -66,9 +202,27 @@
             );
 
         const isLogin =
-            url.includes("/api/auth/login");
+            url.includes(
+                "/api/auth/login"
+            );
 
-        if (isApi && !isLogin) {
+        const isRefresh =
+            url.includes(
+                "/api/auth/refresh"
+            );
+
+        const shouldAttachAuth =
+            isApi &&
+            !isLogin &&
+            !isRefresh;
+
+
+        let requestInit = {
+            ...init
+        };
+
+
+        if (shouldAttachAuth) {
 
             const token =
                 getToken();
@@ -84,48 +238,87 @@
                     {}
                 );
 
-            if (
-                token &&
-                !headers.has("Authorization")
-            ) {
+            if (token) {
+
+                // Always use the newest token from sessionStorage.
+                // This prevents a caller's stale Authorization header
+                // from surviving after a successful refresh.
                 headers.set(
                     "Authorization",
                     `Bearer ${token}`
                 );
+
             }
 
-            init = {
-                ...init,
+            requestInit = {
+                ...requestInit,
                 headers
             };
+
         }
 
-        const response =
+
+        let response =
             await originalFetch(
                 input,
-                init
+                requestInit
             );
 
+
         if (
-            isApi &&
-            !isLogin &&
+            shouldAttachAuth &&
             response.status === 401
         ) {
 
-            clearSession();
+            const refreshed =
+                await refreshSession();
 
-            if (
-                window.location.pathname !==
-                "/login.html"
-            ) {
-                window.location.replace(
-                    "/login.html"
+            if (refreshed) {
+
+                const retryHeaders =
+                    new Headers(
+                        requestInit.headers ||
+                        (
+                            typeof input !== "string"
+                                ? input.headers
+                                : undefined
+                        ) ||
+                        {}
+                    );
+
+                retryHeaders.set(
+                    "Authorization",
+                    `Bearer ${getToken()}`
                 );
+
+                response =
+                    await originalFetch(
+                        input,
+                        {
+                            ...requestInit,
+                            headers:
+                                retryHeaders
+                        }
+                    );
+
             }
+
         }
+
+
+        if (
+            shouldAttachAuth &&
+            response.status === 401
+        ) {
+
+            redirectToLogin();
+
+        }
+
 
         return response;
     };
+
 
     async function ensureAuthenticated() {
 
@@ -199,9 +392,11 @@
 
     window.DevTAuth = {
         getToken,
+        getRefreshToken,
         getProfile,
         setSession,
         clearSession,
+        refreshSession,
         ensureAuthenticated,
         logout
     };
