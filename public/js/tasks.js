@@ -905,13 +905,6 @@ function openEditTaskModal(task) {
         task.deliverable_expected_output
     );
 
-
-    setValue(
-        "evidenceApplicability",
-        task.evidence_applicability
-    );
-
-
     // --------------------------------------------------------
     // OPEN MODAL
     // --------------------------------------------------------
@@ -3531,14 +3524,6 @@ stakeholder_end_user:
                     getValue(
                         "deliverableExpectedOutput"
                     ).trim(),
-
-
-                evidence_applicability:
-                    getValue(
-                        "evidenceApplicability"
-                    ),
-
-
                 percent_complete:
                     Number(
                         getValue(
