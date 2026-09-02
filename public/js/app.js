@@ -108,6 +108,15 @@ function setProjectValue(id, value) {
 }
 
 
+function getLocalDateInputValue(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+
 function escapeHtml(value) {
     if (value === null || value === undefined) {
         return "";
@@ -143,7 +152,7 @@ function getProjectStatusClass(status) {
 // ============================================================
 
 let developmentTeamAccounts = [];
-let isAdminViewer = true;
+let isAdminViewer = false;
 
 async function loadDevelopmentTeamAccounts() {
     if (!isAdminViewer) {
@@ -1520,9 +1529,7 @@ function resetProjectModal() {
     }
 
     const today =
-        new Date()
-            .toISOString()
-            .split("T")[0];
+        getLocalDateInputValue();
 
     setProjectValue(
         "dateOpened",
@@ -1697,6 +1704,9 @@ setProjectValue(
 
         members.forEach(member => {
             addTeamMemberRow({
+                user_id:
+                    member.user_id || "",
+
                 member_name:
                     member.member_name || ""
             });
@@ -2196,6 +2206,95 @@ function bindProjectActionMenuItems(
             }
         );
     }
+
+
+    const deleteAction =
+        menu.querySelector(
+            ".delete-project-action"
+        );
+
+    if (deleteAction) {
+
+        deleteAction.addEventListener(
+            "click",
+            async event => {
+
+                event.stopPropagation();
+
+                closeAllProjectActionMenus();
+
+                if (!isAdminViewer) {
+                    return;
+                }
+
+                const projectLabel =
+                    `${project.project_id || "Project"} - ${project.project_name || "Unnamed Project"}`;
+
+                const confirmed = window.confirm(
+                    `Delete ${projectLabel}?\n\nThis will permanently delete the project and its related records. This action cannot be undone.`
+                );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                deleteAction.disabled = true;
+
+                try {
+
+                    const response = await fetch(
+                        `/api/projects/${encodeURIComponent(project.project_id)}`,
+                        {
+                            method: "DELETE"
+                        }
+                    );
+
+                    const responseText =
+                        await response.text();
+
+                    let result = {};
+
+                    if (responseText) {
+                        try {
+                            result = JSON.parse(responseText);
+                        } catch (_) {
+                            result = { error: responseText };
+                        }
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(
+                            result.error ||
+                            result.details ||
+                            `Server returned ${response.status}.`
+                        );
+                    }
+
+                    alert(
+                        result.message ||
+                        "Project deleted successfully."
+                    );
+
+                    await loadDashboard();
+
+                } catch (error) {
+
+                    console.error(
+                        "DELETE PROJECT ERROR:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to delete project: " +
+                        error.message
+                    );
+
+                } finally {
+                    deleteAction.disabled = false;
+                }
+            }
+        );
+    }
 }
 
 
@@ -2279,6 +2378,14 @@ function createProjectActionMenu(
             >
                 <span class="project-action-icon">✎</span>
                 <span>Edit</span>
+            </button>
+
+            <button
+                type="button"
+                class="project-action-item delete-project-action"
+            >
+                <span class="project-action-icon">🗑</span>
+                <span>Delete Project</span>
             </button>` : ""}
 
         </div>
@@ -2681,7 +2788,9 @@ console.log(
 
 
         alert(
-            "Error creating project: " +
+            (editingProjectId
+                ? "Error updating project: "
+                : "Error creating project: ") +
             error.message
         );
 
@@ -2713,29 +2822,6 @@ if (projectForm) {
 
     projectForm.addEventListener(
         "submit",
-        async event => {
-
-            event.preventDefault();
-
-            await saveProject();
-
-        }
-    );
-}
-
-
-// ============================================================
-// DIRECT CREATE / UPDATE BUTTON CLICK
-// ============================================================
-//
-// This also makes the button work if a future HTML edit
-// accidentally places it outside the <form> element.
-// ============================================================
-
-if (projectSubmitBtn) {
-
-    projectSubmitBtn.addEventListener(
-        "click",
         async event => {
 
             event.preventDefault();
