@@ -499,10 +499,13 @@ form.addEventListener(
             }
 
 
-            if (password.length < 8) {
+            const strongPassword =
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+            if (!strongPassword.test(password)) {
 
                 err.textContent =
-                    "Password must contain at least 8 characters.";
+                    "Password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character.";
 
                 document.getElementById(
                     "memberPassword"
@@ -543,14 +546,17 @@ form.addEventListener(
            EDIT PASSWORD VALIDATION
            ==================================================== */
 
+        const strongPassword =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
         if (
             id &&
             password &&
-            password.length < 8
+            !strongPassword.test(password)
         ) {
 
             err.textContent =
-                "New password must contain at least 8 characters.";
+                "New password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character.";
 
             document.getElementById(
                 "memberPassword"
