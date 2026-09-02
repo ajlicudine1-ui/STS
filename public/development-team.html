@@ -1,326 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width,initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>DevT | Development Team</title>
-
-    <link
-        rel="icon"
-        type="image/png"
-        href="/images/DT%20LOGO.png"
-    >
-
-    <link
-        rel="stylesheet"
-        href="/css/global.css"
-    >
-
-    <link
-        rel="stylesheet"
-        href="/css/sidebar-account.css"
-    >
-
-    <link
-        rel="stylesheet"
-        href="/css/development-team.css"
-    >
+    <link rel="icon" type="image/png" href="/images/DT%20LOGO.png">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/sidebar-account.css">
+    <link rel="stylesheet" href="/css/development-team.css">
 </head>
-
 <body>
-
     <div id="sidebar-container"></div>
 
     <main class="main">
-
         <header class="team-page-header">
-
             <div>
                 <h1>Development Team</h1>
-
-                <p>
-                    Create and manage accounts that can be assigned to projects.
-                </p>
+                <p>Create and manage accounts that can be assigned to projects.</p>
             </div>
-
-            <button
-                class="btn btn-primary"
-                id="addMemberBtn"
-            >
-                + Add Member
-            </button>
-
+            <button class="btn btn-primary" id="addMemberBtn">+ Add Member</button>
         </header>
 
-
         <section class="team-summary">
-
-            <div>
-                <span>Total Accounts</span>
-                <strong id="memberCount">0</strong>
-            </div>
-
-            <div>
-                <span>Active Accounts</span>
-                <strong id="activeCount">0</strong>
-            </div>
-
+            <div><span>Total Accounts</span><strong id="memberCount">0</strong></div>
+            <div><span>Active Accounts</span><strong id="activeCount">0</strong></div>
         </section>
-
 
         <section class="team-card">
-
             <div class="team-card-head">
-
                 <h2>Team Accounts</h2>
-
-                <input
-                    id="memberSearch"
-                    type="search"
-                    placeholder="Search name or email"
-                >
-
+                <input id="memberSearch" type="search" placeholder="Search name or email">
             </div>
-
-
             <div class="team-table-wrap">
-
                 <table>
-
                     <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
+                        <tr><th>Name</th><th>Email</th><th>Status</th><th>Created</th><th>Actions</th></tr>
                     </thead>
-
                     <tbody id="membersTable">
-
-                        <tr>
-                            <td colspan="5">
-                                Loading accounts...
-                            </td>
-                        </tr>
-
+                        <tr><td colspan="5">Loading accounts...</td></tr>
                     </tbody>
-
                 </table>
-
             </div>
-
         </section>
-
     </main>
 
-
-    <!-- =====================================================
-         ADD / EDIT DEVELOPMENT TEAM MEMBER
-         ===================================================== -->
-
-    <div
-        class="modal"
-        id="memberModal"
-    >
-
+    <div class="modal" id="memberModal">
         <div class="modal-content member-modal-content">
-
             <div class="modal-header">
-
                 <div>
-
-                    <h2 id="memberModalTitle">
-                        Add Development Team Member
-                    </h2>
-
-                    <p id="memberModalSubtitle">
-                        Create a login account for a development team member.
-                    </p>
-
+                    <h2 id="memberModalTitle">Add Development Team Member</h2>
+                    <p id="memberModalSubtitle">Create a login account for a development team member.</p>
                 </div>
-
-
-                <button
-                    class="modal-close"
-                    id="closeMemberModal"
-                    type="button"
-                >
-                    &times;
-                </button>
-
+                <button class="modal-close" id="closeMemberModal" type="button">&times;</button>
             </div>
 
-
             <form id="memberForm">
-
-                <input
-                    type="hidden"
-                    id="editingUserId"
-                >
-
-
-                <!-- FULL NAME -->
+                <input type="hidden" id="editingUserId">
 
                 <div class="form-group">
-
-                    <label for="memberFullName">
-                        Full Name *
-                    </label>
-
-                    <input
-                        id="memberFullName"
-                        required
-                    >
-
+                    <label for="memberFullName">Full Name *</label>
+                    <input id="memberFullName" required>
                 </div>
 
-
-                <!-- EMAIL -->
-
                 <div class="form-group">
-
-                    <label for="memberEmail">
-                        Email *
-                    </label>
-
-                    <input
-                        type="email"
-                        id="memberEmail"
-                        required
-                    >
-
+                    <label for="memberEmail">Email *</label>
+                    <input type="email" id="memberEmail" required>
                 </div>
 
-
-                <!-- PASSWORD -->
-
                 <div class="form-group">
-
-                    <label
-                        for="memberPassword"
-                        id="passwordLabel"
-                    >
-                        Temporary Password *
-                    </label>
-
-                    <input
-                        type="password"
-                        id="memberPassword"
-                        minlength="8"
-                        placeholder="At least 8 characters"
-                    >
-
-                    <div
-                        class="form-hint"
-                        id="passwordHint"
-                    >
+                    <label for="memberPassword" id="passwordLabel">Temporary Password *</label>
+                    <div class="password-input-wrap" style="position:relative;">
+                        <input
+                            type="password"
+                            id="memberPassword"
+                            minlength="8"
+                            placeholder="At least 8 characters"
+                            style="width:100%;padding-right:72px;"
+                        >
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            id="toggleMemberPassword"
+                            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;font-weight:600;"
+                        >Show</button>
+                    </div>
+                    <div class="form-hint" id="passwordHint">
                         The member can use this password to sign in immediately.
                     </div>
-
                 </div>
 
-
-                <!-- CONFIRM PASSWORD -->
-
-                <div
-                    class="form-group"
-                    id="confirmPasswordField"
-                >
-
-                    <label
-                        for="memberConfirmPassword"
-                        id="confirmPasswordLabel"
-                    >
-                        Confirm Password *
-                    </label>
-
-                    <input
-                        type="password"
-                        id="memberConfirmPassword"
-                        minlength="8"
-                        placeholder="Re-enter temporary password"
-                    >
-
-                    <div
-                        class="form-hint"
-                        id="confirmPasswordHint"
-                    >
+                <div class="form-group" id="confirmPasswordField">
+                    <label for="memberConfirmPassword" id="confirmPasswordLabel">Confirm Password *</label>
+                    <div class="password-input-wrap" style="position:relative;">
+                        <input
+                            type="password"
+                            id="memberConfirmPassword"
+                            minlength="8"
+                            placeholder="Re-enter temporary password"
+                            style="width:100%;padding-right:72px;"
+                        >
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            id="toggleMemberConfirmPassword"
+                            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;font-weight:600;"
+                        >Show</button>
+                    </div>
+                    <div class="form-hint" id="confirmPasswordHint">
                         Re-enter the temporary password to confirm.
                     </div>
-
                 </div>
 
-
-                <!-- ACTIVE ACCOUNT -->
-
-                <div
-                    class="form-group edit-only"
-                    id="activeField"
-                    hidden
-                >
-
+                <div class="form-group edit-only" id="activeField" hidden>
                     <label class="switch-line">
-
-                        <input
-                            type="checkbox"
-                            id="memberActive"
-                            checked
-                        >
-
+                        <input type="checkbox" id="memberActive" checked>
                         Active account
-
                     </label>
-
                 </div>
 
-
-                <!-- ERROR -->
-
-                <div
-                    class="form-error"
-                    id="memberFormError"
-                ></div>
-
-
-                <!-- ACTIONS -->
+                <div class="form-error" id="memberFormError"></div>
 
                 <div class="form-actions">
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        id="cancelMemberBtn"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                        id="saveMemberBtn"
-                    >
-                        Create Account
-                    </button>
-
+                    <button type="button" class="btn btn-secondary" id="cancelMemberBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveMemberBtn">Create Account</button>
                 </div>
-
             </form>
-
         </div>
-
     </div>
-
 
     <script src="/js/components.js"></script>
     <script src="/js/development-team.js"></script>
-
 </body>
-
 </html>

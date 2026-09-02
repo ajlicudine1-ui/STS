@@ -183,6 +183,8 @@ function openNew() {
 
     form.reset();
 
+    resetPasswordToggles();
+
 
     document.getElementById(
         "editingUserId"
@@ -274,6 +276,8 @@ function openNew() {
    ============================================================ */
 
 function openEdit(id) {
+
+    resetPasswordToggles();
 
     const m = members.find(
         x => x.user_id === id
@@ -394,6 +398,8 @@ function openEdit(id) {
    ============================================================ */
 
 function close() {
+
+    resetPasswordToggles();
 
     modal.classList.remove("show");
 
@@ -718,6 +724,60 @@ form.addEventListener(
     }
 );
 
+
+
+/* ============================================================
+   PASSWORD SHOW / HIDE TOGGLES
+   ============================================================ */
+
+function setPasswordVisibility(inputId, buttonId, visible) {
+    const input = document.getElementById(inputId);
+    const button = document.getElementById(buttonId);
+
+    if (!input || !button) return;
+
+    input.type = visible ? "text" : "password";
+    button.textContent = visible ? "Hide" : "Show";
+}
+
+function setupPasswordToggle(inputId, buttonId) {
+    const input = document.getElementById(inputId);
+    const button = document.getElementById(buttonId);
+
+    if (!input || !button) return;
+
+    button.addEventListener("click", () => {
+        setPasswordVisibility(
+            inputId,
+            buttonId,
+            input.type !== "text"
+        );
+    });
+}
+
+function resetPasswordToggles() {
+    setPasswordVisibility(
+        "memberPassword",
+        "toggleMemberPassword",
+        false
+    );
+
+    setPasswordVisibility(
+        "memberConfirmPassword",
+        "toggleMemberConfirmPassword",
+        false
+    );
+}
+
+setupPasswordToggle(
+    "memberPassword",
+    "toggleMemberPassword"
+);
+
+setupPasswordToggle(
+    "memberConfirmPassword",
+    "toggleMemberConfirmPassword"
+);
 
 /* ============================================================
    EVENTS
