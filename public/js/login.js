@@ -107,7 +107,7 @@ form.addEventListener(
             if (!response.ok) {
                 throw new Error(
                     result.error ||
-                    "Invalid full name or password."
+                    "Invalid username or password."
                 );
             }
 
