@@ -1808,6 +1808,14 @@ app.post("/api/projects", async (req, res) => {
                         projectDriveFolder.id
                 });
 
+                await createDriveFolder({
+                    name:
+                        "System Release & Deployment",
+
+                    parentFolderId:
+                        projectDriveFolder.id
+                });
+
 
             const {
                 data: updatedProject,
