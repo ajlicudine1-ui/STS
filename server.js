@@ -2061,7 +2061,7 @@ app.get(
                         project.project_name,
 
                     repository_folder_url:
-                        project.repository_folder_url
+                        project.drive_folder_url
                 },
 
                 items:
