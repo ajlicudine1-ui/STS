@@ -2033,9 +2033,7 @@ app.get(
                 });
             }
 
-
-            if (!project.repository_folder_id) {
-
+                if (!project.drive_folder_id) {
                 return res.status(400).json({
                     success: false,
                     error:
@@ -2196,7 +2194,7 @@ app.post(
             }
 
 
-            if (!project.drive_folder_id) {
+            if (!project.repository_folder_id) {
                 return res.status(400).json({
                     success: false,
                     error:
