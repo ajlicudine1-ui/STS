@@ -455,6 +455,111 @@
         hidden
     >
 
+    <!-- =====================================================
+     CHOOSE UPLOAD DESTINATION MODAL
+     ===================================================== -->
+    <div
+        class="modal"
+        id="uploadDestinationModal"
+    >
+        <div class="modal-content upload-destination-modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>
+                        Choose Upload Destination
+                    </h2>
+
+                    <p>
+                        Select where you want to upload the files or folder.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeUploadDestinationModal"
+                    aria-label="Close"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <div class="upload-destination-options">
+
+                <label class="upload-destination-option">
+
+                    <input
+                        type="radio"
+                        name="uploadDestination"
+                        value="repository"
+                        checked
+                    >
+
+                    <div>
+                        <strong>
+                            📁 Project Repository
+                        </strong>
+
+                        <span>
+                            Upload project files, source code, documents, and folders.
+                        </span>
+                    </div>
+
+                </label>
+
+
+                <label class="upload-destination-option">
+
+                    <input
+                        type="radio"
+                        name="uploadDestination"
+                        value="release"
+                    >
+
+                    <div>
+                        <strong>
+                            📁 System Release & Deployment
+                        </strong>
+
+                        <span>
+                            Upload system release and deployment documents.
+                        </span>
+                    </div>
+
+                </label>
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="cancelUploadDestinationBtn"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="continueUploadDestinationBtn"
+                >
+                    Continue
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
 
     <!-- =====================================================
          PROJECT REPOSITORY FILES MODAL

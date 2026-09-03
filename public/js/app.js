@@ -45,9 +45,23 @@ const projectFileInput =
 const projectFolderInput =
     document.getElementById("projectFolderInput");
 
+const uploadDestinationModal =
+    document.getElementById("uploadDestinationModal");
+
+const closeUploadDestinationModalBtn =
+    document.getElementById("closeUploadDestinationModal");
+
+const cancelUploadDestinationBtn =
+    document.getElementById("cancelUploadDestinationBtn");
+
+const continueUploadDestinationBtn =
+    document.getElementById("continueUploadDestinationBtn");
+
+let pendingUploadType = null;
+let selectedProjectUploadDestination = "repository";
+
 const projectUploadSelectionStatus =
     document.getElementById("projectUploadSelectionStatus");
-
 
 const repositoryFilesModal =
     document.getElementById("repositoryFilesModal");
@@ -355,6 +369,122 @@ function collectDevelopmentTeam() {
     return members;
 }
 
+function openUploadDestinationModal(uploadType) {
+
+    pendingUploadType =
+        uploadType;
+
+    selectedProjectUploadDestination =
+        "repository";
+
+    const repositoryOption =
+        document.querySelector(
+            'input[name="uploadDestination"][value="repository"]'
+        );
+
+    if (repositoryOption) {
+        repositoryOption.checked = true;
+    }
+
+    if (uploadDestinationModal) {
+        uploadDestinationModal.classList.add(
+            "show"
+        );
+    }
+}
+
+
+function closeUploadDestinationModal() {
+
+    if (uploadDestinationModal) {
+        uploadDestinationModal.classList.remove(
+            "show"
+        );
+    }
+
+    pendingUploadType =
+        null;
+}
+
+
+if (closeUploadDestinationModalBtn) {
+
+    closeUploadDestinationModalBtn.addEventListener(
+        "click",
+        closeUploadDestinationModal
+    );
+}
+
+
+if (cancelUploadDestinationBtn) {
+
+    cancelUploadDestinationBtn.addEventListener(
+        "click",
+        closeUploadDestinationModal
+    );
+}
+
+
+if (uploadDestinationModal) {
+
+    uploadDestinationModal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                uploadDestinationModal
+            ) {
+                closeUploadDestinationModal();
+            }
+        }
+    );
+}
+
+
+if (continueUploadDestinationBtn) {
+
+    continueUploadDestinationBtn.addEventListener(
+        "click",
+        () => {
+
+            const selectedOption =
+                document.querySelector(
+                    'input[name="uploadDestination"]:checked'
+                );
+
+            selectedProjectUploadDestination =
+                selectedOption?.value ||
+                "repository";
+
+            const uploadType =
+                pendingUploadType;
+
+            closeUploadDestinationModal();
+
+            if (
+                uploadType === "file" &&
+                projectFileInput
+            ) {
+
+                projectFileInput.value =
+                    "";
+
+                projectFileInput.click();
+
+            } else if (
+                uploadType === "folder" &&
+                projectFolderInput
+            ) {
+
+                projectFolderInput.value =
+                    "";
+
+                projectFolderInput.click();
+            }
+        }
+    );
+}
 // ============================================================
 // PROJECT REPOSITORY FILE / FOLDER UPLOAD
 // ============================================================
