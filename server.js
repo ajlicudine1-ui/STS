@@ -2123,6 +2123,12 @@ app.post(
                     ""
                 ).trim();
 
+            const uploadDestination =
+                String(
+                    req.get("X-Upload-Destination") ||
+                    "repository"
+                ).trim();
+
 
             if (!fileName) {
 
@@ -2158,8 +2164,8 @@ app.post(
             } = await db
                 .from("projects")
                 .select(
-                    "project_id, repository_folder_id, repository_folder_url"
-                )
+                "project_id, drive_folder_id, repository_folder_id, repository_folder_url"
+            )
                 .eq(
                     "project_id",
                     projectId
@@ -2194,17 +2200,52 @@ app.post(
             }
 
 
-            if (!project.repository_folder_id) {
-                return res.status(400).json({
-                    success: false,
-                    error:
-                        "Project Google Drive folder is missing for this project."
-                });
+            let baseFolderId;
+
+            if (uploadDestination === "release") {
+
+                if (!project.drive_folder_id) {
+                    return res.status(400).json({
+                        success: false,
+                        error:
+                            "Project Google Drive folder is missing for this project."
+                    });
+                }
+
+                const releaseFolder =
+                    await findChildDriveFolder(
+                        project.drive_folder_id,
+                        "System Release & Deployment"
+                    );
+
+                if (!releaseFolder?.id) {
+                    return res.status(400).json({
+                        success: false,
+                        error:
+                            "System Release & Deployment folder is missing for this project."
+                    });
+                }
+
+                baseFolderId =
+                    releaseFolder.id;
+
+            } else {
+
+                if (!project.repository_folder_id) {
+                    return res.status(400).json({
+                        success: false,
+                        error:
+                            "Project Repository folder is missing for this project."
+                    });
+                }
+
+                baseFolderId =
+                    project.repository_folder_id;
             }
 
             const destinationFolderId =
                 await ensureDriveFolderPath(
-                    project.repository_folder_id,
+                    baseFolderId,
                     relativePath
                 );
 

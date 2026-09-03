@@ -489,7 +489,7 @@ if (continueUploadDestinationBtn) {
 // PROJECT REPOSITORY FILE / FOLDER UPLOAD
 // ============================================================
 
-function getProjectQueuedUploads() {
+function getProjectQueuedUploads() {    
 
     const items = [];
 
@@ -829,13 +829,16 @@ async function uploadFileToProjectRepository(
                         encodeURIComponent(
                             relativePath ||
                             ""
-                        )
-                },
+                        ),
 
-                body:
-                    file
+                    "X-Upload-Destination":
+                        selectedProjectUploadDestination
+                                    },
+
+                                    body:
+                                        file
             }
-        );
+                    );
 
     // Vercel/proxies may return a plain-text or HTML error (for example when
     // a request is too large), so do not assume every response is JSON.
@@ -2158,21 +2161,17 @@ function showUploadOptionsInActionMenu(
                 currentRepositoryProject =
                     project;
 
-                if (projectFileInput) {
-
-                    projectFileInput.value =
-                        "";
-
-                    projectFileInput.click();
-                }
-
                 closeAllProjectActionMenus();
+
+                openUploadDestinationModal(
+                    "file"
+                );
             }
         );
     }
 
 
-    if (chooseFolder) {
+        if (chooseFolder) {
 
         chooseFolder.addEventListener(
             "click",
@@ -2186,15 +2185,11 @@ function showUploadOptionsInActionMenu(
                 currentRepositoryProject =
                     project;
 
-                if (projectFolderInput) {
-
-                    projectFolderInput.value =
-                        "";
-
-                    projectFolderInput.click();
-                }
-
                 closeAllProjectActionMenus();
+
+                openUploadDestinationModal(
+                    "folder"
+                );
             }
         );
     }
