@@ -1623,23 +1623,78 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 }
 
 /* =====================================================
-   UPLOAD DESTINATION MODAL
+   CHOOSE UPLOAD DESTINATION MODAL
    ===================================================== */
 
 .upload-destination-modal-content {
     width: min(620px, calc(100vw - 40px));
-    padding: 0;
+    padding: 28px 32px 24px;
     overflow: hidden;
 }
 
 
+/* =====================================================
+   MODAL HEADER
+   ===================================================== */
+
+.upload-destination-modal-content .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    margin-bottom: 24px;
+}
+
+
+.upload-destination-modal-content .modal-header h2 {
+    margin: 0 0 6px;
+
+    font-size: 26px;
+    line-height: 1.2;
+
+    color: #1f642d;
+}
+
+
+.upload-destination-modal-content .modal-header p {
+    margin: 0;
+
+    font-size: 16px;
+    line-height: 1.5;
+
+    color: #6b7280;
+}
+
+
+.upload-destination-modal-content .modal-close {
+    margin: 0 0 0 20px;
+
+    flex-shrink: 0;
+
+    border: none;
+    background: transparent;
+
+    color: #6b7280;
+
+    font-size: 28px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+
+/* =====================================================
+   DESTINATION OPTIONS
+   ===================================================== */
+
 .upload-destination-options {
     display: flex;
     flex-direction: column;
-    gap: 14px;
 
-    margin-top: 24px;
-    margin-bottom: 28px;
+    gap: 16px;
+
+    margin-top: 0;
+    margin-bottom: 30px;
 }
 
 
@@ -1647,11 +1702,11 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
     display: flex;
     align-items: flex-start;
 
-    gap: 14px;
+    gap: 16px;
 
-    padding: 18px 20px;
+    padding: 20px 22px;
 
-    border: 1px solid #d9dee7;
+    border: 1px solid #d6dce5;
     border-radius: 12px;
 
     background: #ffffff;
@@ -1660,49 +1715,56 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 
     transition:
         border-color 0.2s ease,
-        background 0.2s ease,
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 
 .upload-destination-option:hover {
-    border-color: #2f7d3c;
-    background: #f7fbf7;
-
-    box-shadow:
-        0 5px 15px rgba(0, 0, 0, 0.06);
+    border-color: #2f8a3e;
+    background: #f8fcf8;
 }
 
 
 .upload-destination-option:has(
     input[type="radio"]:checked
 ) {
-    border-color: #2f7d3c;
-    background: #f2f8f3;
+    border-color: #2f8a3e;
+
+    background: #f1f8f2;
 
     box-shadow:
-        0 0 0 2px rgba(47, 125, 60, 0.1);
+        0 0 0 1px rgba(47, 138, 62, 0.08);
 }
 
+
+/* =====================================================
+   RADIO BUTTON
+   ===================================================== */
 
 .upload-destination-option input[type="radio"] {
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
 
-    margin-top: 3px;
-
-    accent-color: #2f7d3c;
+    margin: 6px 2px 0 0;
 
     flex-shrink: 0;
+
+    accent-color: #2f8a3e;
+
+    cursor: pointer;
 }
 
+
+/* =====================================================
+   OPTION TEXT
+   ===================================================== */
 
 .upload-destination-option > div {
     display: flex;
     flex-direction: column;
 
-    gap: 5px;
+    gap: 6px;
 
     min-width: 0;
 }
@@ -1711,42 +1773,89 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 .upload-destination-option strong {
     display: block;
 
+    margin: 0;
+
     color: #1f2937;
 
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 700;
 
-    line-height: 1.3;
+    line-height: 1.35;
 }
 
 
 .upload-destination-option span {
     display: block;
 
+    margin: 0;
+
     color: #6b7280;
 
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 400;
 
     line-height: 1.5;
 }
 
+
+/* =====================================================
+   FOOTER / ACTION BUTTONS
+   ===================================================== */
 
 .upload-destination-modal-content .form-actions {
     display: flex;
     justify-content: flex-end;
     align-items: center;
 
-    gap: 12px;
+    gap: 14px;
 
-    margin-top: 0;
+    margin-top: 6px;
+    padding-top: 0;
 }
 
 
 .upload-destination-modal-content .form-actions .btn {
-    min-width: 110px;
-    min-height: 44px;
+    min-width: 120px;
+    min-height: 46px;
 
-    border-radius: 9px;
+    padding: 10px 22px;
 
-    font-weight: 600;
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 600px) {
+
+    .upload-destination-modal-content {
+        width: calc(100vw - 24px);
+
+        padding: 22px 20px 20px;
+    }
+
+
+    .upload-destination-modal-content .modal-header h2 {
+        font-size: 22px;
+    }
+
+
+    .upload-destination-option {
+        padding: 16px;
+    }
+
+
+    .upload-destination-modal-content .form-actions {
+        flex-direction: column-reverse;
+    }
+
+
+    .upload-destination-modal-content .form-actions .btn {
+        width: 100%;
+    }
 }
