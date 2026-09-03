@@ -2060,7 +2060,7 @@ app.get(
                     project_name:
                         project.project_name,
 
-                    repository_folder_url:
+                    drive_folder_url:
                         project.drive_folder_url
                 },
 

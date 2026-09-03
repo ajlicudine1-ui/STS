@@ -1454,12 +1454,11 @@ if (openRepositoryDriveBtn) {
         () => {
 
             const url =
-                currentRepositoryProject?.repository_folder_url ||
-                currentRepositoryProject?.project_url;
+                currentRepositoryProject?.drive_folder_url;
 
             if (!url) {
                 alert(
-                    "Project Repository URL is not available."
+                    "Project Google Drive folder URL is not available."
                 );
                 return;
             }
