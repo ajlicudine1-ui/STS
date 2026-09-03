@@ -1998,7 +1998,7 @@ app.get(
             } = await db
                 .from("projects")
                 .select(
-                    "project_id, project_name, repository_folder_id, repository_folder_url"
+                    "project_id, project_name, drive_folder_id, drive_folder_url"
                 )
                 .eq(
                     "project_id",
@@ -2046,7 +2046,7 @@ app.get(
 
             const items =
                 await listDriveFolderContents(
-                    project.repository_folder_id
+                     project.drive_folder_id
                 );
 
 
@@ -2196,15 +2196,13 @@ app.post(
             }
 
 
-            if (!project.repository_folder_id) {
-
+            if (!project.drive_folder_id) {
                 return res.status(400).json({
                     success: false,
                     error:
-                        "Project Repository folder is missing for this project."
+                        "Project Google Drive folder is missing for this project."
                 });
             }
-
 
             const destinationFolderId =
                 await ensureDriveFolderPath(
