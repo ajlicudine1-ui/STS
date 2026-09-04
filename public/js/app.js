@@ -2514,6 +2514,8 @@ async function openDeploymentChecklist(
             data
         );
 
+        await loadDashboard();
+
 
     } catch (error) {
 
