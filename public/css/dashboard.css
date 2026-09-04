@@ -357,7 +357,7 @@
     top: calc(100% + 7px);
     right: 0;
 
-    width: 280px;
+    width: 190px;
 
     display: none;
 
@@ -388,7 +388,7 @@
     right: auto !important;
     bottom: auto !important;
 
-    width: 280px !important;
+    width: 190px !important;
 
     max-height:
         calc(100vh - 20px);
@@ -2069,73 +2069,48 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 
 /* ============================================================
    DEPLOYMENT CHECKLIST MODAL
-   Clean consolidated styles
    ============================================================ */
 
 #deploymentChecklistModal .deployment-checklist-modal-content {
-    width: min(940px, calc(100vw - 40px));
-    max-width: 940px;
+    width: min(900px, calc(100vw - 40px));
     max-height: 90vh;
     padding: 0;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
     border-radius: 16px;
     background: #ffffff;
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.20);
 }
 
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
 #deploymentChecklistModal .modal-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 20px;
     padding: 24px 28px;
     border-bottom: 1px solid #e5e7eb;
 }
 
 #deploymentChecklistModal .modal-header h2 {
     margin: 0 0 5px;
-    color: #1f2937;
     font-size: 22px;
     font-weight: 700;
-    line-height: 1.25;
+    color: #1f2937;
 }
 
 #deploymentChecklistProjectName {
     margin: 0;
-    color: #6b7280;
     font-size: 14px;
-    line-height: 1.4;
-}
-
-#deploymentChecklistModal .modal-close {
-    flex: 0 0 36px;
-    width: 36px;
-    height: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
     color: #6b7280;
-    font-size: 25px;
-    line-height: 1;
-    cursor: pointer;
 }
 
-#deploymentChecklistModal .modal-close:hover {
-    background: #f3f4f6;
-    color: #1f2937;
-}
 
-/* Readiness */
+/* ============================================================
+   DEPLOYMENT READINESS
+   ============================================================ */
+
 .deployment-readiness-card {
     margin: 22px 28px 18px;
     padding: 18px 20px;
-    flex: 0 0 auto;
     background: #f8faf8;
     border: 1px solid #dfe9df;
     border-radius: 12px;
@@ -2150,17 +2125,21 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 }
 
 .deployment-readiness-label {
-    color: #4b5563;
     font-size: 14px;
     font-weight: 600;
+    color: #4b5563;
 }
 
 #deploymentReadinessCount {
-    color: #235e26;
     font-size: 15px;
     font-weight: 700;
-    white-space: nowrap;
+    color: #235e26;
 }
+
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
 
 .deployment-progress-track {
     width: 100%;
@@ -2178,152 +2157,190 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
     transition: width 0.3s ease;
 }
 
-.deployment-checklist-loading,
+
+/* ============================================================
+   LOADING / ERROR
+   ============================================================ */
+
+.deployment-checklist-loading {
+    margin: 0 28px 15px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: #4b5563;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
 .deployment-checklist-error {
     margin: 0 28px 15px;
     padding: 12px 14px;
-    border-radius: 8px;
     font-size: 14px;
-    line-height: 1.4;
-}
-
-.deployment-checklist-loading {
-    color: #4b5563;
-    background: #f9fafb;
-}
-
-.deployment-checklist-error {
     color: #991b1b;
     background: #fef2f2;
     border: 1px solid #fecaca;
+    border-radius: 8px;
 }
 
-/* Document list */
+
+/* ============================================================
+   DOCUMENT LIST
+   ============================================================ */
+
 .deployment-document-list {
-    min-height: 0;
     max-height: 470px;
     padding: 0 28px 20px;
     overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-gutter: stable;
 }
+
+
+/* ============================================================
+   DOCUMENT ROW
+   ============================================================ */
 
 .deployment-document-row {
     display: grid;
-    grid-template-columns: 38px minmax(260px, 1fr) 190px minmax(230px, auto);
+    grid-template-columns: 38px minmax(0, 1fr) 145px 95px;
     align-items: center;
     gap: 14px;
-    min-height: 72px;
+
+    min-height: 68px;
     padding: 12px 14px;
     margin-bottom: 9px;
-    box-sizing: border-box;
+
     background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 11px;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    border-radius: 10px;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .deployment-document-row:hover {
     border-color: #cbd5e1;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.05);
 }
 
+
+/* ============================================================
+   DOCUMENT NUMBER
+   ============================================================ */
+
 .deployment-document-number {
-    width: 34px;
-    height: 34px;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    color: #235e26;
-    background: #edf6ed;
-    border-radius: 9px;
+
+    width: 32px;
+    height: 32px;
+
     font-size: 13px;
     font-weight: 700;
+    color: #235e26;
+
+    background: #edf6ed;
+    border-radius: 8px;
 }
+
+
+/* ============================================================
+   DOCUMENT INFORMATION
+   ============================================================ */
 
 .deployment-document-info {
     min-width: 0;
 }
 
 .deployment-document-name {
-    color: #1f2937;
     font-size: 14px;
-    font-weight: 650;
+    font-weight: 600;
     line-height: 1.4;
+    color: #1f2937;
+
     overflow-wrap: anywhere;
 }
 
+
+/* ============================================================
+   STATUS BADGES
+   ============================================================ */
+
 .deployment-document-status {
-    width: 100%;
-    min-width: 0;
-    min-height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 7px 12px;
-    box-sizing: border-box;
-    border-radius: 999px;
+
+    min-width: 125px;
+    min-height: 30px;
+    padding: 6px 10px;
+
     font-size: 12px;
     font-weight: 700;
-    line-height: 1.2;
-    text-align: center;
+
+    border-radius: 999px;
     white-space: nowrap;
 }
+
+
+/* Missing */
 
 .deployment-status-missing {
     color: #6b7280;
     background: #f3f4f6;
 }
 
+
+/* Pending Review */
+
 .deployment-status-pending {
     color: #92400e;
     background: #fef3c7;
 }
+
+
+/* Approved */
 
 .deployment-status-approved {
     color: #166534;
     background: #dcfce7;
 }
 
+
+/* Needs Revision */
+
 .deployment-status-revision {
     color: #991b1b;
     background: #fee2e2;
 }
 
-.deployment-document-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    flex-wrap: nowrap;
-    min-width: 0;
-}
+
+/* ============================================================
+   UPLOAD / VIEW / RESUBMIT BUTTON
+   ============================================================ */
 
 .deployment-document-action {
-    min-width: 112px;
-    height: 42px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 16px;
-    box-sizing: border-box;
-    border: 1px solid #d5dce3;
-    border-radius: 9px;
-    background: #ffffff;
-    color: #235e26;
-    font-family: inherit;
+    min-width: 88px;
+    height: 36px;
+    padding: 0 14px;
+
+    border: none;
+    border-radius: 8px;
+
     font-size: 13px;
-    font-weight: 700;
-    line-height: 1.2;
-    white-space: nowrap;
+    font-weight: 600;
+
+    color: #ffffff;
+    background: #235e26;
+
     cursor: pointer;
-    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.12s ease;
+
+    transition:
+        background 0.2s ease,
+        transform 0.1s ease;
 }
 
 .deployment-document-action:hover:not(:disabled) {
-    background: #f2f8f2;
-    border-color: #235e26;
-    color: #235e26;
+    background: #194b1c;
 }
 
 .deployment-document-action:active:not(:disabled) {
@@ -2332,478 +2349,113 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 
 .deployment-document-action:disabled {
     color: #9ca3af;
-    background: #f3f4f6;
-    border-color: #e5e7eb;
+    background: #e5e7eb;
     cursor: not-allowed;
 }
 
-.deployment-review-action {
-    min-width: 138px;
-    color: #ffffff !important;
-    background: #235e26 !important;
-    border-color: #235e26 !important;
-}
 
-.deployment-review-action:hover:not(:disabled) {
-    color: #ffffff !important;
-    background: #19491d !important;
-    border-color: #19491d !important;
-}
+/* ============================================================
+   FOOTER
+   ============================================================ */
 
-/* Checklist footer */
 .deployment-checklist-footer {
-    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
+
     padding: 18px 28px;
+
     background: #f9fafb;
     border-top: 1px solid #e5e7eb;
 }
 
+
+/* ============================================================
+   OVERALL DEPLOYMENT STATUS
+   ============================================================ */
+
 .deployment-overall-status {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    min-height: 38px;
-    padding: 8px 13px;
-    border-radius: 9px;
-    font-size: 13px;
+
+    padding: 8px 12px;
+
+    font-size: 12px;
     font-weight: 700;
+
+    border-radius: 8px;
 }
 
 .deployment-not-ready {
-    color: #92400e;
-    background: #fff7ed;
-    border: 1px solid #fed7aa;
+    color: #991b1b;
+    background: #fee2e2;
 }
 
 .deployment-ready {
     color: #166534;
-    background: #ecfdf3;
-    border: 1px solid #bbf7d0;
+    background: #dcfce7;
 }
 
-#closeDeploymentChecklistFooterBtn {
-    min-width: 100px;
-}
 
 /* ============================================================
-   DEPLOYMENT REVIEW MODAL
-   Clean final styles - works with Deployment Checklist stacking
+   SCROLLBAR
    ============================================================ */
 
-#deploymentReviewModal {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 21000 !important;
-    padding: 24px;
-    box-sizing: border-box;
-    align-items: center;
-    justify-content: center;
-    background: rgba(15, 23, 42, 0.52);
+.deployment-document-list::-webkit-scrollbar {
+    width: 7px;
 }
 
-#deploymentReviewModal.show {
-    display: flex !important;
-}
-
-#deploymentReviewModal .deployment-review-modal-content {
-    position: relative !important;
-    z-index: 21001 !important;
-    width: min(680px, calc(100vw - 48px));
-    max-width: 680px;
-    max-height: calc(100vh - 48px);
-    padding: 0 !important;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    background: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.95);
-    border-radius: 18px;
-    box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
-}
-
-#deploymentReviewModal .modal-header {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 20px;
-    padding: 26px 30px 22px;
-    border-bottom: 1px solid #e5e7eb;
-    background: #ffffff;
-}
-
-#deploymentReviewModal .modal-header > div {
-    min-width: 0;
-}
-
-#deploymentReviewModalTitle,
-#deploymentReviewTitle {
-    margin: 0 0 6px;
-    color: #235e26;
-    font-size: 23px;
-    font-weight: 700;
-    line-height: 1.25;
-}
-
-#deploymentReviewDocumentName {
-    margin: 0;
-    color: #6b7280;
-    font-size: 14px;
-    line-height: 1.45;
-    overflow-wrap: anywhere;
-}
-
-#deploymentReviewModal .modal-close {
-    flex: 0 0 36px;
-    width: 36px;
-    height: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin: -4px -4px 0 0;
-    padding: 0;
-    border: 0;
-    border-radius: 9px;
+.deployment-document-list::-webkit-scrollbar-track {
     background: transparent;
-    color: #6b7280;
-    font-size: 24px;
-    line-height: 1;
-    cursor: pointer;
-    transition: background 0.16s ease, color 0.16s ease;
 }
 
-#deploymentReviewModal .modal-close:hover {
-    background: #f3f4f6;
-    color: #1f2937;
+.deployment-document-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
 }
 
-#deploymentReviewModal .deployment-review-body {
-    flex: 1 1 auto;
-    min-height: 0;
-    padding: 26px 30px 28px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-gutter: stable;
-}
-
-#deploymentReviewModal .deployment-review-file-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-    width: 100%;
-    margin: 0 0 26px;
-    padding: 16px 18px;
-    box-sizing: border-box;
-    background: #f8fbf8;
-    border: 1px solid #dce7dd;
-    border-radius: 12px;
-}
-
-#deploymentReviewModal .deployment-review-file-card > div {
-    min-width: 0;
-    flex: 1 1 auto;
-}
-
-#deploymentReviewModal .deployment-review-field-label {
-    display: block;
-    margin: 0 0 4px;
-    color: #6b7280;
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1.3;
-}
-
-#deploymentReviewFileName {
-    display: block;
-    max-width: 430px;
-    color: #1f2937;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.35;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-#deploymentReviewViewFileBtn {
-    flex: 0 0 auto;
-    min-width: 110px;
-    height: 42px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 16px;
-    border: 1px solid #cfe1d0;
-    border-radius: 9px;
-    background: #edf6ee;
-    color: #235e26;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.16s ease, border-color 0.16s ease;
-}
-
-#deploymentReviewViewFileBtn:hover:not(:disabled) {
-    background: #dceedd;
-    border-color: #235e26;
-}
-
-#deploymentReviewViewFileBtn:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-
-#deploymentReviewModal .deployment-review-decision {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    width: 100%;
-    margin: 0 0 24px;
-    padding: 0;
-    border: 0;
-}
-
-#deploymentReviewModal .deployment-review-decision legend {
-    grid-column: 1 / -1;
-    margin: 0 0 2px;
-    padding: 0;
-    color: #374151;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.35;
-}
-
-#deploymentReviewModal .deployment-review-option {
-    min-height: 54px;
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    margin: 0;
-    padding: 13px 15px;
-    box-sizing: border-box;
-    border: 1px solid #d7dce2;
-    border-radius: 10px;
-    background: #ffffff;
-    color: #374151;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
-}
-
-#deploymentReviewModal .deployment-review-option:hover {
-    border-color: #9fbea1;
-    background: #f8fbf8;
-}
-
-#deploymentReviewModal .deployment-review-option input[type="radio"] {
-    flex: 0 0 auto;
-    width: 18px;
-    height: 18px;
-    margin: 0;
-    accent-color: #235e26;
-    cursor: pointer;
-}
-
-#deploymentReviewModal .deployment-review-option:has(input[type="radio"]:checked) {
-    border-color: #235e26;
-    background: #edf6ee;
-    box-shadow: inset 0 0 0 1px #235e26;
-}
-
-#deploymentReviewModal .deployment-review-option span {
-    line-height: 1.3;
-}
-
-#deploymentReviewModal .deployment-review-remarks-group {
-    margin: 0;
-}
-
-#deploymentReviewModal .deployment-review-remarks-group > label {
-    display: block;
-    margin: 0 0 8px;
-    color: #374151;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.35;
-}
-
-#deploymentReviewRemarks {
-    display: block;
-    width: 100%;
-    min-height: 132px;
-    max-height: 260px;
-    margin: 0;
-    padding: 13px 14px;
-    box-sizing: border-box;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-    background: #ffffff;
-    color: #1f2937;
-    font-family: inherit;
-    font-size: 14px;
-    line-height: 1.5;
-    resize: vertical;
-    outline: none;
-    transition: border-color 0.16s ease, box-shadow 0.16s ease;
-}
-
-#deploymentReviewRemarks::placeholder {
-    color: #9ca3af;
-}
-
-#deploymentReviewRemarks:focus {
-    border-color: #235e26;
-    box-shadow: 0 0 0 3px rgba(35, 94, 38, 0.11);
-}
-
-#deploymentReviewModal .deployment-review-remarks-group > small {
-    display: block;
-    margin: 8px 0 0;
-    color: #6b7280;
-    font-size: 12px;
-    line-height: 1.45;
-}
-
-#deploymentReviewModal .deployment-review-error,
-#deploymentReviewError {
-    margin-top: 14px;
-    padding: 10px 12px;
-    box-sizing: border-box;
-    color: #b91c1c;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 8px;
-    font-size: 13px;
-    line-height: 1.4;
-}
-
-#deploymentReviewModal .deployment-review-error[hidden],
-#deploymentReviewError[hidden],
-#deploymentReviewError:empty {
-    display: none !important;
-}
-
-#deploymentReviewModal .deployment-review-footer {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 18px 30px 22px;
-    background: #ffffff;
-    border-top: 1px solid #e5e7eb;
-}
-
-#cancelDeploymentReviewBtn,
-#submitDeploymentReviewBtn {
-    margin: 15px;
-    min-width: 132px;
-    height: 42px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 18px;
-    box-sizing: border-box;
-    border-radius: 9px;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.16s ease, border-color 0.16s ease, transform 0.12s ease;
-}
-
-#cancelDeploymentReviewBtn {
-    color: #235e26;
-    background: #edf6ee;
-    border: 1px solid #cfe0d0;
-}
-
-#cancelDeploymentReviewBtn:hover {
-    background: #dceedd;
-}
-
-#submitDeploymentReviewBtn {
-    color: #ffffff;
-    background: #235e26;
-    border: 1px solid #235e26;
-}
-
-#submitDeploymentReviewBtn:hover:not(:disabled) {
-    background: #19491d;
-    border-color: #19491d;
-}
-
-#cancelDeploymentReviewBtn:active,
-#submitDeploymentReviewBtn:active:not(:disabled) {
-    transform: translateY(1px);
-}
-
-#submitDeploymentReviewBtn:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
 
 /* ============================================================
-   DEPLOYMENT RESPONSIVE
+   RESPONSIVE
    ============================================================ */
-
-@media (max-width: 900px) {
-    .deployment-document-row {
-        grid-template-columns: 38px minmax(210px, 1fr) 160px minmax(220px, auto);
-    }
-}
 
 @media (max-width: 760px) {
+
     #deploymentChecklistModal .deployment-checklist-modal-content {
-        width: calc(100vw - 20px);
-        max-height: 94vh;
+        width: calc(100vw - 24px);
+        max-height: 92vh;
     }
 
-    #deploymentChecklistModal .modal-header,
-    .deployment-checklist-footer {
-        padding-left: 18px;
-        padding-right: 18px;
+    #deploymentChecklistModal .modal-header {
+        padding: 20px;
     }
 
     .deployment-readiness-card {
-        margin-left: 18px;
-        margin-right: 18px;
+        margin: 18px 20px 15px;
     }
 
     .deployment-document-list {
-        padding-left: 18px;
-        padding-right: 18px;
+        padding: 0 20px 18px;
     }
 
     .deployment-document-row {
-        grid-template-columns: 38px minmax(0, 1fr);
-        gap: 10px 12px;
-    }
-
-    .deployment-document-status,
-    .deployment-document-actions {
-        grid-column: 2;
+        grid-template-columns: 34px 1fr;
+        gap: 10px;
     }
 
     .deployment-document-status {
-        width: auto;
+        grid-column: 2;
         justify-self: start;
-        min-width: 150px;
     }
 
-    .deployment-document-actions {
-        justify-content: flex-start;
-        flex-wrap: wrap;
+    .deployment-document-action {
+        grid-column: 2;
+        justify-self: start;
     }
 
     .deployment-checklist-footer {
+        padding: 16px 20px;
         flex-direction: column;
         align-items: stretch;
     }
@@ -2816,255 +2468,949 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
     #closeDeploymentChecklistFooterBtn {
         width: 100%;
     }
+}
 
-    #deploymentReviewModal .deployment-review-modal-content {
-        width: calc(100vw - 20px);
-        max-height: 94vh;
+
+/* ============================================================
+   DEPLOYMENT CHECKLIST - ACTION BUTTONS
+   ============================================================ */
+
+.deployment-document-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+
+/* All checklist action buttons */
+
+.deployment-document-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 110px;
+    min-height: 42px;
+
+    padding: 8px 14px;
+
+    border: 1px solid #d5dce3;
+    border-radius: 9px;
+
+    background: #ffffff;
+    color: #235e26;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.15;
+
+    text-align: center;
+    white-space: normal;
+
+    cursor: pointer;
+
+    box-sizing: border-box;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.15s ease;
+}
+
+
+.deployment-document-action:hover:not(:disabled) {
+    background: #f2f8f2;
+    border-color: #235e26;
+
+    transform: translateY(-1px);
+}
+
+
+.deployment-document-action:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+
+/* Review / Edit Review button */
+
+.deployment-review-action {
+    background: #235e26;
+    border-color: #235e26;
+    color: #ffffff;
+}
+
+
+.deployment-review-action:hover:not(:disabled) {
+    background: #19491d;
+    border-color: #19491d;
+    color: #ffffff;
+}
+
+
+/* Prevent action area from becoming too narrow */
+
+.deployment-document-row {
+    grid-template-columns:
+        44px
+        minmax(240px, 1fr)
+        182px
+        minmax(118px, auto);
+
+    gap: 16px;
+
+    align-items: center;
+}
+
+
+/* ============================================================
+   DEPLOYMENT REVIEW MODAL
+   ============================================================ */
+
+#deploymentReviewModal .modal-content,
+#deploymentReviewModal .deployment-review-modal-content {
+    width: min(620px, calc(100vw - 40px));
+    max-width: 620px;
+
+    max-height: calc(100vh - 50px);
+
+    padding: 0;
+
+    overflow-y: auto;
+
+    background: #ffffff;
+
+    border-radius: 16px;
+
+    box-sizing: border-box;
+
+    box-shadow:
+        0 20px 55px rgba(0, 0, 0, 0.20);
+}
+
+
+/* ============================================================
+   REVIEW HEADER
+   ============================================================ */
+
+#deploymentReviewModal .modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 26px 30px 20px;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+
+#deploymentReviewModal .modal-header > div {
+    min-width: 0;
+}
+
+
+#deploymentReviewTitle {
+    margin: 0 0 5px;
+
+    color: #235e26;
+
+    font-size: 22px;
+    font-weight: 750;
+    line-height: 1.25;
+}
+
+
+#deploymentReviewDocumentName {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+
+#closeDeploymentReviewModal {
+    flex: 0 0 auto;
+
+    width: 36px;
+    height: 36px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: #6b7280;
+
+    font-size: 25px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+
+#closeDeploymentReviewModal:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+
+/* ============================================================
+   REVIEW BODY
+   ============================================================ */
+
+#deploymentReviewModal .modal-body {
+    padding: 24px 30px 26px;
+}
+
+
+/* Uploaded file */
+
+.deployment-review-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 14px 16px;
+
+    margin-bottom: 24px;
+
+    border: 1px solid #e1e5e9;
+    border-radius: 10px;
+
+    background: #f8faf8;
+}
+
+
+.deployment-review-file-info {
+    min-width: 0;
+}
+
+
+.deployment-review-file-label {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #6b7280;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+#deploymentReviewFileName {
+    display: block;
+
+    color: #1f2937;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+#deploymentReviewViewFileBtn {
+    flex: 0 0 auto;
+
+    min-width: 95px;
+    height: 38px;
+
+    padding: 0 15px;
+
+    border: 1px solid #cfe1d0;
+    border-radius: 8px;
+
+    background: #eaf5eb;
+    color: #235e26;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+#deploymentReviewViewFileBtn:hover {
+    background: #dceedd;
+    border-color: #235e26;
+}
+
+
+/* ============================================================
+   REVIEW DECISION
+   ============================================================ */
+
+.deployment-review-decision {
+    margin: 0 0 22px;
+    padding: 0;
+
+    border: 0;
+}
+
+
+.deployment-review-decision legend {
+    margin-bottom: 10px;
+
+    color: #374151;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.deployment-review-options {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 12px;
+}
+
+
+.deployment-review-option {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    min-height: 48px;
+
+    padding: 11px 14px;
+
+    margin: 0;
+
+    border: 1px solid #d8dde3;
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    color: #374151;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    box-sizing: border-box;
+}
+
+
+.deployment-review-option:hover {
+    border-color: #235e26;
+
+    background: #f7faf7;
+}
+
+
+.deployment-review-option input[type="radio"] {
+    flex: 0 0 auto;
+
+    width: 18px;
+    height: 18px;
+
+    margin: 0;
+
+    accent-color: #235e26;
+
+    cursor: pointer;
+}
+
+
+.deployment-review-option:has(input[type="radio"]:checked) {
+    border-color: #235e26;
+
+    background: #edf6ee;
+
+    box-shadow:
+        inset 0 0 0 1px #235e26;
+}
+
+
+/* ============================================================
+   REMARKS / FINDINGS
+   ============================================================ */
+
+.deployment-review-remarks-group {
+    margin-bottom: 20px;
+}
+
+
+.deployment-review-remarks-group label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #374151;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+#deploymentReviewRemarks {
+    display: block;
+
+    width: 100%;
+    min-height: 120px;
+
+    padding: 12px 14px;
+
+    margin: 0;
+
+    border: 1px solid #d5d9df;
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    color: #1f2937;
+
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+
+    resize: vertical;
+
+    box-sizing: border-box;
+}
+
+
+#deploymentReviewRemarks:focus {
+    outline: none;
+
+    border-color: #235e26;
+
+    box-shadow:
+        0 0 0 3px rgba(35, 94, 38, 0.12);
+}
+
+
+.deployment-review-helper {
+    display: block;
+
+    margin: 7px 0 0;
+
+    color: #6b7280;
+
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+
+/* Error message */
+
+#deploymentReviewError {
+    display: none;
+
+    margin: 0 0 18px;
+    padding: 10px 12px;
+
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+
+    background: #fef2f2;
+
+    color: #b91c1c;
+
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+
+#deploymentReviewError:not(:empty) {
+    display: block;
+}
+
+
+/* ============================================================
+   REVIEW FOOTER
+   ============================================================ */
+
+#deploymentReviewModal .modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding: 18px 30px 24px;
+
+    border-top: 1px solid #e5e7eb;
+}
+
+
+#cancelDeploymentReviewBtn,
+#submitDeploymentReviewBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 120px;
+    height: 42px;
+
+    padding: 0 18px;
+
+    border-radius: 8px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-sizing: border-box;
+}
+
+
+#cancelDeploymentReviewBtn {
+    border: 1px solid #d3dfd4;
+
+    background: #edf6ee;
+    color: #235e26;
+}
+
+
+#cancelDeploymentReviewBtn:hover {
+    background: #dceedd;
+}
+
+
+#submitDeploymentReviewBtn {
+    border: 1px solid #235e26;
+
+    background: #235e26;
+    color: #ffffff;
+}
+
+
+#submitDeploymentReviewBtn:hover:not(:disabled) {
+    background: #19491d;
+    border-color: #19491d;
+}
+
+
+#submitDeploymentReviewBtn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 760px) {
+
+    .deployment-document-row {
+        grid-template-columns:
+            40px
+            minmax(0, 1fr);
+
+        gap: 10px 12px;
     }
 
+
+    .deployment-document-status,
+    .deployment-document-actions {
+        grid-column: 2;
+    }
+
+
+    .deployment-document-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+
+    #deploymentReviewModal .modal-content,
+    #deploymentReviewModal .deployment-review-modal-content {
+        width: calc(100vw - 24px);
+    }
+
+
     #deploymentReviewModal .modal-header,
-    .deployment-review-body,
-    .deployment-review-footer {
+    #deploymentReviewModal .modal-body,
+    #deploymentReviewModal .modal-footer {
         padding-left: 20px;
         padding-right: 20px;
     }
 
-    .deployment-review-decision {
+
+    .deployment-review-options {
         grid-template-columns: 1fr;
     }
 
-    .deployment-review-decision legend {
-        grid-column: 1;
-    }
 
-    .deployment-review-file-card {
+    .deployment-review-file {
         align-items: stretch;
         flex-direction: column;
     }
 
-    #deploymentReviewFileName {
-        max-width: none;
-    }
 
     #deploymentReviewViewFileBtn {
         width: 100%;
     }
 
-    .deployment-review-footer {
-        flex-direction: column-reverse;
-    }
 
     #cancelDeploymentReviewBtn,
     #submitDeploymentReviewBtn {
-        width: 100%;
+        flex: 1;
+        min-width: 0;
     }
 }
-
 /* ============================================================
-   MODAL STACKING
-   Checklist below Review modal
+   FINAL DEPLOYMENT UI COMPATIBILITY PATCH
+   Matches the current index.html structure exactly.
    ============================================================ */
 
+/* Actions menu: enough room for Ready for Deployment */
+.project-action-menu,
+.project-action-menu.project-action-menu-portal {
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: min(280px, calc(100vw - 20px)) !important;
+}
+
+.project-action-item,
+.project-action-section-toggle {
+    box-sizing: border-box;
+}
+
+.project-action-item > span:last-child,
+.project-action-section-label {
+    min-width: 0;
+    white-space: nowrap;
+}
+
+/* Modal stacking: Review always above Checklist */
 #deploymentChecklistModal {
-    position: fixed !important;
-    inset: 0 !important;
     z-index: 20000 !important;
 }
 
-#deploymentChecklistModal .deployment-checklist-modal-content {
+#deploymentReviewModal {
+    z-index: 21000 !important;
+    padding: 24px !important;
+    background: rgba(15, 23, 42, 0.55) !important;
+}
+
+#deploymentReviewModal.show {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+#deploymentReviewModal .deployment-review-modal-content {
     position: relative !important;
-    z-index: 20001 !important;
+    z-index: 21001 !important;
+    width: min(680px, calc(100vw - 48px)) !important;
+    max-width: 680px !important;
+    max-height: calc(100vh - 48px) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: #fff !important;
+    border-radius: 18px !important;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.26) !important;
 }
 
-/* ============================================================
-   DEPLOYMENT REVIEW - RADIO OPTION FIX
-   Prevent other dashboard label/input styles from interfering
-   ============================================================ */
-
-#deploymentReviewModal .deployment-review-decision {
-    width: 100%;
-    margin: 0 0 24px;
-    padding: 0;
-    border: 0;
+#deploymentReviewModal .modal-header {
+    flex: 0 0 auto !important;
+    padding: 24px 30px 20px !important;
+    border-bottom: 1px solid #e5e7eb !important;
 }
 
-#deploymentReviewModal .deployment-review-decision legend {
-    display: block;
-    width: 100%;
-    margin: 0 0 12px;
-    padding: 0;
-
-    color: #374151;
-    font-size: 14px;
-    font-weight: 700;
+#deploymentReviewTitle {
+    margin: 0 0 5px !important;
+    color: #235e26 !important;
+    font-size: 23px !important;
+    line-height: 1.25 !important;
 }
 
+#deploymentReviewDocumentName {
+    margin: 0 !important;
+    color: #6b7280 !important;
+    font-size: 14px !important;
+}
 
-/* Options container */
+#deploymentReviewModal .deployment-review-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    padding: 24px 30px 26px !important;
+}
 
-#deploymentReviewModal .deployment-review-options {
+#deploymentReviewModal .deployment-review-file-card {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 18px !important;
+    width: 100% !important;
+    margin: 0 0 24px !important;
+    padding: 15px 17px !important;
+    box-sizing: border-box !important;
+    border: 1px solid #dce6dd !important;
+    border-radius: 11px !important;
+    background: #f8fbf8 !important;
+}
+
+#deploymentReviewModal .deployment-review-file-card > div {
+    min-width: 0 !important;
+}
+
+#deploymentReviewModal .deployment-review-label {
+    display: block !important;
+    width: auto !important;
+    margin: 0 0 7px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    color: #374151 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+}
+
+#deploymentReviewModal .deployment-review-file-card .deployment-review-label {
+    margin-bottom: 3px !important;
+    color: #6b7280 !important;
+    font-size: 12px !important;
+}
+
+#deploymentReviewFileName {
+    display: block !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    color: #1f2937 !important;
+    font-size: 14px !important;
+}
+
+#deploymentReviewViewFileBtn {
+    flex: 0 0 auto !important;
+    min-width: 108px !important;
+    height: 40px !important;
+    border: 1px solid #cfe1d0 !important;
+    border-radius: 9px !important;
+    background: #edf6ee !important;
+    color: #235e26 !important;
+    font-weight: 700 !important;
+}
+
+#deploymentReviewModal .deployment-review-field {
+    width: 100% !important;
+    margin: 0 0 22px !important;
+}
+
+/* Current HTML: .deployment-review-decisions wraps two label.deployment-review-decision */
+#deploymentReviewModal .deployment-review-decisions {
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 12px !important;
-
-    width: 100%;
+    width: 100% !important;
+    margin: 0 !important;
 }
 
-
-/* Reset conflicting label styles */
-
-#deploymentReviewModal label.deployment-review-option {
+#deploymentReviewModal label.deployment-review-decision {
     display: flex !important;
     align-items: center !important;
     justify-content: flex-start !important;
-
     gap: 11px !important;
-
     width: 100% !important;
     min-width: 0 !important;
     min-height: 52px !important;
-
     margin: 0 !important;
-    padding: 0 16px !important;
-
+    padding: 0 15px !important;
     box-sizing: border-box !important;
-
     border: 1px solid #d8dde3 !important;
     border-radius: 10px !important;
-
-    background: #ffffff !important;
+    background: #fff !important;
     color: #374151 !important;
-
-    font-family: inherit !important;
     font-size: 14px !important;
     font-weight: 600 !important;
     line-height: 1.3 !important;
-
-    text-align: left !important;
-
-    cursor: pointer;
-
+    cursor: pointer !important;
     box-shadow: none !important;
-    outline: none !important;
-
-    transition:
-        background 0.18s ease,
-        border-color 0.18s ease,
-        box-shadow 0.18s ease;
+    transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease !important;
 }
 
-
-/* Radio itself */
-
-#deploymentReviewModal
-label.deployment-review-option
-input[type="radio"] {
-    appearance: auto !important;
-    -webkit-appearance: radio !important;
-
-    display: inline-block !important;
-
-    flex: 0 0 18px !important;
-
-    width: 18px !important;
-    min-width: 18px !important;
-    max-width: 18px !important;
-
-    height: 18px !important;
-    min-height: 18px !important;
-    max-height: 18px !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-
-    border: initial !important;
-    border-radius: 50% !important;
-
-    background: initial !important;
-
-    box-shadow: none !important;
-    outline: none !important;
-
-    accent-color: #235e26 !important;
-
-    cursor: pointer;
-}
-
-
-/* Prevent radio from stretching */
-
-#deploymentReviewModal
-.deployment-review-option
-input {
-    position: static !important;
-
-    float: none !important;
-
-    transform: none !important;
-}
-
-
-/* Text next to radio */
-
-#deploymentReviewModal
-.deployment-review-option
-span {
-    display: inline !important;
-
-    flex: 1 1 auto;
-
-    width: auto !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-
-    background: transparent !important;
-
-    color: inherit !important;
-
-    font: inherit !important;
-}
-
-
-/* Hover */
-
-#deploymentReviewModal
-label.deployment-review-option:hover {
+#deploymentReviewModal label.deployment-review-decision:hover {
     border-color: #86ad89 !important;
     background: #f8fbf8 !important;
 }
 
+#deploymentReviewModal label.deployment-review-decision > input[type="radio"] {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    position: static !important;
+    flex: 0 0 19px !important;
+    width: 19px !important;
+    min-width: 19px !important;
+    max-width: 19px !important;
+    height: 19px !important;
+    min-height: 19px !important;
+    max-height: 19px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 2px solid #9ca3af !important;
+    border-radius: 50% !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    transform: none !important;
+    cursor: pointer !important;
+}
 
-/* Selected option */
-
-#deploymentReviewModal
-label.deployment-review-option:has(input[type="radio"]:checked) {
+#deploymentReviewModal label.deployment-review-decision > input[type="radio"]:checked {
     border-color: #235e26 !important;
+    background: radial-gradient(circle, #235e26 0 43%, #fff 47% 100%) !important;
+}
 
+#deploymentReviewModal label.deployment-review-decision > span {
+    display: block !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    color: inherit !important;
+    font: inherit !important;
+    text-align: left !important;
+}
+
+#deploymentReviewModal label.deployment-review-decision:has(input[type="radio"]:checked) {
+    border-color: #235e26 !important;
     background: #edf6ee !important;
-
-    box-shadow:
-        inset 0 0 0 1px #235e26 !important;
-
     color: #1b5e20 !important;
+    box-shadow: inset 0 0 0 1px #235e26 !important;
 }
 
-
-/* Keyboard focus */
-
-#deploymentReviewModal
-label.deployment-review-option:has(input[type="radio"]:focus-visible) {
-    box-shadow:
-        0 0 0 3px rgba(35, 94, 38, 0.12) !important;
+#deploymentReviewRemarks {
+    display: block !important;
+    width: 100% !important;
+    min-height: 125px !important;
+    margin: 0 !important;
+    padding: 12px 13px !important;
+    box-sizing: border-box !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    color: #1f2937 !important;
+    font: inherit !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    resize: vertical !important;
 }
 
+#deploymentReviewRemarks:focus {
+    outline: none !important;
+    border-color: #235e26 !important;
+    box-shadow: 0 0 0 3px rgba(35, 94, 38, 0.11) !important;
+}
 
-/* Mobile */
+#deploymentReviewModal .deployment-review-field small {
+    display: block !important;
+    margin-top: 7px !important;
+    color: #6b7280 !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+}
 
-@media (max-width: 600px) {
+#deploymentReviewError {
+    margin: 0 0 18px !important;
+    padding: 10px 12px !important;
+    border: 1px solid #fecaca !important;
+    border-radius: 8px !important;
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+    font-size: 13px !important;
+}
 
-    #deploymentReviewModal .deployment-review-options {
+#deploymentReviewError[hidden],
+#deploymentReviewError:empty {
+    display: none !important;
+}
+
+#deploymentReviewModal .modal-footer {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    padding: 17px 30px 21px !important;
+    border-top: 1px solid #e5e7eb !important;
+    background: #fff !important;
+}
+
+#cancelDeploymentReviewBtn,
+#submitDeploymentReviewBtn {
+    min-width: 128px !important;
+    height: 42px !important;
+    margin: 0 !important;
+    border-radius: 9px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+}
+
+#cancelDeploymentReviewBtn {
+    border: 1px solid #cfe0d0 !important;
+    background: #edf6ee !important;
+    color: #235e26 !important;
+}
+
+#submitDeploymentReviewBtn {
+    border: 1px solid #235e26 !important;
+    background: #235e26 !important;
+    color: #fff !important;
+}
+
+@media (max-width: 700px) {
+    #deploymentReviewModal {
+        padding: 12px !important;
+    }
+
+    #deploymentReviewModal .deployment-review-modal-content {
+        width: 100% !important;
+        max-height: calc(100vh - 24px) !important;
+        border-radius: 14px !important;
+    }
+
+    #deploymentReviewModal .modal-header,
+    #deploymentReviewModal .deployment-review-body,
+    #deploymentReviewModal .modal-footer {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
+    #deploymentReviewModal .deployment-review-decisions {
         grid-template-columns: 1fr !important;
     }
-}
 
+    #deploymentReviewModal .deployment-review-file-card {
+        align-items: stretch !important;
+        flex-direction: column !important;
+    }
+
+    #deploymentReviewViewFileBtn {
+        width: 100% !important;
+    }
+}
