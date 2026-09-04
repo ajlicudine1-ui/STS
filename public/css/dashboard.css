@@ -4254,3 +4254,33 @@ select:focus {
     }
 }
 
+
+/* ============================================================
+   DEPLOYMENT FORMS - STABLE MODAL DURING REFRESH
+   Keeps the existing rows/height visible while upload/delete
+   refreshes data. Prevents the modal from collapsing/shrinking.
+   ============================================================ */
+
+#deploymentChecklistModal .deployment-checklist-modal-content {
+    min-height: 560px;
+}
+
+#deploymentChecklistModal .deployment-document-list {
+    flex: 1 1 auto;
+    min-height: 280px;
+}
+
+#deploymentChecklistLoading:not([hidden]) {
+    display: block;
+}
+
+@media (max-width: 700px) {
+    #deploymentChecklistModal .deployment-checklist-modal-content {
+        min-height: min(560px, calc(100vh - 24px));
+    }
+
+    #deploymentChecklistModal .deployment-document-list {
+        min-height: 220px;
+    }
+}
+

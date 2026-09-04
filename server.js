@@ -2463,6 +2463,11 @@ app.patch(
                 project.project_status;
 
 
+            // IMPORTANT STATUS RULE:
+            // This checklist endpoint can only move a non-deployed project
+            // to "Ready for Deployment" (or back to Active).
+            // "Deployed" is written ONLY by POST /api/projects/:projectId/deploy.
+            //
             // Ready for Deployment is triggered ONLY when all 8 are Pass.
             if (
                 checklistState.summary
@@ -2973,7 +2978,7 @@ app.get(
                 approvedCount ===
                 REQUIRED_DEPLOYMENT_DOCUMENTS.length;
 
-            // Deployment documents are optional.
+            // Deployment forms are optional.
             // They no longer change project readiness/status.
 
 
@@ -3717,7 +3722,7 @@ app.patch(
                 throw updateError;
             }
 
-                        // Deployment document review is informational/supporting only.
+                        // Deployment form review is informational/supporting only.
             // Project readiness is controlled by deployment_checklist_items.
 
 

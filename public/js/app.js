@@ -3215,6 +3215,18 @@ async function openDeploymentChecklist(
         return;
     }
 
+
+    const previousProjectId =
+        currentDeploymentChecklistProject
+            ?.project_id ||
+        null;
+
+
+    const isSameProjectRefresh =
+        previousProjectId ===
+        project.project_id;
+
+
     currentDeploymentChecklistProject =
         project;
 
@@ -3248,7 +3260,13 @@ async function openDeploymentChecklist(
     }
 
 
-    if (deploymentDocumentList) {
+    // On first open / project switch, clear old content.
+    // On upload/delete refresh for the SAME project, keep the rows visible
+    // while the updated data loads so the modal does not collapse/shrink.
+    if (
+        deploymentDocumentList &&
+        !isSameProjectRefresh
+    ) {
 
         deploymentDocumentList.innerHTML =
             "";
@@ -3276,7 +3294,7 @@ async function openDeploymentChecklist(
 
             throw new Error(
                 data.error ||
-                "Unable to load deployment documents."
+                "Unable to load deployment forms."
             );
         }
 
@@ -3290,7 +3308,7 @@ async function openDeploymentChecklist(
     } catch (error) {
 
         console.error(
-            "DEPLOYMENT DOCUMENTS ERROR:",
+            "DEPLOYMENT FORMS ERROR:",
             error
         );
 
@@ -3299,7 +3317,7 @@ async function openDeploymentChecklist(
 
             deploymentChecklistError.textContent =
                 error.message ||
-                "Unable to load deployment documents.";
+                "Unable to load deployment forms.";
 
             deploymentChecklistError.hidden =
                 false;
@@ -3514,7 +3532,7 @@ if (deploymentDocumentFileInput) {
                 if (deploymentChecklistLoading) {
 
                     deploymentChecklistLoading.textContent =
-                        "Loading deployment documents...";
+                        "Loading deployment forms...";
 
                     deploymentChecklistLoading.hidden =
                         true;
@@ -4371,7 +4389,7 @@ async function refreshDeployActionState(
             await fetch(
                 `/api/projects/${encodeURIComponent(
                     project.project_id
-                )}/deployment-checklist`
+                )}/deployment-checklist-items`
             );
 
 
@@ -5111,7 +5129,7 @@ function createProjectActionMenu(
                     </span>
 
                     <span>
-                        Deployment Documents
+                        Deployment Forms
                     </span>
                 </button>
 
