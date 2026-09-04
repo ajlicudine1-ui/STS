@@ -2056,21 +2056,52 @@ app.get(
             }
 
             // ------------------------------------------------
-    // VERIFY SAVED DEPLOYMENT FILES STILL EXIST IN DRIVE
-    // ------------------------------------------------
+            // LOAD SAVED DEPLOYMENT DOCUMENTS
+            // ------------------------------------------------
 
-    for (const document of savedDocuments || []) {
+            const {
+                data: savedDocuments,
+                error: documentsError
+            } = await db
+                .from("deployment_documents")
+                .select("*")
+                .eq(
+                    "project_id",
+                    projectId
+                );
 
-        if (!document.drive_file_id) {
+
+            if (documentsError) {
+
+                console.error(
+                    "DEPLOYMENT DOCUMENTS LOOKUP ERROR:",
+                    documentsError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to load the deployment checklist."
+                });
+            }
+
+
+            // ------------------------------------------------
+            // VERIFY SAVED DEPLOYMENT FILES STILL EXIST IN DRIVE
+            // ------------------------------------------------
+
+            for (const document of savedDocuments || []) {
+
+                if (!document.drive_file_id) {
             continue;
-        }
+                }
 
 
-        let fileStillExists =
+                let fileStillExists =
             true;
 
 
-        try {
+                try {
 
             const driveFile =
                 await googleDrive.files.get({
@@ -2092,7 +2123,7 @@ app.get(
             }
 
 
-        } catch (driveError) {
+                } catch (driveError) {
 
             const statusCode =
                 driveError?.code ||
@@ -2119,10 +2150,10 @@ app.get(
                 // Google API/network errors.
                 continue;
             }
-        }
+                }
 
 
-        if (!fileStillExists) {
+                if (!fileStillExists) {
 
             const now =
                 new Date().toISOString();
@@ -2202,41 +2233,7 @@ app.get(
 
             document.review_remarks =
                 null;
-        }
-    }
-
-
-            
-
-
-            // ------------------------------------------------
-            // LOAD SAVED DEPLOYMENT DOCUMENTS
-            // ------------------------------------------------
-
-            const {
-                data: savedDocuments,
-                error: documentsError
-            } = await db
-                .from("deployment_documents")
-                .select("*")
-                .eq(
-                    "project_id",
-                    projectId
-                );
-
-
-            if (documentsError) {
-
-                console.error(
-                    "DEPLOYMENT DOCUMENTS LOOKUP ERROR:",
-                    documentsError
-                );
-
-                return res.status(500).json({
-                    success: false,
-                    error:
-                        "Unable to load the deployment checklist."
-                });
+                }
             }
 
 
