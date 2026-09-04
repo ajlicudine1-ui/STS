@@ -491,10 +491,17 @@ async function listDriveFolderContents(
                 child.mimeType ===
                 "application/vnd.google-apps.folder";
 
+                        // Preserve "/" inside an actual Google Drive file/folder name.
+            // The repository viewer itself uses "/" to separate folder levels,
+            // so use a harmless display-safe character internally.
+            const safeChildPathName =
+                String(child.name || "")
+                    .replace(/\//g, "∕");
+
             const itemRelativePath =
                 relativePath
-                    ? `${relativePath}/${child.name}`
-                    : child.name;
+                    ? `${relativePath}/${safeChildPathName}`
+                    : safeChildPathName;
 
             items.push({
                 id:

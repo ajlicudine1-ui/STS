@@ -1335,7 +1335,9 @@ function renderRepositoryFiles(items) {
                             </div>
 
                             <div class="repository-file-path">
-                                ${escapeHtml(path)}
+                                ${escapeHtml(
+                                    path.replace(/∕/g, " / ")
+                                )}
                             </div>
 
                         </div>
