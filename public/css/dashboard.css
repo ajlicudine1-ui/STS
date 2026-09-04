@@ -407,20 +407,6 @@
     z-index: 2147483647 !important;
 }
 
-/* Keep long project action labels fully visible. */
-.project-action-menu .project-action-item,
-.project-action-menu .project-action-section-label {
-    overflow: visible;
-    text-overflow: clip;
-}
-
-@media (max-width: 420px) {
-    .project-action-menu,
-    .project-action-menu.project-action-menu-portal {
-        width: min(280px, calc(100vw - 24px)) !important;
-    }
-}
-
 /* ============================================================
    ACTION SECTIONS / ACCORDION
    ============================================================ */
@@ -560,8 +546,6 @@
     font-size: 13px;
 
     border-radius: 7px;
-
-    white-space: nowrap;
 }
 
 
@@ -1460,7 +1444,11 @@
 
 
 /* Small X at upper-left */
-/* The menu is already positioned, so no extra positioning override is needed. */
+/* Upload submenu */
+.project-action-menu {
+    position: relative;
+}
+
 
 /* X floats in the upper-left */
 .upload-menu-close {
@@ -2081,48 +2069,73 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 
 /* ============================================================
    DEPLOYMENT CHECKLIST MODAL
+   Clean consolidated styles
    ============================================================ */
 
 #deploymentChecklistModal .deployment-checklist-modal-content {
-    width: min(900px, calc(100vw - 40px));
+    width: min(940px, calc(100vw - 40px));
+    max-width: 940px;
     max-height: 90vh;
     padding: 0;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
     border-radius: 16px;
     background: #ffffff;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.20);
 }
 
-
-/* ============================================================
-   HEADER
-   ============================================================ */
-
 #deploymentChecklistModal .modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
     padding: 24px 28px;
     border-bottom: 1px solid #e5e7eb;
 }
 
 #deploymentChecklistModal .modal-header h2 {
     margin: 0 0 5px;
+    color: #1f2937;
     font-size: 22px;
     font-weight: 700;
-    color: #1f2937;
+    line-height: 1.25;
 }
 
 #deploymentChecklistProjectName {
     margin: 0;
-    font-size: 14px;
     color: #6b7280;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
+#deploymentChecklistModal .modal-close {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #6b7280;
+    font-size: 25px;
+    line-height: 1;
+    cursor: pointer;
+}
 
-/* ============================================================
-   DEPLOYMENT READINESS
-   ============================================================ */
+#deploymentChecklistModal .modal-close:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
 
+/* Readiness */
 .deployment-readiness-card {
     margin: 22px 28px 18px;
     padding: 18px 20px;
+    flex: 0 0 auto;
     background: #f8faf8;
     border: 1px solid #dfe9df;
     border-radius: 12px;
@@ -2137,21 +2150,17 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 }
 
 .deployment-readiness-label {
+    color: #4b5563;
     font-size: 14px;
     font-weight: 600;
-    color: #4b5563;
 }
 
 #deploymentReadinessCount {
+    color: #235e26;
     font-size: 15px;
     font-weight: 700;
-    color: #235e26;
+    white-space: nowrap;
 }
-
-
-/* ============================================================
-   PROGRESS BAR
-   ============================================================ */
 
 .deployment-progress-track {
     width: 100%;
@@ -2169,216 +2178,156 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
     transition: width 0.3s ease;
 }
 
-
-/* ============================================================
-   LOADING / ERROR
-   ============================================================ */
-
-.deployment-checklist-loading {
-    margin: 0 28px 15px;
-    padding: 12px 14px;
-    font-size: 14px;
-    color: #4b5563;
-    background: #f9fafb;
-    border-radius: 8px;
-}
-
+.deployment-checklist-loading,
 .deployment-checklist-error {
     margin: 0 28px 15px;
     padding: 12px 14px;
+    border-radius: 8px;
     font-size: 14px;
+    line-height: 1.4;
+}
+
+.deployment-checklist-loading {
+    color: #4b5563;
+    background: #f9fafb;
+}
+
+.deployment-checklist-error {
     color: #991b1b;
     background: #fef2f2;
     border: 1px solid #fecaca;
-    border-radius: 8px;
 }
 
-
-/* ============================================================
-   DOCUMENT LIST
-   ============================================================ */
-
+/* Document list */
 .deployment-document-list {
+    min-height: 0;
     max-height: 470px;
     padding: 0 28px 20px;
     overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
 }
-
-
-/* ============================================================
-   DOCUMENT ROW
-   ============================================================ */
 
 .deployment-document-row {
     display: grid;
-    grid-template-columns: 40px minmax(230px, 1fr) 170px 252px;
+    grid-template-columns: 38px minmax(260px, 1fr) 190px minmax(230px, auto);
     align-items: center;
     gap: 14px;
-
-    min-height: 68px;
+    min-height: 72px;
     padding: 12px 14px;
     margin-bottom: 9px;
-
+    box-sizing: border-box;
     background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 10px;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+    border-radius: 11px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .deployment-document-row:hover {
     border-color: #cbd5e1;
-    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
-
-
-/* ============================================================
-   DOCUMENT NUMBER
-   ============================================================ */
 
 .deployment-document-number {
-    display: flex;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    width: 32px;
-    height: 32px;
-
+    color: #235e26;
+    background: #edf6ed;
+    border-radius: 9px;
     font-size: 13px;
     font-weight: 700;
-    color: #235e26;
-
-    background: #edf6ed;
-    border-radius: 8px;
 }
-
-
-/* ============================================================
-   DOCUMENT INFORMATION
-   ============================================================ */
 
 .deployment-document-info {
     min-width: 0;
 }
 
 .deployment-document-name {
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.4;
     color: #1f2937;
-
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.4;
     overflow-wrap: anywhere;
 }
 
-
-/* ============================================================
-   STATUS BADGES
-   ============================================================ */
-
 .deployment-document-status {
+    width: 100%;
+    min-width: 0;
+    min-height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    min-width: 125px;
-    min-height: 30px;
-    padding: 6px 10px;
-
+    padding: 7px 12px;
+    box-sizing: border-box;
+    border-radius: 999px;
     font-size: 12px;
     font-weight: 700;
-
-    border-radius: 999px;
+    line-height: 1.2;
+    text-align: center;
     white-space: nowrap;
 }
-
-
-/* Missing */
 
 .deployment-status-missing {
     color: #6b7280;
     background: #f3f4f6;
 }
 
-
-/* Pending Review */
-
 .deployment-status-pending {
     color: #92400e;
     background: #fef3c7;
 }
-
-
-/* Approved */
 
 .deployment-status-approved {
     color: #166534;
     background: #dcfce7;
 }
 
-
-/* Needs Revision */
-
 .deployment-status-revision {
     color: #991b1b;
     background: #fee2e2;
 }
 
-
-/* ============================================================
-   DEPLOYMENT DOCUMENT ACTIONS
-   ============================================================ */
-
 .deployment-document-actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: nowrap;
     min-width: 0;
 }
 
 .deployment-document-action {
+    min-width: 112px;
+    height: 42px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    min-width: 108px;
-    height: 42px;
-    padding: 0 14px;
-
-    border: 1px solid #d4dde5;
+    padding: 0 16px;
+    box-sizing: border-box;
+    border: 1px solid #d5dce3;
     border-radius: 9px;
-
     background: #ffffff;
     color: #235e26;
-
     font-family: inherit;
     font-size: 13px;
     font-weight: 700;
     line-height: 1.2;
     white-space: nowrap;
-
     cursor: pointer;
-    box-sizing: border-box;
-
-    transition:
-        background-color 0.18s ease,
-        border-color 0.18s ease,
-        color 0.18s ease,
-        transform 0.12s ease;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.12s ease;
 }
 
 .deployment-document-action:hover:not(:disabled) {
-    background: #f1f8f2;
+    background: #f2f8f2;
     border-color: #235e26;
     color: #235e26;
-    transform: translateY(-1px);
 }
 
 .deployment-document-action:active:not(:disabled) {
-    transform: translateY(0);
+    transform: translateY(1px);
 }
 
 .deployment-document-action:disabled {
@@ -2389,168 +2338,85 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 }
 
 .deployment-review-action {
-    min-width: 136px;
-    background: #235e26;
-    border-color: #235e26;
-    color: #ffffff;
+    min-width: 138px;
+    color: #ffffff !important;
+    background: #235e26 !important;
+    border-color: #235e26 !important;
 }
 
 .deployment-review-action:hover:not(:disabled) {
-    background: #19491d;
-    border-color: #19491d;
-    color: #ffffff;
+    color: #ffffff !important;
+    background: #19491d !important;
+    border-color: #19491d !important;
 }
 
-/* ============================================================
-   FOOTER
-   ============================================================ */
-
+/* Checklist footer */
 .deployment-checklist-footer {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-
     padding: 18px 28px;
-
     background: #f9fafb;
     border-top: 1px solid #e5e7eb;
 }
 
-
-/* ============================================================
-   OVERALL DEPLOYMENT STATUS
-   ============================================================ */
-
 .deployment-overall-status {
     display: inline-flex;
     align-items: center;
-
-    padding: 8px 12px;
-
-    font-size: 12px;
+    gap: 8px;
+    min-height: 38px;
+    padding: 8px 13px;
+    border-radius: 9px;
+    font-size: 13px;
     font-weight: 700;
-
-    border-radius: 8px;
 }
 
 .deployment-not-ready {
-    color: #991b1b;
-    background: #fee2e2;
+    color: #92400e;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
 }
 
 .deployment-ready {
     color: #166534;
-    background: #dcfce7;
+    background: #ecfdf3;
+    border: 1px solid #bbf7d0;
 }
 
-
-/* ============================================================
-   SCROLLBAR
-   ============================================================ */
-
-.deployment-document-list::-webkit-scrollbar {
-    width: 7px;
+#closeDeploymentChecklistFooterBtn {
+    min-width: 100px;
 }
-
-.deployment-document-list::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.deployment-document-list::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 999px;
-}
-
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 760px) {
-
-    #deploymentChecklistModal .deployment-checklist-modal-content {
-        width: calc(100vw - 24px);
-        max-height: 92vh;
-    }
-
-    #deploymentChecklistModal .modal-header {
-        padding: 20px;
-    }
-
-    .deployment-readiness-card {
-        margin: 18px 20px 15px;
-    }
-
-    .deployment-document-list {
-        padding: 0 20px 18px;
-    }
-
-    .deployment-document-row {
-        grid-template-columns: 34px 1fr;
-        gap: 10px;
-    }
-
-    .deployment-document-status {
-        grid-column: 2;
-        justify-self: start;
-    }
-
-    .deployment-document-action {
-        grid-column: 2;
-        justify-self: start;
-    }
-
-    .deployment-checklist-footer {
-        padding: 16px 20px;
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .deployment-overall-status {
-        justify-content: center;
-        text-align: center;
-    }
-
-    #closeDeploymentChecklistFooterBtn {
-        width: 100%;
-    }
-}
-
 
 /* ============================================================
    DEPLOYMENT REVIEW MODAL
+   Matches the actual index.html structure exactly
    ============================================================ */
 
 #deploymentReviewModal {
-    z-index: 100000;
+    z-index: 1100;
 }
 
-#deploymentReviewModal .modal-content,
 #deploymentReviewModal .deployment-review-modal-content {
-    width: min(650px, calc(100vw - 40px));
-    max-width: 650px;
-    max-height: calc(100vh - 56px);
-
+    width: min(620px, calc(100vw - 40px));
+    max-width: 620px;
+    max-height: calc(100vh - 48px);
     padding: 0;
     overflow: hidden;
-
+    display: flex;
+    flex-direction: column;
     background: #ffffff;
     border-radius: 16px;
-    box-sizing: border-box;
-
-    box-shadow: 0 22px 58px rgba(15, 23, 42, 0.22);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
 }
-
-/* Review header */
 
 #deploymentReviewModal .modal-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 20px;
-
-    padding: 26px 30px 22px;
+    padding: 24px 28px 20px;
     border-bottom: 1px solid #e5e7eb;
 }
 
@@ -2558,10 +2424,11 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
     min-width: 0;
 }
 
+#deploymentReviewModalTitle,
 #deploymentReviewTitle {
     margin: 0 0 6px;
     color: #235e26;
-    font-size: 23px;
+    font-size: 22px;
     font-weight: 700;
     line-height: 1.25;
 }
@@ -2570,80 +2437,57 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
     margin: 0;
     color: #6b7280;
     font-size: 14px;
-    line-height: 1.45;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
 }
 
-#closeDeploymentReviewModal,
-#closeDeploymentReviewModalBtn {
+#deploymentReviewModal .modal-close {
+    flex: 0 0 36px;
     width: 36px;
     height: 36px;
-    flex: 0 0 36px;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    margin: 0;
     padding: 0;
-
     border: 0;
     border-radius: 8px;
     background: transparent;
     color: #6b7280;
-
-    font-size: 24px;
+    font-size: 25px;
     line-height: 1;
     cursor: pointer;
 }
 
-#closeDeploymentReviewModal:hover,
-#closeDeploymentReviewModalBtn:hover {
+#deploymentReviewModal .modal-close:hover {
     background: #f3f4f6;
     color: #1f2937;
 }
 
-/* Review body */
-
-#deploymentReviewModal .modal-body {
-    padding: 24px 30px 26px;
+.deployment-review-body {
+    min-height: 0;
+    padding: 24px 28px 22px;
     overflow-y: auto;
-    box-sizing: border-box;
 }
 
-/* Supports review markup even when the body uses generic form-group wrappers. */
-#deploymentReviewModal .form-group {
-    margin: 0 0 20px;
-}
-
-#deploymentReviewModal .form-group:last-child {
-    margin-bottom: 0;
-}
-
-/* Uploaded file */
-
-#deploymentReviewModal .deployment-review-file {
+.deployment-review-file-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-
-    width: 100%;
-    margin: 0 0 22px;
     padding: 14px 16px;
-
-    border: 1px solid #e1e7e2;
+    margin-bottom: 22px;
+    background: #f8faf8;
+    border: 1px solid #dfe7df;
     border-radius: 10px;
-    background: #f8fbf8;
-    box-sizing: border-box;
 }
 
-.deployment-review-file-info {
+.deployment-review-file-card > div {
     min-width: 0;
 }
 
-.deployment-review-file-label {
+.deployment-review-field-label {
     display: block;
-    margin: 0 0 3px;
+    margin-bottom: 4px;
     color: #6b7280;
     font-size: 12px;
     font-weight: 600;
@@ -2651,211 +2495,191 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 
 #deploymentReviewFileName {
     display: block;
-    max-width: 100%;
+    max-width: 360px;
     color: #1f2937;
     font-size: 14px;
     font-weight: 700;
-    overflow-wrap: anywhere;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 #deploymentReviewViewFileBtn {
+    flex: 0 0 auto;
+    min-width: 102px;
+    height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 auto;
-
-    min-width: 100px;
-    height: 40px;
     padding: 0 16px;
-
-    border: 1px solid #cde1cf;
+    border: 1px solid #cfe1d0;
     border-radius: 8px;
     background: #edf6ee;
     color: #235e26;
-
     font-family: inherit;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
 }
 
-#deploymentReviewViewFileBtn:hover {
+#deploymentReviewViewFileBtn:hover:not(:disabled) {
     background: #dceedd;
     border-color: #235e26;
 }
 
-/* Review decision */
-
-#deploymentReviewModal .deployment-review-decision,
-#deploymentReviewModal fieldset {
-    width: 100%;
-    margin: 0 0 22px;
-    padding: 0;
-    border: 0;
-    box-sizing: border-box;
+#deploymentReviewViewFileBtn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
 }
 
-#deploymentReviewModal .deployment-review-decision legend,
-#deploymentReviewModal fieldset legend {
-    display: block;
-    margin: 0 0 10px;
-    color: #374151;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-#deploymentReviewModal .deployment-review-options {
+.deployment-review-decision {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
-    width: 100%;
+    margin: 0 0 22px;
+    padding: 0;
+    border: 0;
 }
 
-#deploymentReviewModal .deployment-review-option {
+.deployment-review-decision legend {
+    grid-column: 1 / -1;
+    margin: 0 0 2px;
+    padding: 0;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.deployment-review-option {
+    min-height: 50px;
     display: flex;
     align-items: center;
     gap: 10px;
-
-    min-height: 50px;
     margin: 0;
     padding: 12px 14px;
-
+    box-sizing: border-box;
     border: 1px solid #d7dce2;
     border-radius: 9px;
     background: #ffffff;
     color: #374151;
-
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    box-sizing: border-box;
+    transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
 
-#deploymentReviewModal .deployment-review-option:hover {
-    border-color: #235e26;
-    background: #f7faf7;
+.deployment-review-option:hover {
+    border-color: #9fbea1;
+    background: #fbfdfb;
 }
 
-#deploymentReviewModal input[type="radio"] {
+.deployment-review-option input[type="radio"] {
+    flex: 0 0 auto;
     width: 18px;
     height: 18px;
-    flex: 0 0 18px;
     margin: 0;
     accent-color: #235e26;
     cursor: pointer;
 }
 
-#deploymentReviewModal .deployment-review-option:has(input[type="radio"]:checked) {
+.deployment-review-option:has(input[type="radio"]:checked) {
     border-color: #235e26;
     background: #edf6ee;
     box-shadow: inset 0 0 0 1px #235e26;
 }
 
-/* Remarks */
-
-.deployment-review-remarks-group {
-    margin: 0 0 20px;
+.deployment-review-option span {
+    line-height: 1.25;
 }
 
-#deploymentReviewModal label[for="deploymentReviewRemarks"],
-.deployment-review-remarks-group label {
+.deployment-review-remarks-group {
+    margin-bottom: 4px;
+}
+
+.deployment-review-remarks-group > label {
     display: block;
     margin: 0 0 8px;
     color: #374151;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
 }
 
 #deploymentReviewRemarks {
     display: block;
     width: 100%;
-    min-height: 125px;
-
+    min-height: 118px;
+    max-height: 260px;
     margin: 0;
     padding: 12px 14px;
-
+    box-sizing: border-box;
     border: 1px solid #d1d5db;
     border-radius: 9px;
     background: #ffffff;
     color: #1f2937;
-
     font-family: inherit;
     font-size: 14px;
     line-height: 1.5;
-
     resize: vertical;
-    box-sizing: border-box;
+    outline: none;
 }
 
 #deploymentReviewRemarks:focus {
-    outline: none;
     border-color: #235e26;
     box-shadow: 0 0 0 3px rgba(35, 94, 38, 0.12);
 }
 
-.deployment-review-helper {
+.deployment-review-remarks-group > small {
     display: block;
-    margin: 7px 0 0;
+    margin-top: 7px;
     color: #6b7280;
     font-size: 12px;
     line-height: 1.45;
 }
 
-/* Review error */
-
-#deploymentReviewError {
-    margin: 14px 0 0;
+.deployment-review-error {
+    margin-top: 14px;
     padding: 10px 12px;
+    color: #b91c1c;
+    background: #fef2f2;
     border: 1px solid #fecaca;
     border-radius: 8px;
-    background: #fef2f2;
-    color: #b91c1c;
     font-size: 13px;
     line-height: 1.4;
-    box-sizing: border-box;
 }
 
-#deploymentReviewError:empty {
-    display: none;
+.deployment-review-error[hidden] {
+    display: none !important;
 }
 
-/* Review footer */
-
-#deploymentReviewModal .modal-footer {
+.deployment-review-footer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 12px;
-
-    margin: 0;
-    padding: 18px 30px 24px;
-
-    border-top: 1px solid #e5e7eb;
+    gap: 10px;
+    padding: 18px 28px 22px;
     background: #ffffff;
+    border-top: 1px solid #e5e7eb;
 }
 
 #cancelDeploymentReviewBtn,
 #submitDeploymentReviewBtn {
+    min-width: 128px;
+    height: 42px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    min-width: 132px;
-    height: 42px;
     padding: 0 18px;
-
     border-radius: 8px;
     font-family: inherit;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    box-sizing: border-box;
 }
 
 #cancelDeploymentReviewBtn {
-    border: 1px solid #cfe0d0;
-    background: #edf6ee;
     color: #235e26;
+    background: #edf6ee;
+    border: 1px solid #cfe0d0;
 }
 
 #cancelDeploymentReviewBtn:hover {
@@ -2863,9 +2687,9 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 }
 
 #submitDeploymentReviewBtn {
-    border: 1px solid #235e26;
-    background: #235e26;
     color: #ffffff;
+    background: #235e26;
+    border: 1px solid #235e26;
 }
 
 #submitDeploymentReviewBtn:hover:not(:disabled) {
@@ -2882,60 +2706,108 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    DEPLOYMENT RESPONSIVE
    ============================================================ */
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
+    .deployment-document-row {
+        grid-template-columns: 38px minmax(210px, 1fr) 160px minmax(220px, auto);
+    }
+}
 
-    #deploymentChecklistModal .deployment-document-row {
-        grid-template-columns: 40px minmax(0, 1fr);
+@media (max-width: 760px) {
+    #deploymentChecklistModal .deployment-checklist-modal-content {
+        width: calc(100vw - 20px);
+        max-height: 94vh;
+    }
+
+    #deploymentChecklistModal .modal-header,
+    .deployment-checklist-footer {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .deployment-readiness-card {
+        margin-left: 18px;
+        margin-right: 18px;
+    }
+
+    .deployment-document-list {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .deployment-document-row {
+        grid-template-columns: 38px minmax(0, 1fr);
         gap: 10px 12px;
     }
 
-    #deploymentChecklistModal .deployment-document-status,
-    #deploymentChecklistModal .deployment-document-actions {
+    .deployment-document-status,
+    .deployment-document-actions {
         grid-column: 2;
     }
 
-    #deploymentChecklistModal .deployment-document-status {
+    .deployment-document-status {
         width: auto;
         justify-self: start;
+        min-width: 150px;
     }
 
-    #deploymentChecklistModal .deployment-document-actions {
+    .deployment-document-actions {
         justify-content: flex-start;
         flex-wrap: wrap;
     }
 
-    #deploymentReviewModal .modal-content,
+    .deployment-checklist-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .deployment-overall-status {
+        justify-content: center;
+        text-align: center;
+    }
+
+    #closeDeploymentChecklistFooterBtn {
+        width: 100%;
+    }
+
     #deploymentReviewModal .deployment-review-modal-content {
-        width: calc(100vw - 24px);
+        width: calc(100vw - 20px);
+        max-height: 94vh;
     }
 
     #deploymentReviewModal .modal-header,
-    #deploymentReviewModal .modal-body,
-    #deploymentReviewModal .modal-footer {
+    .deployment-review-body,
+    .deployment-review-footer {
         padding-left: 20px;
         padding-right: 20px;
     }
 
-    #deploymentReviewModal .deployment-review-options {
+    .deployment-review-decision {
         grid-template-columns: 1fr;
     }
 
-    #deploymentReviewModal .deployment-review-file {
+    .deployment-review-decision legend {
+        grid-column: 1;
+    }
+
+    .deployment-review-file-card {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    #deploymentReviewFileName {
+        max-width: none;
     }
 
     #deploymentReviewViewFileBtn {
         width: 100%;
     }
 
-    #deploymentReviewModal .modal-footer {
+    .deployment-review-footer {
         flex-direction: column-reverse;
     }
 
     #cancelDeploymentReviewBtn,
     #submitDeploymentReviewBtn {
         width: 100%;
-        min-width: 0;
     }
 }
