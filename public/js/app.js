@@ -276,6 +276,9 @@ function getProjectStatusClass(status) {
         case "Completed":
             return "status-completed";
 
+        case "Deployed":
+            return "status-deployed";
+
         case "Not Started":
         case "On Hold":
         default:
@@ -3468,6 +3471,167 @@ function restoreProjectActionMenu(
 }
 
 
+
+// ============================================================
+// DEPLOY ACTION STATE
+// ============================================================
+
+async function refreshDeployActionState(
+    menu,
+    project
+) {
+
+    if (
+        !menu ||
+        !project?.project_id
+    ) {
+        return;
+    }
+
+
+    const deployAction =
+        menu.querySelector(
+            ".deploy-project-action"
+        );
+
+
+    if (!deployAction) {
+        return;
+    }
+
+
+    const deployLabel =
+        deployAction.querySelector(
+            ".deploy-project-label"
+        );
+
+
+    // Only administrators can deploy the project.
+    if (!isAdminViewer) {
+
+        deployAction.disabled =
+            true;
+
+        deployAction.title =
+            "Administrator access required.";
+
+        return;
+    }
+
+
+    // A deployed project cannot be deployed again.
+    if (
+        project.project_status ===
+        "Deployed"
+    ) {
+
+        deployAction.disabled =
+            true;
+
+        deployAction.title =
+            "This project is already deployed.";
+
+        if (deployLabel) {
+            deployLabel.textContent =
+                "Deployed";
+        }
+
+        return;
+    }
+
+
+    deployAction.disabled =
+        true;
+
+    deployAction.title =
+        "Checking deployment readiness...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/projects/${encodeURIComponent(
+                    project.project_id
+                )}/deployment-checklist`
+            );
+
+
+        const responseText =
+            await response.text();
+
+
+        let result = {};
+
+
+        if (responseText) {
+
+            try {
+                result =
+                    JSON.parse(
+                        responseText
+                    );
+            } catch (_) {
+                result = {
+                    error:
+                        responseText
+                };
+            }
+        }
+
+
+        if (
+            !response.ok ||
+            !result.success
+        ) {
+
+            throw new Error(
+                result.error ||
+                result.details ||
+                "Unable to verify deployment readiness."
+            );
+        }
+
+
+        const ready =
+            result.summary
+                ?.ready_for_deployment ===
+            true;
+
+
+        deployAction.disabled =
+            !ready;
+
+
+        deployAction.title =
+            ready
+                ? "All 8 required deployment documents are approved."
+                : "All 8 required deployment documents must be approved before deployment.";
+
+
+        if (deployLabel) {
+            deployLabel.textContent =
+                "Deploy";
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "DEPLOYMENT READINESS CHECK ERROR:",
+            error
+        );
+
+
+        deployAction.disabled =
+            true;
+
+        deployAction.title =
+            "Unable to verify deployment readiness.";
+    }
+}
+
+
 // ============================================================
 // BIND PROJECT ACTION MENU ITEMS
 // ============================================================
@@ -3562,6 +3726,18 @@ function bindProjectActionMenuItems(
                         arrow.textContent =
                             "⌄";
                     }
+
+
+                    if (
+                        sectionName ===
+                        "deployment"
+                    ) {
+
+                        refreshDeployActionState(
+                            menu,
+                            project
+                        );
+                    }
                 }
             }
         );
@@ -3591,6 +3767,143 @@ function bindProjectActionMenuItems(
                 openDeploymentChecklist(
                     project
                 );
+            }
+        );
+    }
+
+
+    // ============================================================
+    // DEPLOY PROJECT
+    // ============================================================
+
+    const deployProjectAction =
+        menu.querySelector(
+            ".deploy-project-action"
+        );
+
+
+    if (deployProjectAction) {
+
+        deployProjectAction.addEventListener(
+            "click",
+            async event => {
+
+                event.stopPropagation();
+
+
+                if (
+                    deployProjectAction.disabled ||
+                    !isAdminViewer
+                ) {
+                    return;
+                }
+
+
+                const confirmed =
+                    window.confirm(
+                        `Deploy ${project.project_id} - ${project.project_name}?\n\nThis will mark the project as Deployed and unlock Maintenance.`
+                    );
+
+
+                if (!confirmed) {
+                    return;
+                }
+
+
+                const deployLabel =
+                    deployProjectAction.querySelector(
+                        ".deploy-project-label"
+                    );
+
+
+                deployProjectAction.disabled =
+                    true;
+
+
+                if (deployLabel) {
+                    deployLabel.textContent =
+                        "Deploying...";
+                }
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `/api/projects/${encodeURIComponent(
+                                project.project_id
+                            )}/deploy`,
+                            {
+                                method:
+                                    "POST"
+                            }
+                        );
+
+
+                    const responseText =
+                        await response.text();
+
+
+                    let result = {};
+
+
+                    if (responseText) {
+
+                        try {
+                            result =
+                                JSON.parse(
+                                    responseText
+                                );
+                        } catch (_) {
+                            result = {
+                                error:
+                                    responseText
+                            };
+                        }
+                    }
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            result.error ||
+                            result.details ||
+                            "Unable to deploy the project."
+                        );
+                    }
+
+
+                    closeAllProjectActionMenus();
+
+
+                    alert(
+                        result.message ||
+                        "Project deployed successfully. Maintenance is now unlocked."
+                    );
+
+
+                    await loadDashboard();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "DEPLOY PROJECT ERROR:",
+                        error
+                    );
+
+
+                    alert(
+                        "Deployment failed: " +
+                        error.message
+                    );
+
+
+                    await refreshDeployActionState(
+                        menu,
+                        project
+                    );
+                }
             }
         );
     }
@@ -3945,18 +4258,22 @@ function createProjectActionMenu(
 
                 <button
                     type="button"
-                    class="project-action-item ready-for-deployment-action"
+                    class="project-action-item ready-for-deployment-action deploy-project-action"
                     disabled
+                    title="${
+                        maintenanceEnabled
+                            ? "This project is already deployed."
+                            : "All 8 required deployment documents must be approved before deployment."
+                    }"
                 >
                     <span class="project-action-icon">
                         ✓
                     </span>
 
-                    <span>
-                        Ready for Deployment
+                    <span class="deploy-project-label">
+                        ${maintenanceEnabled ? "Deployed" : "Deploy"}
                     </span>
                 </button>
-
             </div>
 
 

@@ -2849,6 +2849,220 @@ app.patch(
 );
 
 // ============================================================
+// DEPLOY PROJECT
+// ADMIN ONLY
+// ============================================================
+
+app.post(
+    "/api/projects/:projectId/deploy",
+
+    async (req, res) => {
+
+        try {
+
+            const { projectId } =
+                req.params;
+
+
+            // ------------------------------------------------
+            // ADMIN ONLY
+            // ------------------------------------------------
+
+            if (
+                req.profile?.role !==
+                "admin"
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    error:
+                        "Only administrators can deploy a project."
+                });
+            }
+
+
+            const db =
+                getDatabaseClient();
+
+
+            // ------------------------------------------------
+            // VERIFY PROJECT
+            // ------------------------------------------------
+
+            const {
+                data: project,
+                error: projectError
+            } = await db
+                .from("projects")
+                .select(
+                    "project_id, project_name, project_status"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .maybeSingle();
+
+
+            if (projectError) {
+                throw projectError;
+            }
+
+
+            if (!project) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Project not found."
+                });
+            }
+
+
+            if (
+                project.project_status ===
+                "Deployed"
+            ) {
+
+                return res.json({
+                    success: true,
+                    already_deployed: true,
+                    message:
+                        "Project is already deployed.",
+                    project:
+                        project
+                });
+            }
+
+
+            // ------------------------------------------------
+            // LOAD DEPLOYMENT DOCUMENTS
+            // ------------------------------------------------
+
+            const {
+                data: deploymentDocuments,
+                error: documentsError
+            } = await db
+                .from(
+                    "deployment_documents"
+                )
+                .select(
+                    "document_type, status"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                );
+
+
+            if (documentsError) {
+                throw documentsError;
+            }
+
+
+            const documentMap =
+                new Map(
+                    (deploymentDocuments || [])
+                        .map(document => [
+                            document.document_type,
+                            document.status
+                        ])
+                );
+
+
+            // ------------------------------------------------
+            // VERIFY ALL 8 ARE APPROVED
+            // ------------------------------------------------
+
+            const incompleteDocuments =
+                REQUIRED_DEPLOYMENT_DOCUMENTS
+                    .filter(
+                        documentType =>
+                            documentMap.get(
+                                documentType
+                            ) !==
+                            "Approved"
+                    );
+
+
+            if (
+                incompleteDocuments.length >
+                0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Project is not ready for deployment. All 8 required documents must be approved.",
+                    incomplete_documents:
+                        incompleteDocuments
+                });
+            }
+
+
+            // ------------------------------------------------
+            // MARK PROJECT AS DEPLOYED
+            // ------------------------------------------------
+
+            const now =
+                new Date().toISOString();
+
+
+            const {
+                data: deployedProject,
+                error: updateError
+            } = await db
+                .from("projects")
+                .update({
+                    project_status:
+                        "Deployed",
+
+                    updated_at:
+                        now
+                })
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .select()
+                .single();
+
+
+            if (updateError) {
+                throw updateError;
+            }
+
+
+            return res.json({
+                success: true,
+                message:
+                    "Project deployed successfully. Maintenance is now unlocked.",
+                project:
+                    deployedProject
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "DEPLOY PROJECT ERROR:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Could not deploy the project.",
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
 // LIST PROJECT REPOSITORY CONTENTS
 // ============================================================
 
