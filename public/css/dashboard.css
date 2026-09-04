@@ -151,47 +151,48 @@
 /* Project ID */
 .table-container th:nth-child(1),
 .table-container td:nth-child(1) {
-    width: 15%;
+    width: 13%;
     white-space: nowrap;
 }
 
 /* System / Application Name */
 .table-container th:nth-child(2),
 .table-container td:nth-child(2) {
-    width: 22%;
+    width: 19%;
 }
 
 /* Development Team */
 .table-container th:nth-child(3),
 .table-container td:nth-child(3) {
-    width: 21%;
+    width: 19%;
 }
 
 /* Version */
 .table-container th:nth-child(4),
 .table-container td:nth-child(4) {
-    width: 9%;
+    width: 8%;
     white-space: nowrap;
 }
 
 /* Status */
 .table-container th:nth-child(5),
 .table-container td:nth-child(5) {
-    width: 13%;
+    width: 18%;
     white-space: nowrap;
+    overflow: visible;
 }
 
 /* Date Started */
 .table-container th:nth-child(6),
 .table-container td:nth-child(6) {
-    width: 13%;
+    width: 11%;
     white-space: nowrap;
 }
 
 /* Actions */
 .table-container th:nth-child(7),
 .table-container td:nth-child(7) {
-    width: 13%;
+    width: 12%;
     min-width: 145px;
     white-space: nowrap;
     overflow: visible;
@@ -250,9 +251,19 @@
 
 /* Active */
 
-.status-active {
+.status-active,
+.status-ready-deployment,
+.status-deployed {
     background: #d1fae5;
     color: #166534;
+}
+
+/* Keep long automatic statuses contained inside their own cell. */
+.status-ready-deployment,
+.status-deployed {
+    max-width: 100%;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 /* Completed */
@@ -2071,13 +2082,33 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    DEPLOYMENT CHECKLIST MODAL
    ============================================================ */
 
+#deploymentChecklistModal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 20000 !important;
+}
+
 #deploymentChecklistModal .deployment-checklist-modal-content {
-    width: min(900px, calc(100vw - 40px));
+    position: relative !important;
+    z-index: 20001 !important;
+
+    width: min(940px, calc(100vw - 40px));
+    max-width: 940px;
     max-height: 90vh;
+
     padding: 0;
     overflow: hidden;
-    border-radius: 16px;
+
+    display: flex;
+    flex-direction: column;
+
     background: #ffffff;
+    border-radius: 18px;
+
+    box-sizing: border-box;
+
+    box-shadow:
+        0 24px 70px rgba(15, 23, 42, 0.24);
 }
 
 
@@ -2086,21 +2117,29 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    ============================================================ */
 
 #deploymentChecklistModal .modal-header {
+    flex: 0 0 auto;
+
     padding: 24px 28px;
+
     border-bottom: 1px solid #e5e7eb;
 }
 
 #deploymentChecklistModal .modal-header h2 {
     margin: 0 0 5px;
+
+    color: #1f2937;
+
     font-size: 22px;
     font-weight: 700;
-    color: #1f2937;
+    line-height: 1.25;
 }
 
 #deploymentChecklistProjectName {
     margin: 0;
-    font-size: 14px;
+
     color: #6b7280;
+
+    font-size: 14px;
 }
 
 
@@ -2109,9 +2148,13 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    ============================================================ */
 
 .deployment-readiness-card {
+    flex: 0 0 auto;
+
     margin: 22px 28px 18px;
     padding: 18px 20px;
+
     background: #f8faf8;
+
     border: 1px solid #dfe9df;
     border-radius: 12px;
 }
@@ -2120,20 +2163,26 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 16px;
+
     margin-bottom: 12px;
 }
 
 .deployment-readiness-label {
+    color: #4b5563;
+
     font-size: 14px;
     font-weight: 600;
-    color: #4b5563;
 }
 
 #deploymentReadinessCount {
+    color: #235e26;
+
     font-size: 15px;
     font-weight: 700;
-    color: #235e26;
+
+    white-space: nowrap;
 }
 
 
@@ -2144,16 +2193,22 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
 .deployment-progress-track {
     width: 100%;
     height: 9px;
+
     overflow: hidden;
+
     background: #e5e7eb;
+
     border-radius: 999px;
 }
 
 .deployment-progress-bar {
     width: 0;
     height: 100%;
+
     background: #235e26;
+
     border-radius: inherit;
+
     transition: width 0.3s ease;
 }
 
@@ -2163,22 +2218,32 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    ============================================================ */
 
 .deployment-checklist-loading {
+    flex: 0 0 auto;
+
     margin: 0 28px 15px;
     padding: 12px 14px;
-    font-size: 14px;
+
     color: #4b5563;
     background: #f9fafb;
+
     border-radius: 8px;
+
+    font-size: 14px;
 }
 
 .deployment-checklist-error {
+    flex: 0 0 auto;
+
     margin: 0 28px 15px;
     padding: 12px 14px;
-    font-size: 14px;
+
     color: #991b1b;
     background: #fef2f2;
+
     border: 1px solid #fecaca;
     border-radius: 8px;
+
+    font-size: 14px;
 }
 
 
@@ -2186,10 +2251,16 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    DOCUMENT LIST
    ============================================================ */
 
-.deployment-document-list {
-    max-height: 470px;
-    padding: 0 28px 20px;
+#deploymentChecklistModal .deployment-document-list {
+    min-height: 0;
+    max-height: 510px;
+
+    padding: 0 24px 20px;
+
     overflow-y: auto;
+    overflow-x: hidden;
+
+    scrollbar-gutter: stable;
 }
 
 
@@ -2197,28 +2268,42 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    DOCUMENT ROW
    ============================================================ */
 
-.deployment-document-row {
+#deploymentChecklistModal .deployment-document-row {
     display: grid;
-    grid-template-columns: 38px minmax(0, 1fr) 145px 95px;
+
+    grid-template-columns:
+        44px
+        minmax(240px, 1fr)
+        150px
+        284px;
+
     align-items: center;
+
     gap: 14px;
 
-    min-height: 68px;
+    width: 100%;
+    min-height: 78px;
+
+    margin: 0 0 10px;
     padding: 12px 14px;
-    margin-bottom: 9px;
+
+    box-sizing: border-box;
 
     background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
+
+    border: 1px solid #e1e6eb;
+    border-radius: 12px;
 
     transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
 }
 
-.deployment-document-row:hover {
+#deploymentChecklistModal .deployment-document-row:hover {
     border-color: #cbd5e1;
-    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.05);
+
+    box-shadow:
+        0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 
@@ -2226,20 +2311,25 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    DOCUMENT NUMBER
    ============================================================ */
 
-.deployment-document-number {
+#deploymentChecklistModal .deployment-document-number {
     display: flex;
     align-items: center;
     justify-content: center;
 
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
 
-    font-size: 13px;
-    font-weight: 700;
+    margin: 0;
+
+    flex-shrink: 0;
+
     color: #235e26;
+    background: #edf6ee;
 
-    background: #edf6ed;
-    border-radius: 8px;
+    border-radius: 10px;
+
+    font-size: 14px;
+    font-weight: 700;
 }
 
 
@@ -2247,110 +2337,171 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    DOCUMENT INFORMATION
    ============================================================ */
 
-.deployment-document-info {
+#deploymentChecklistModal .deployment-document-info {
     min-width: 0;
 }
 
-.deployment-document-name {
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.4;
+#deploymentChecklistModal .deployment-document-name {
     color: #1f2937;
 
-    overflow-wrap: anywhere;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.42;
+
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
 }
 
 
 /* ============================================================
-   STATUS BADGES
+   DOCUMENT STATUS
    ============================================================ */
 
-.deployment-document-status {
+#deploymentChecklistModal .deployment-document-status {
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
-    min-width: 125px;
-    min-height: 30px;
-    padding: 6px 10px;
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+    min-height: 38px;
+
+    padding: 7px 10px;
+
+    box-sizing: border-box;
+
+    border-radius: 999px;
 
     font-size: 12px;
     font-weight: 700;
+    line-height: 1.2;
 
-    border-radius: 999px;
     white-space: nowrap;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-
-/* Missing */
-
-.deployment-status-missing {
+#deploymentChecklistModal .deployment-status-missing {
     color: #6b7280;
     background: #f3f4f6;
 }
 
-
-/* Pending Review */
-
-.deployment-status-pending {
+#deploymentChecklistModal .deployment-status-pending {
     color: #92400e;
     background: #fef3c7;
 }
 
-
-/* Approved */
-
-.deployment-status-approved {
+#deploymentChecklistModal .deployment-status-approved {
     color: #166534;
     background: #dcfce7;
 }
 
-
-/* Needs Revision */
-
-.deployment-status-revision {
+#deploymentChecklistModal .deployment-status-revision {
     color: #991b1b;
     background: #fee2e2;
 }
 
 
 /* ============================================================
-   UPLOAD / VIEW / RESUBMIT BUTTON
+   DOCUMENT ACTIONS
    ============================================================ */
 
-.deployment-document-action {
-    min-width: 88px;
-    height: 36px;
+#deploymentChecklistModal .deployment-document-actions {
+    display: grid;
+
+    grid-template-columns:
+        136px
+        138px;
+
+    align-items: center;
+    justify-content: end;
+
+    gap: 10px;
+
+    width: 284px;
+    min-width: 284px;
+
+    margin: 0;
+
+    box-sizing: border-box;
+}
+
+
+/* ============================================================
+   DOCUMENT ACTION BUTTONS
+   ============================================================ */
+
+#deploymentChecklistModal .deployment-document-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 136px;
+    min-width: 136px;
+    height: 48px;
+
+    margin: 0;
     padding: 0 14px;
 
-    border: none;
-    border-radius: 8px;
+    box-sizing: border-box;
 
+    border: 1px solid #cfd8e3;
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: #235e26;
+
+    font-family: inherit;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
+    line-height: 1.2;
 
-    color: #ffffff;
-    background: #235e26;
+    text-align: center;
+    white-space: nowrap;
 
     cursor: pointer;
 
     transition:
-        background 0.2s ease,
-        transform 0.1s ease;
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.15s ease;
 }
 
+#deploymentChecklistModal
 .deployment-document-action:hover:not(:disabled) {
-    background: #194b1c;
+    background: #f4faf4;
+
+    border-color: #235e26;
+
+    transform: translateY(-1px);
 }
 
-.deployment-document-action:active:not(:disabled) {
-    transform: translateY(1px);
-}
+#deploymentChecklistModal .deployment-document-action:disabled {
+    opacity: 0.45;
 
-.deployment-document-action:disabled {
-    color: #9ca3af;
-    background: #e5e7eb;
     cursor: not-allowed;
+}
+
+#deploymentChecklistModal .deployment-review-action {
+    width: 138px;
+    min-width: 138px;
+
+    color: #ffffff;
+    background: #235e26;
+
+    border-color: #235e26;
+}
+
+#deploymentChecklistModal
+.deployment-review-action:hover:not(:disabled) {
+    color: #ffffff;
+    background: #19491d;
+
+    border-color: #19491d;
 }
 
 
@@ -2358,15 +2509,19 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    FOOTER
    ============================================================ */
 
-.deployment-checklist-footer {
+#deploymentChecklistModal .deployment-checklist-footer {
+    flex: 0 0 auto;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 20px;
 
     padding: 18px 28px;
 
     background: #f9fafb;
+
     border-top: 1px solid #e5e7eb;
 }
 
@@ -2375,24 +2530,32 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    OVERALL DEPLOYMENT STATUS
    ============================================================ */
 
-.deployment-overall-status {
+#deploymentChecklistModal .deployment-overall-status {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+
+    max-width: 100%;
 
     padding: 8px 12px;
+
+    box-sizing: border-box;
+
+    border-radius: 8px;
 
     font-size: 12px;
     font-weight: 700;
 
-    border-radius: 8px;
+    text-align: center;
+    white-space: normal;
 }
 
-.deployment-not-ready {
+#deploymentChecklistModal .deployment-not-ready {
     color: #991b1b;
     background: #fee2e2;
 }
 
-.deployment-ready {
+#deploymentChecklistModal .deployment-ready {
     color: #166534;
     background: #dcfce7;
 }
@@ -2402,30 +2565,70 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
    SCROLLBAR
    ============================================================ */
 
+#deploymentChecklistModal
 .deployment-document-list::-webkit-scrollbar {
-    width: 7px;
+    width: 8px;
 }
 
+#deploymentChecklistModal
 .deployment-document-list::-webkit-scrollbar-track {
     background: transparent;
 }
 
+#deploymentChecklistModal
 .deployment-document-list::-webkit-scrollbar-thumb {
     background: #cbd5e1;
+
     border-radius: 999px;
 }
 
 
 /* ============================================================
-   RESPONSIVE
+   CHECKLIST RESPONSIVE
    ============================================================ */
 
-@media (max-width: 760px) {
+@media (max-width: 920px) {
 
     #deploymentChecklistModal .deployment-checklist-modal-content {
         width: calc(100vw - 24px);
-        max-height: 92vh;
     }
+
+    #deploymentChecklistModal .deployment-document-row {
+        grid-template-columns:
+            42px
+            minmax(200px, 1fr)
+            145px;
+
+        gap: 12px;
+    }
+
+    #deploymentChecklistModal .deployment-document-status {
+        width: 145px;
+        min-width: 145px;
+        max-width: 145px;
+    }
+
+    #deploymentChecklistModal .deployment-document-actions {
+        grid-column: 2 / -1;
+
+        width: 100%;
+        min-width: 0;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        justify-content: stretch;
+    }
+
+    #deploymentChecklistModal .deployment-document-action,
+    #deploymentChecklistModal .deployment-review-action {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+
+@media (max-width: 620px) {
 
     #deploymentChecklistModal .modal-header {
         padding: 20px;
@@ -2435,135 +2638,52 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
         margin: 18px 20px 15px;
     }
 
-    .deployment-document-list {
-        padding: 0 20px 18px;
+    #deploymentChecklistModal .deployment-document-list {
+        padding: 0 16px 18px;
     }
 
-    .deployment-document-row {
-        grid-template-columns: 34px 1fr;
-        gap: 10px;
+    #deploymentChecklistModal .deployment-document-row {
+        grid-template-columns:
+            40px
+            minmax(0, 1fr);
+
+        align-items: start;
+
+        padding: 12px;
     }
 
-    .deployment-document-status {
+    #deploymentChecklistModal .deployment-document-status {
         grid-column: 2;
+
+        width: auto;
+        min-width: 0;
+        max-width: 180px;
+
         justify-self: start;
     }
 
-    .deployment-document-action {
+    #deploymentChecklistModal .deployment-document-actions {
         grid-column: 2;
-        justify-self: start;
+
+        grid-template-columns: 1fr;
+
+        width: 100%;
     }
 
-    .deployment-checklist-footer {
+    #deploymentChecklistModal .deployment-checklist-footer {
         padding: 16px 20px;
+
         flex-direction: column;
         align-items: stretch;
     }
 
-    .deployment-overall-status {
-        justify-content: center;
-        text-align: center;
+    #deploymentChecklistModal .deployment-overall-status {
+        width: 100%;
     }
 
     #closeDeploymentChecklistFooterBtn {
         width: 100%;
     }
-}
-
-
-/* ============================================================
-   DEPLOYMENT CHECKLIST - ACTION BUTTONS
-   ============================================================ */
-
-.deployment-document-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
-    flex-wrap: nowrap;
-}
-
-
-/* All checklist action buttons */
-
-.deployment-document-action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    min-width: 110px;
-    min-height: 42px;
-
-    padding: 8px 14px;
-
-    border: 1px solid #d5dce3;
-    border-radius: 9px;
-
-    background: #ffffff;
-    color: #235e26;
-
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.15;
-
-    text-align: center;
-    white-space: normal;
-
-    cursor: pointer;
-
-    box-sizing: border-box;
-
-    transition:
-        background-color 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease,
-        transform 0.15s ease;
-}
-
-
-.deployment-document-action:hover:not(:disabled) {
-    background: #f2f8f2;
-    border-color: #235e26;
-
-    transform: translateY(-1px);
-}
-
-
-.deployment-document-action:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-
-
-/* Review / Edit Review button */
-
-.deployment-review-action {
-    background: #235e26;
-    border-color: #235e26;
-    color: #ffffff;
-}
-
-
-.deployment-review-action:hover:not(:disabled) {
-    background: #19491d;
-    border-color: #19491d;
-    color: #ffffff;
-}
-
-
-/* Prevent action area from becoming too narrow */
-
-.deployment-document-row {
-    grid-template-columns:
-        44px
-        minmax(240px, 1fr)
-        182px
-        minmax(118px, auto);
-
-    gap: 16px;
-
-    align-items: center;
 }
 
 
@@ -3414,3 +3534,26 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
         width: 100% !important;
     }
 }
+
+/* ============================================================
+   PROJECT STATUS - LONG AUTOMATIC STATUS SAFETY
+   ============================================================ */
+
+.table-container td:nth-child(5) .status {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.table-container td:nth-child(5) .status-ready-deployment {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+@media (max-width: 1100px) {
+    .table-container td:nth-child(5) .status {
+        white-space: normal;
+        text-align: center;
+        line-height: 1.2;
+    }
+}
+
