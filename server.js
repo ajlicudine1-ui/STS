@@ -2464,34 +2464,31 @@ app.patch(
 
 
             // IMPORTANT STATUS RULE:
-            // This checklist endpoint can only move a non-deployed project
-            // to "Ready for Deployment" (or back to Active).
-            // "Deployed" is written ONLY by POST /api/projects/:projectId/deploy.
+            // The checklist always controls readiness.
             //
-            // Ready for Deployment is triggered ONLY when all 8 are Pass.
+            // All 8 Pass
+            //     -> Ready for Deployment
+            //
+            // Anything less than 8 Pass
+            //     -> Active
+            //
+            // The ONLY route allowed to set "Deployed" is:
+            // POST /api/projects/:projectId/deploy
+            //
+            // Therefore, if a deployed project's checklist is changed,
+            // its status immediately leaves Deployed and becomes either
+            // Ready for Deployment or Active.
             if (
                 checklistState.summary
                     .ready_for_deployment ===
                 true
             ) {
 
-                // Do not overwrite a project that has already been deployed.
-                if (
-                    project.project_status !==
-                    "Deployed"
-                ) {
+                nextProjectStatus =
+                    "Ready for Deployment";
 
-                    nextProjectStatus =
-                        "Ready for Deployment";
-                }
+            } else {
 
-            } else if (
-                project.project_status ===
-                "Ready for Deployment"
-            ) {
-
-                // If even one item stops being Pass before deployment,
-                // return the project to Active.
                 nextProjectStatus =
                     "Active";
             }

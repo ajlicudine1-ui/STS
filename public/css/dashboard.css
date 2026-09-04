@@ -4284,3 +4284,75 @@ select:focus {
     }
 }
 
+
+/* ============================================================
+   DEPLOYMENT FORMS - VIEW + DELETE
+   ============================================================ */
+
+#deploymentChecklistModal
+.deployment-document-actions.deployment-document-simple-actions:has(
+    .deployment-document-view-action
+) {
+    display: grid !important;
+
+    grid-template-columns:
+        110px
+        110px !important;
+
+    width: 230px !important;
+    min-width: 230px !important;
+
+    gap: 10px !important;
+}
+
+#deploymentChecklistModal
+.deployment-document-simple-actions
+.deployment-document-view-action,
+#deploymentChecklistModal
+.deployment-document-simple-actions
+.deployment-document-delete-action {
+    width: 110px !important;
+    min-width: 110px !important;
+}
+
+#deploymentChecklistModal
+.deployment-document-view-action {
+    color: #235e26 !important;
+    background: #ffffff !important;
+
+    border-color: #b7d8ba !important;
+}
+
+#deploymentChecklistModal
+.deployment-document-view-action:hover:not(:disabled) {
+    color: #19491d !important;
+    background: #edf6ee !important;
+
+    border-color: #8ec493 !important;
+}
+
+@media (max-width: 700px) {
+
+    #deploymentChecklistModal
+    .deployment-document-actions.deployment-document-simple-actions:has(
+        .deployment-document-view-action
+    ) {
+        grid-template-columns:
+            1fr
+            1fr !important;
+
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    #deploymentChecklistModal
+    .deployment-document-simple-actions
+    .deployment-document-view-action,
+    #deploymentChecklistModal
+    .deployment-document-simple-actions
+    .deployment-document-delete-action {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+

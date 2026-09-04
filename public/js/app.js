@@ -3057,6 +3057,53 @@ function renderDeploymentChecklist(data) {
 
             } else {
 
+                const viewAction =
+                    document.createElement(
+                        "button"
+                    );
+
+                viewAction.type =
+                    "button";
+
+                viewAction.className =
+                    "deployment-document-action deployment-document-view-action";
+
+                viewAction.textContent =
+                    "View";
+
+
+                viewAction.addEventListener(
+                    "click",
+                    event => {
+
+                        event.stopPropagation();
+
+
+                        const fileUrl =
+                            deploymentDocument.drive_file_url ||
+                            deploymentDocument.file_url ||
+                            "";
+
+
+                        if (!fileUrl) {
+
+                            alert(
+                                "The uploaded file link is not available."
+                            );
+
+                            return;
+                        }
+
+
+                        window.open(
+                            fileUrl,
+                            "_blank",
+                            "noopener,noreferrer"
+                        );
+                    }
+                );
+
+
                 const deleteAction =
                     document.createElement(
                         "button"
@@ -3162,6 +3209,10 @@ function renderDeploymentChecklist(data) {
                     }
                 );
 
+
+                actions.appendChild(
+                    viewAction
+                );
 
                 actions.appendChild(
                     deleteAction
