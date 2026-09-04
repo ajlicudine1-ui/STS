@@ -97,7 +97,66 @@ let pendingProjectFileUploads = [];
 let pendingProjectFolderUploads = [];
 
 // ============================================================
-// DEPLOYMENT CHECKLIST ELEMENTS
+// REAL DEPLOYMENT CHECKLIST ELEMENTS
+// ============================================================
+
+const deploymentVerificationModal =
+    document.getElementById(
+        "deploymentVerificationModal"
+    );
+
+const closeDeploymentVerificationModalBtn =
+    document.getElementById(
+        "closeDeploymentVerificationModal"
+    );
+
+const closeDeploymentVerificationFooterBtn =
+    document.getElementById(
+        "closeDeploymentVerificationFooterBtn"
+    );
+
+const deploymentVerificationProjectName =
+    document.getElementById(
+        "deploymentVerificationProjectName"
+    );
+
+const deploymentVerificationCount =
+    document.getElementById(
+        "deploymentVerificationCount"
+    );
+
+const deploymentVerificationProgressBar =
+    document.getElementById(
+        "deploymentVerificationProgressBar"
+    );
+
+const deploymentVerificationLoading =
+    document.getElementById(
+        "deploymentVerificationLoading"
+    );
+
+const deploymentVerificationError =
+    document.getElementById(
+        "deploymentVerificationError"
+    );
+
+const deploymentVerificationList =
+    document.getElementById(
+        "deploymentVerificationList"
+    );
+
+const deploymentVerificationOverallStatus =
+    document.getElementById(
+        "deploymentVerificationOverallStatus"
+    );
+
+let currentDeploymentVerificationProject =
+    null;
+
+
+// ============================================================
+// OPTIONAL DEPLOYMENT DOCUMENT ELEMENTS
+// Existing IDs/functions retained to avoid breaking uploads/reviews.
 // ============================================================
 
 const deploymentChecklistModal =
@@ -2036,7 +2095,705 @@ if (projectModal) {
 }
 
 // ============================================================
-// DEPLOYMENT CHECKLIST
+// REAL DEPLOYMENT CHECKLIST
+// ============================================================
+
+function closeDeploymentVerificationModal() {
+
+    if (!deploymentVerificationModal) {
+        return;
+    }
+
+    deploymentVerificationModal.classList.remove(
+        "show"
+    );
+}
+
+
+function getVerificationStatusClass(status) {
+
+    switch (status) {
+
+        case "Pass":
+            return "deployment-status-approved";
+
+        case "N/A":
+            return "deployment-status-pending";
+
+        case "Pending":
+        default:
+            return "deployment-status-missing";
+    }
+}
+
+
+function getVerificationStatusIcon(status) {
+
+    switch (status) {
+
+        case "Pass":
+            return "✓";
+
+        case "N/A":
+            return "—";
+
+        case "Pending":
+        default:
+            return "○";
+    }
+}
+
+
+async function updateDeploymentVerificationItem(
+    projectId,
+    criterionKey,
+    status,
+    verifiedBy = ""
+) {
+
+    const response =
+        await fetch(
+            `/api/projects/${encodeURIComponent(
+                projectId
+            )}/deployment-checklist-items/${encodeURIComponent(
+                criterionKey
+            )}`,
+            {
+                method:
+                    "PATCH",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:
+                    JSON.stringify({
+                        status:
+                            status,
+
+                        verified_by:
+                            verifiedBy
+                    })
+            }
+        );
+
+
+    const responseText =
+        await response.text();
+
+
+    let result = {};
+
+
+    if (responseText) {
+
+        try {
+
+            result =
+                JSON.parse(
+                    responseText
+                );
+
+        } catch (_) {
+
+            result = {
+                error:
+                    responseText
+            };
+        }
+    }
+
+
+    if (
+        !response.ok ||
+        !result.success
+    ) {
+
+        throw new Error(
+            result.error ||
+            result.details ||
+            "Unable to update deployment checklist item."
+        );
+    }
+
+
+    return result;
+}
+
+
+function renderDeploymentVerificationChecklist(
+    data
+) {
+
+    if (
+        !deploymentVerificationList ||
+        !data
+    ) {
+        return;
+    }
+
+
+    const summary =
+        data.summary || {};
+
+
+    const items =
+        Array.isArray(data.items)
+            ? data.items
+            : [];
+
+
+    if (deploymentVerificationProjectName) {
+
+        deploymentVerificationProjectName.textContent =
+            `${data.project?.project_id || ""} — ${data.project?.project_name || ""}`;
+    }
+
+
+    const passed =
+        Number(
+            summary.passed || 0
+        );
+
+
+    const total =
+        Number(
+            summary.total || 8
+        );
+
+
+    if (deploymentVerificationCount) {
+
+        deploymentVerificationCount.textContent =
+            `${passed} / ${total} Pass`;
+    }
+
+
+    const progress =
+        total > 0
+            ? Math.round(
+                (passed / total) *
+                100
+            )
+            : 0;
+
+
+    if (deploymentVerificationProgressBar) {
+
+        deploymentVerificationProgressBar.style.width =
+            `${progress}%`;
+    }
+
+
+    deploymentVerificationList.innerHTML =
+        "";
+
+
+    items.forEach(
+        (
+            checklistItem,
+            index
+        ) => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                "deployment-document-row";
+
+            // Defensive inline grid so the new checklist works
+            // even before any separate CSS refinement is added.
+            row.style.display =
+                "grid";
+
+            row.style.gridTemplateColumns =
+                isAdminViewer
+                    ? "44px minmax(260px,1fr) 150px minmax(260px,auto)"
+                    : "44px minmax(260px,1fr) 150px";
+
+            row.style.alignItems =
+                "center";
+
+            row.style.gap =
+                "14px";
+
+            row.style.padding =
+                "12px 14px";
+
+            row.style.marginBottom =
+                "10px";
+
+            row.style.boxSizing =
+                "border-box";
+
+
+            const number =
+                document.createElement(
+                    "div"
+                );
+
+            number.className =
+                "deployment-document-number";
+
+            number.textContent =
+                String(index + 1);
+
+
+            const information =
+                document.createElement(
+                    "div"
+                );
+
+            information.className =
+                "deployment-document-info";
+
+
+            const name =
+                document.createElement(
+                    "div"
+                );
+
+            name.className =
+                "deployment-document-name";
+
+            name.textContent =
+                checklistItem.criterion_name ||
+                "Deployment criterion";
+
+
+            information.appendChild(
+                name
+            );
+
+
+            const verifier =
+                document.createElement(
+                    "div"
+                );
+
+            verifier.style.marginTop =
+                "5px";
+
+            verifier.style.fontSize =
+                "12px";
+
+            verifier.style.color =
+                "#6b7280";
+
+            verifier.textContent =
+                checklistItem.verified_by
+                    ? `Verified by: ${checklistItem.verified_by}`
+                    : "Verified by: —";
+
+
+            information.appendChild(
+                verifier
+            );
+
+
+            const status =
+                document.createElement(
+                    "span"
+                );
+
+            status.className =
+                `deployment-document-status ${getVerificationStatusClass(
+                    checklistItem.status
+                )}`;
+
+            status.textContent =
+                `${getVerificationStatusIcon(
+                    checklistItem.status
+                )} ${checklistItem.status || "Pending"}`;
+
+
+            row.appendChild(
+                number
+            );
+
+            row.appendChild(
+                information
+            );
+
+            row.appendChild(
+                status
+            );
+
+
+            if (isAdminViewer) {
+
+                const actions =
+                    document.createElement(
+                        "div"
+                    );
+
+                actions.className =
+                    "deployment-document-actions";
+
+                actions.style.display =
+                    "grid";
+
+                actions.style.gridTemplateColumns =
+                    "150px 110px";
+
+                actions.style.gap =
+                    "10px";
+
+                actions.style.width =
+                    "270px";
+
+                actions.style.minWidth =
+                    "270px";
+
+
+                const statusSelect =
+                    document.createElement(
+                        "select"
+                    );
+
+                statusSelect.setAttribute(
+                    "aria-label",
+                    `Status for ${checklistItem.criterion_name}`
+                );
+
+                statusSelect.style.height =
+                    "44px";
+
+                statusSelect.style.width =
+                    "150px";
+
+                statusSelect.style.padding =
+                    "0 10px";
+
+                statusSelect.style.border =
+                    "1px solid #cfd8e3";
+
+                statusSelect.style.borderRadius =
+                    "10px";
+
+                statusSelect.style.background =
+                    "#ffffff";
+
+                statusSelect.style.fontFamily =
+                    "inherit";
+
+                statusSelect.style.fontWeight =
+                    "600";
+
+
+                [
+                    "Pending",
+                    "Pass",
+                    "N/A"
+                ].forEach(optionValue => {
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+                    option.value =
+                        optionValue;
+
+                    option.textContent =
+                        optionValue;
+
+                    option.selected =
+                        checklistItem.status ===
+                        optionValue;
+
+                    statusSelect.appendChild(
+                        option
+                    );
+                });
+
+
+                const saveButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                saveButton.type =
+                    "button";
+
+                saveButton.className =
+                    "deployment-document-action deployment-review-action";
+
+                saveButton.textContent =
+                    "Save";
+
+                saveButton.style.width =
+                    "110px";
+
+                saveButton.style.minWidth =
+                    "110px";
+
+                saveButton.style.height =
+                    "44px";
+
+
+                saveButton.addEventListener(
+                    "click",
+                    async event => {
+
+                        event.stopPropagation();
+
+
+                        saveButton.disabled =
+                            true;
+
+                        const originalText =
+                            saveButton.textContent;
+
+                        saveButton.textContent =
+                            "Saving...";
+
+
+                        try {
+
+                            await updateDeploymentVerificationItem(
+                                data.project?.project_id,
+                                checklistItem.criterion_key,
+                                statusSelect.value,
+                                ""
+                            );
+
+
+                            await openDeploymentVerificationChecklist(
+                                currentDeploymentVerificationProject
+                            );
+
+
+                            // Project status may have changed to/from
+                            // Ready for Deployment.
+                            await loadDashboard();
+
+
+                        } catch (error) {
+
+                            console.error(
+                                "UPDATE DEPLOYMENT CHECKLIST ERROR:",
+                                error
+                            );
+
+
+                            alert(
+                                "Could not update checklist: " +
+                                error.message
+                            );
+
+
+                        } finally {
+
+                            saveButton.disabled =
+                                false;
+
+                            saveButton.textContent =
+                                originalText;
+                        }
+                    }
+                );
+
+
+                actions.appendChild(
+                    statusSelect
+                );
+
+                actions.appendChild(
+                    saveButton
+                );
+
+
+                row.appendChild(
+                    actions
+                );
+            }
+
+
+            deploymentVerificationList.appendChild(
+                row
+            );
+        }
+    );
+
+
+    if (deploymentVerificationOverallStatus) {
+
+        if (
+            summary.ready_for_deployment ===
+            true
+        ) {
+
+            deploymentVerificationOverallStatus.textContent =
+                "READY FOR DEPLOYMENT";
+
+            deploymentVerificationOverallStatus.classList.remove(
+                "deployment-not-ready"
+            );
+
+            deploymentVerificationOverallStatus.classList.add(
+                "deployment-ready"
+            );
+
+        } else {
+
+            deploymentVerificationOverallStatus.textContent =
+                "NOT READY FOR DEPLOYMENT";
+
+            deploymentVerificationOverallStatus.classList.remove(
+                "deployment-ready"
+            );
+
+            deploymentVerificationOverallStatus.classList.add(
+                "deployment-not-ready"
+            );
+        }
+    }
+}
+
+
+async function openDeploymentVerificationChecklist(
+    project
+) {
+
+    if (
+        !deploymentVerificationModal ||
+        !project
+    ) {
+        return;
+    }
+
+
+    currentDeploymentVerificationProject =
+        project;
+
+
+    deploymentVerificationModal.classList.add(
+        "show"
+    );
+
+
+    if (deploymentVerificationProjectName) {
+
+        deploymentVerificationProjectName.textContent =
+            `${project.project_id} — ${project.project_name}`;
+    }
+
+
+    if (deploymentVerificationLoading) {
+
+        deploymentVerificationLoading.hidden =
+            false;
+    }
+
+
+    if (deploymentVerificationError) {
+
+        deploymentVerificationError.hidden =
+            true;
+
+        deploymentVerificationError.textContent =
+            "";
+    }
+
+
+    if (deploymentVerificationList) {
+
+        deploymentVerificationList.innerHTML =
+            "";
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/projects/${encodeURIComponent(
+                    project.project_id
+                )}/deployment-checklist-items`
+            );
+
+
+        const responseText =
+            await response.text();
+
+
+        let data = {};
+
+
+        if (responseText) {
+
+            try {
+
+                data =
+                    JSON.parse(
+                        responseText
+                    );
+
+            } catch (_) {
+
+                data = {
+                    error:
+                        responseText
+                };
+            }
+        }
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.error ||
+                data.details ||
+                "Unable to load deployment checklist."
+            );
+        }
+
+
+        renderDeploymentVerificationChecklist(
+            data
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "REAL DEPLOYMENT CHECKLIST ERROR:",
+            error
+        );
+
+
+        if (deploymentVerificationError) {
+
+            deploymentVerificationError.textContent =
+                error.message ||
+                "Unable to load deployment checklist.";
+
+            deploymentVerificationError.hidden =
+                false;
+        }
+
+
+    } finally {
+
+        if (deploymentVerificationLoading) {
+
+            deploymentVerificationLoading.hidden =
+                true;
+        }
+    }
+}
+
+
+// ============================================================
+// OPTIONAL DEPLOYMENT DOCUMENTS
+// Existing upload/review behavior preserved.
 // ============================================================
 
 function closeDeploymentChecklistModal() {
@@ -2130,7 +2887,7 @@ function renderDeploymentChecklist(data) {
     if (deploymentReadinessCount) {
 
         deploymentReadinessCount.textContent =
-            `${approved} / ${total} Approved`;
+            `${approved} / ${total} Approved (Optional)`;
     }
 
 
@@ -2401,35 +3158,16 @@ function renderDeploymentChecklist(data) {
 
     if (deploymentOverallStatus) {
 
-        if (
-            summary.ready_for_deployment ===
-            true
-        ) {
+        deploymentOverallStatus.textContent =
+            "OPTIONAL — NOT REQUIRED FOR DEPLOYMENT";
 
-            deploymentOverallStatus.textContent =
-                "READY FOR DEPLOYMENT";
+        deploymentOverallStatus.classList.remove(
+            "deployment-not-ready"
+        );
 
-            deploymentOverallStatus.classList.remove(
-                "deployment-not-ready"
-            );
-
-            deploymentOverallStatus.classList.add(
-                "deployment-ready"
-            );
-
-        } else {
-
-            deploymentOverallStatus.textContent =
-                "NOT READY FOR DEPLOYMENT";
-
-            deploymentOverallStatus.classList.remove(
-                "deployment-ready"
-            );
-
-            deploymentOverallStatus.classList.add(
-                "deployment-not-ready"
-            );
-        }
+        deploymentOverallStatus.classList.add(
+            "deployment-ready"
+        );
     }
 }
 
@@ -2490,7 +3228,7 @@ async function openDeploymentChecklist(
             await fetch(
                 `/api/projects/${encodeURIComponent(
                     project.project_id
-                )}/deployment-checklist`
+                )}/deployment-checklist-items`
             );
 
 
@@ -3126,7 +3864,48 @@ if (deploymentReviewModal) {
 
 
 // ============================================================
-// DEPLOYMENT CHECKLIST MODAL LISTENERS
+// REAL DEPLOYMENT CHECKLIST MODAL LISTENERS
+// ============================================================
+
+if (closeDeploymentVerificationModalBtn) {
+
+    closeDeploymentVerificationModalBtn.addEventListener(
+        "click",
+        closeDeploymentVerificationModal
+    );
+}
+
+
+if (closeDeploymentVerificationFooterBtn) {
+
+    closeDeploymentVerificationFooterBtn.addEventListener(
+        "click",
+        closeDeploymentVerificationModal
+    );
+}
+
+
+if (deploymentVerificationModal) {
+
+    deploymentVerificationModal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                deploymentVerificationModal
+            ) {
+
+                closeDeploymentVerificationModal();
+            }
+        }
+    );
+}
+
+
+// ============================================================
+// OPTIONAL DEPLOYMENT DOCUMENTS MODAL LISTENERS
+// Existing IDs retained.
 // ============================================================
 
 if (closeDeploymentChecklistModalBtn) {
@@ -3612,8 +4391,8 @@ async function refreshDeployActionState(
 
         deployAction.title =
             ready
-                ? "All 8 required deployment documents are approved."
-                : "All 8 required deployment documents must be approved before deployment.";
+                ? "All 8 deployment checklist criteria are Pass."
+                : "All 8 deployment checklist criteria must be Pass before deployment.";
 
 
         if (deployLabel) {
@@ -3764,6 +4543,34 @@ function bindProjectActionMenuItems(
     if (deploymentChecklistAction) {
 
         deploymentChecklistAction.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+                closeAllProjectActionMenus();
+
+                openDeploymentVerificationChecklist(
+                    project
+                );
+            }
+        );
+    }
+
+
+    // ============================================================
+    // OPTIONAL DEPLOYMENT DOCUMENTS ACTION
+    // ============================================================
+
+    const deploymentDocumentsAction =
+        menu.querySelector(
+            ".deployment-documents-action"
+        );
+
+
+    if (deploymentDocumentsAction) {
+
+        deploymentDocumentsAction.addEventListener(
             "click",
             event => {
 
@@ -4265,12 +5072,26 @@ function createProjectActionMenu(
 
                 <button
                     type="button"
+                    class="project-action-item deployment-documents-action"
+                >
+                    <span class="project-action-icon">
+                        📄
+                    </span>
+
+                    <span>
+                        Deployment Documents
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
                     class="project-action-item ready-for-deployment-action deploy-project-action"
                     disabled
                     title="${
                         maintenanceEnabled
                             ? "This project is already deployed."
-                            : "All 8 required deployment documents must be approved before deployment."
+                            : "All 8 deployment checklist criteria must be Pass before deployment."
                     }"
                 >
                     <span class="project-action-icon">

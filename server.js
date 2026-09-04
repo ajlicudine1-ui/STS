@@ -1995,8 +1995,575 @@ const REQUIRED_DEPLOYMENT_DOCUMENTS = [
     "System Test Report"
 ];
 
+
+/*
+ * REAL DEPLOYMENT CHECKLIST
+ *
+ * IMPORTANT:
+ * - This checklist is separate from deployment_documents.
+ * - Only all 8 items with status = "Pass" make a project
+ *   Ready for Deployment.
+ * - "N/A" does NOT count as Pass.
+ * - Deployment document uploads remain optional/supporting records.
+ */
+const DEPLOYMENT_CHECKLIST_CRITERIA = [
+    {
+        key: "approved_system_version",
+        name: "Approved system version verified"
+    },
+    {
+        key: "backup_completed_before_deployment",
+        name: "Backup completed before deployment"
+    },
+    {
+        key: "database_data_migration_completed",
+        name: "Database/data migration completed"
+    },
+    {
+        key: "user_accounts_access_permissions_configured",
+        name: "User accounts and access permissions configured"
+    },
+    {
+        key: "system_functionality_verified_after_deployment",
+        name: "System functionality verified after deployment"
+    },
+    {
+        key: "security_controls_verified",
+        name: "Security controls verified"
+    },
+    {
+        key: "user_training_orientation_conducted",
+        name: "User training/orientation conducted"
+    },
+    {
+        key: "user_documentation_manual_provided",
+        name: "User documentation/manual provided"
+    }
+];
+
+
+async function getDeploymentChecklistState(
+    db,
+    projectId
+) {
+
+    const {
+        data: savedItems,
+        error: itemsError
+    } = await db
+        .from("deployment_checklist_items")
+        .select(
+            "deployment_checklist_item_id, project_id, criterion_key, criterion_name, status, verified_by, verified_at, created_at, updated_at"
+        )
+        .eq(
+            "project_id",
+            projectId
+        );
+
+
+    if (itemsError) {
+        throw itemsError;
+    }
+
+
+    const savedByKey =
+        new Map(
+            (savedItems || [])
+                .map(item => [
+                    item.criterion_key,
+                    item
+                ])
+        );
+
+
+    const items =
+        DEPLOYMENT_CHECKLIST_CRITERIA
+            .map(criterion => {
+
+                const saved =
+                    savedByKey.get(
+                        criterion.key
+                    );
+
+
+                return saved
+                    ? {
+                        ...saved,
+
+                        // Always display the exact approved criterion text.
+                        criterion_name:
+                            criterion.name
+                    }
+                    : {
+                        deployment_checklist_item_id:
+                            null,
+
+                        project_id:
+                            projectId,
+
+                        criterion_key:
+                            criterion.key,
+
+                        criterion_name:
+                            criterion.name,
+
+                        status:
+                            "Pending",
+
+                        verified_by:
+                            null,
+
+                        verified_at:
+                            null,
+
+                        created_at:
+                            null,
+
+                        updated_at:
+                            null
+                    };
+            });
+
+
+    const passedCount =
+        items.filter(
+            item =>
+                item.status ===
+                "Pass"
+        ).length;
+
+
+    const readyForDeployment =
+        items.length ===
+            DEPLOYMENT_CHECKLIST_CRITERIA.length &&
+        items.every(
+            item =>
+                item.status ===
+                "Pass"
+        );
+
+
+    return {
+        items,
+        summary: {
+            total:
+                DEPLOYMENT_CHECKLIST_CRITERIA.length,
+
+            passed:
+                passedCount,
+
+            pending:
+                items.filter(
+                    item =>
+                        item.status ===
+                        "Pending"
+                ).length,
+
+            not_applicable:
+                items.filter(
+                    item =>
+                        item.status ===
+                        "N/A"
+                ).length,
+
+            ready_for_deployment:
+                readyForDeployment
+        }
+    };
+}
+
 // ============================================================
-// GET PROJECT DEPLOYMENT CHECKLIST
+// GET REAL DEPLOYMENT CHECKLIST
+// ============================================================
+
+app.get(
+    "/api/projects/:projectId/deployment-checklist-items",
+
+    async (req, res) => {
+
+        try {
+
+            const { projectId } =
+                req.params;
+
+
+            const db =
+                getDatabaseClient();
+
+
+            const {
+                data: project,
+                error: projectError
+            } = await db
+                .from("projects")
+                .select(
+                    "project_id, project_name, project_status"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .maybeSingle();
+
+
+            if (projectError) {
+                throw projectError;
+            }
+
+
+            if (!project) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Project not found."
+                });
+            }
+
+
+            const checklistState =
+                await getDeploymentChecklistState(
+                    db,
+                    projectId
+                );
+
+
+            return res.json({
+                success: true,
+
+                project: {
+                    project_id:
+                        project.project_id,
+
+                    project_name:
+                        project.project_name,
+
+                    project_status:
+                        project.project_status
+                },
+
+                summary:
+                    checklistState.summary,
+
+                items:
+                    checklistState.items
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "GET REAL DEPLOYMENT CHECKLIST ERROR:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Could not load the deployment checklist.",
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// UPDATE REAL DEPLOYMENT CHECKLIST ITEM
+// ADMIN ONLY
+// ============================================================
+
+app.patch(
+    "/api/projects/:projectId/deployment-checklist-items/:criterionKey",
+
+    async (req, res) => {
+
+        try {
+
+            const {
+                projectId,
+                criterionKey
+            } = req.params;
+
+
+            if (
+                req.profile?.role !==
+                "admin"
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    error:
+                        "Only administrators can update the deployment checklist."
+                });
+            }
+
+
+            const criterion =
+                DEPLOYMENT_CHECKLIST_CRITERIA
+                    .find(
+                        item =>
+                            item.key ===
+                            criterionKey
+                    );
+
+
+            if (!criterion) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Invalid deployment checklist criterion."
+                });
+            }
+
+
+            const status =
+                String(
+                    req.body?.status ||
+                    ""
+                ).trim();
+
+
+            if (
+                ![
+                    "Pending",
+                    "Pass",
+                    "N/A"
+                ].includes(status)
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Checklist status must be Pending, Pass, or N/A."
+                });
+            }
+
+
+            const db =
+                getDatabaseClient();
+
+
+            const {
+                data: project,
+                error: projectError
+            } = await db
+                .from("projects")
+                .select(
+                    "project_id, project_name, project_status"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .maybeSingle();
+
+
+            if (projectError) {
+                throw projectError;
+            }
+
+
+            if (!project) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Project not found."
+                });
+            }
+
+
+            const requestedVerifiedBy =
+                String(
+                    req.body?.verified_by ||
+                    ""
+                ).trim();
+
+
+            const now =
+                new Date().toISOString();
+
+
+            const verifiedBy =
+                status ===
+                    "Pending"
+                    ? null
+                    : (
+                        requestedVerifiedBy ||
+                        getLoggedInDisplayName(
+                            req
+                        )
+                    );
+
+
+            const verifiedAt =
+                status ===
+                    "Pending"
+                    ? null
+                    : now;
+
+
+            const {
+                data: updatedItem,
+                error: upsertError
+            } = await db
+                .from(
+                    "deployment_checklist_items"
+                )
+                .upsert(
+                    {
+                        project_id:
+                            projectId,
+
+                        criterion_key:
+                            criterion.key,
+
+                        criterion_name:
+                            criterion.name,
+
+                        status:
+                            status,
+
+                        verified_by:
+                            verifiedBy,
+
+                        verified_at:
+                            verifiedAt,
+
+                        updated_at:
+                            now
+                    },
+                    {
+                        onConflict:
+                            "project_id,criterion_key"
+                    }
+                )
+                .select()
+                .single();
+
+
+            if (upsertError) {
+                throw upsertError;
+            }
+
+
+            // Re-read the complete 8-item checklist after the update.
+            const checklistState =
+                await getDeploymentChecklistState(
+                    db,
+                    projectId
+                );
+
+
+            let nextProjectStatus =
+                project.project_status;
+
+
+            // Ready for Deployment is triggered ONLY when all 8 are Pass.
+            if (
+                checklistState.summary
+                    .ready_for_deployment ===
+                true
+            ) {
+
+                // Do not overwrite a project that has already been deployed.
+                if (
+                    project.project_status !==
+                    "Deployed"
+                ) {
+
+                    nextProjectStatus =
+                        "Ready for Deployment";
+                }
+
+            } else if (
+                project.project_status ===
+                "Ready for Deployment"
+            ) {
+
+                // If even one item stops being Pass before deployment,
+                // return the project to Active.
+                nextProjectStatus =
+                    "Active";
+            }
+
+
+            if (
+                nextProjectStatus !==
+                project.project_status
+            ) {
+
+                const {
+                    error: statusUpdateError
+                } = await db
+                    .from("projects")
+                    .update({
+                        project_status:
+                            nextProjectStatus,
+
+                        updated_at:
+                            now
+                    })
+                    .eq(
+                        "project_id",
+                        projectId
+                    );
+
+
+                if (statusUpdateError) {
+                    throw statusUpdateError;
+                }
+            }
+
+
+            return res.json({
+                success: true,
+
+                message:
+                    "Deployment checklist updated successfully.",
+
+                project_status:
+                    nextProjectStatus,
+
+                item:
+                    updatedItem,
+
+                summary:
+                    checklistState.summary,
+
+                items:
+                    checklistState.items
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "UPDATE REAL DEPLOYMENT CHECKLIST ERROR:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Could not update the deployment checklist.",
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// GET DEPLOYMENT DOCUMENTS
+// Existing upload/review workflow retained.
+// These documents are OPTIONAL and do NOT trigger readiness.
 // ============================================================
 
 app.get(
@@ -2406,45 +2973,8 @@ app.get(
                 approvedCount ===
                 REQUIRED_DEPLOYMENT_DOCUMENTS.length;
 
-            // ------------------------------------------------
-            // SYNC PROJECT STATUS AFTER DRIVE FILE CHECK
-            // ------------------------------------------------
-
-            if (
-                !readyForDeployment &&
-                (
-                    project.project_status ===
-                        "Ready for Deployment" ||
-                    project.project_status ===
-                        "Deployed"
-                )
-            ) {
-
-                const {
-                    error: projectStatusError
-                } = await db
-                    .from("projects")
-                    .update({
-                        project_status:
-                            "Active",
-
-                        updated_at:
-                            new Date().toISOString()
-                    })
-                    .eq(
-                        "project_id",
-                        projectId
-                    );
-
-
-                if (projectStatusError) {
-                    throw projectStatusError;
-                }
-
-
-                project.project_status =
-                    "Active";
-            }
+            // Deployment documents are optional.
+            // They no longer change project readiness/status.
 
 
             // ------------------------------------------------
@@ -3053,140 +3583,8 @@ app.patch(
                 throw updateError;
             }
 
-                        // ------------------------------------------------
-            // UPDATE PROJECT DEPLOYMENT READINESS STATUS
-            // ------------------------------------------------
-
-            const {
-                data: allDeploymentDocuments,
-                error: deploymentReadinessError
-            } = await db
-                .from("deployment_documents")
-                .select(
-                    "document_type, status"
-                )
-                .eq(
-                    "project_id",
-                    projectId
-                );
-
-
-            if (deploymentReadinessError) {
-                throw deploymentReadinessError;
-            }
-
-
-            const approvedDocumentTypes =
-                new Set(
-                    (allDeploymentDocuments || [])
-                        .filter(
-                            document =>
-                                document.status ===
-                                "Approved"
-                        )
-                        .map(
-                            document =>
-                                document.document_type
-                        )
-                );
-
-
-            const allRequiredDocumentsApproved =
-                REQUIRED_DEPLOYMENT_DOCUMENTS
-                    .every(
-                        documentType =>
-                            approvedDocumentTypes.has(
-                                documentType
-                            )
-                    );
-
-
-            const {
-                data: currentProject,
-                error: currentProjectError
-            } = await db
-                .from("projects")
-                .select(
-                    "project_status"
-                )
-                .eq(
-                    "project_id",
-                    projectId
-                )
-                .maybeSingle();
-
-
-            if (currentProjectError) {
-                throw currentProjectError;
-            }
-
-
-            // ------------------------------------------------
-            // DETERMINE PROJECT STATUS FROM DEPLOYMENT CHECKLIST
-            // ------------------------------------------------
-
-            let nextProjectStatus =
-                null;
-
-
-            if (allRequiredDocumentsApproved) {
-
-                // All 8 are approved.
-                // If it is already deployed, keep it deployed.
-                // Otherwise it becomes Ready for Deployment.
-
-                nextProjectStatus =
-                    currentProject?.project_status ===
-                    "Deployed"
-                        ? "Deployed"
-                        : "Ready for Deployment";
-
-            } else {
-
-                // Any deployment requirement is no longer approved.
-                // The project is no longer deployment-ready,
-                // even if it had previously been deployed.
-
-                if (
-                    currentProject?.project_status ===
-                        "Ready for Deployment" ||
-                    currentProject?.project_status ===
-                        "Deployed"
-                ) {
-
-                    nextProjectStatus =
-                        "Active";
-                }
-            }
-
-
-            if (
-                nextProjectStatus &&
-                nextProjectStatus !==
-                    currentProject?.project_status
-            ) {
-
-                const {
-                    error: projectStatusUpdateError
-                } = await db
-                    .from("projects")
-                    .update({
-                        project_status:
-                            nextProjectStatus,
-
-                        updated_at:
-                            new Date().toISOString()
-                    })
-                    .eq(
-                        "project_id",
-                        projectId
-                    );
-
-
-                if (projectStatusUpdateError) {
-                    throw projectStatusUpdateError;
-                }
-            }
+                        // Deployment document review is informational/supporting only.
+            // Project readiness is controlled by deployment_checklist_items.
 
 
             // ------------------------------------------------
@@ -3316,66 +3714,59 @@ app.post(
 
 
             // ------------------------------------------------
-            // LOAD DEPLOYMENT DOCUMENTS
+            // VERIFY THE REAL DEPLOYMENT CHECKLIST
             // ------------------------------------------------
 
-            const {
-                data: deploymentDocuments,
-                error: documentsError
-            } = await db
-                .from(
-                    "deployment_documents"
-                )
-                .select(
-                    "document_type, status"
-                )
-                .eq(
-                    "project_id",
+            const checklistState =
+                await getDeploymentChecklistState(
+                    db,
                     projectId
                 );
 
 
-            if (documentsError) {
-                throw documentsError;
-            }
-
-
-            const documentMap =
-                new Map(
-                    (deploymentDocuments || [])
-                        .map(document => [
-                            document.document_type,
-                            document.status
-                        ])
-                );
-
-
-            // ------------------------------------------------
-            // VERIFY ALL 8 ARE APPROVED
-            // ------------------------------------------------
-
-            const incompleteDocuments =
-                REQUIRED_DEPLOYMENT_DOCUMENTS
-                    .filter(
-                        documentType =>
-                            documentMap.get(
-                                documentType
-                            ) !==
-                            "Approved"
-                    );
-
-
             if (
-                incompleteDocuments.length >
-                0
+                checklistState.summary
+                    .ready_for_deployment !==
+                true
             ) {
+
+                const incompleteCriteria =
+                    checklistState.items
+                        .filter(
+                            item =>
+                                item.status !==
+                                "Pass"
+                        )
+                        .map(
+                            item => ({
+                                criterion_key:
+                                    item.criterion_key,
+
+                                criterion_name:
+                                    item.criterion_name,
+
+                                status:
+                                    item.status
+                            })
+                        );
+
 
                 return res.status(400).json({
                     success: false,
+
                     error:
-                        "Project is not ready for deployment. All 8 required documents must be approved.",
-                    incomplete_documents:
-                        incompleteDocuments
+                        "Project is not ready for deployment. All 8 deployment checklist criteria must be Pass.",
+
+                    passed:
+                        checklistState.summary
+                            .passed,
+
+                    total:
+                        checklistState.summary
+                            .total,
+
+                    incomplete_criteria:
+                        incompleteCriteria
                 });
             }
 

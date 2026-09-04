@@ -371,7 +371,7 @@
     top: calc(100% + 7px);
     right: 0;
 
-    width: 190px;
+    width: 280px;
 
     display: none;
 
@@ -402,7 +402,7 @@
     right: auto !important;
     bottom: auto !important;
 
-    width: 190px !important;
+    width: 280px !important;
 
     max-height:
         calc(100vh - 20px);
@@ -3559,4 +3559,609 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
         line-height: 1.2;
     }
 }
+
+
+/* ============================================================
+   REAL DEPLOYMENT CHECKLIST
+   This is separate from optional Deployment Documents.
+   All 8 items must be Pass before deployment is allowed.
+   ============================================================ */
+
+#deploymentVerificationModal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 20500 !important;
+}
+
+#deploymentVerificationModal .deployment-checklist-modal-content {
+    position: relative !important;
+    z-index: 20501 !important;
+
+    width: min(940px, calc(100vw - 40px)) !important;
+    max-width: 940px !important;
+    max-height: 90vh !important;
+
+    padding: 0 !important;
+    overflow: hidden !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    background: #ffffff !important;
+
+    border-radius: 18px !important;
+
+    box-sizing: border-box !important;
+
+    box-shadow:
+        0 24px 70px rgba(15, 23, 42, 0.24) !important;
+}
+
+
+/* ============================================================
+   REAL CHECKLIST HEADER
+   ============================================================ */
+
+#deploymentVerificationModal .modal-header {
+    flex: 0 0 auto;
+
+    padding: 24px 28px;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#deploymentVerificationModal .modal-header h2 {
+    margin: 0 0 5px;
+
+    color: #1f2937;
+
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+#deploymentVerificationProjectName {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 14px;
+}
+
+
+/* ============================================================
+   REAL CHECKLIST READINESS CARD
+   ============================================================ */
+
+#deploymentVerificationModal .deployment-readiness-card {
+    flex: 0 0 auto;
+
+    margin: 22px 28px 18px;
+    padding: 18px 20px;
+
+    background: #f8faf8;
+
+    border: 1px solid #dfe9df;
+    border-radius: 12px;
+}
+
+#deploymentVerificationModal .deployment-readiness-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    margin-bottom: 12px;
+}
+
+#deploymentVerificationModal .deployment-readiness-label {
+    color: #4b5563;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#deploymentVerificationCount {
+    color: #235e26;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+#deploymentVerificationModal .deployment-progress-track {
+    width: 100%;
+    height: 9px;
+
+    overflow: hidden;
+
+    background: #e5e7eb;
+
+    border-radius: 999px;
+}
+
+#deploymentVerificationProgressBar {
+    width: 0;
+    height: 100%;
+
+    background: #235e26;
+
+    border-radius: inherit;
+
+    transition: width 0.3s ease;
+}
+
+
+/* ============================================================
+   REAL CHECKLIST LOADING / ERROR
+   ============================================================ */
+
+#deploymentVerificationLoading {
+    flex: 0 0 auto;
+
+    margin: 0 28px 15px;
+    padding: 12px 14px;
+
+    color: #4b5563;
+    background: #f9fafb;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+}
+
+#deploymentVerificationError {
+    flex: 0 0 auto;
+
+    margin: 0 28px 15px;
+    padding: 12px 14px;
+
+    color: #991b1b;
+    background: #fef2f2;
+
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+
+    font-size: 14px;
+}
+
+
+/* ============================================================
+   REAL CHECKLIST LIST / ROWS
+   ============================================================ */
+
+#deploymentVerificationList {
+    min-height: 0 !important;
+    max-height: 510px !important;
+
+    padding: 0 24px 20px !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    scrollbar-gutter: stable;
+}
+
+#deploymentVerificationModal .deployment-document-row {
+    display: grid !important;
+
+    grid-template-columns:
+        44px
+        minmax(260px, 1fr)
+        150px
+        270px !important;
+
+    align-items: center !important;
+
+    gap: 14px !important;
+
+    width: 100% !important;
+    min-height: 82px !important;
+
+    margin: 0 0 10px !important;
+    padding: 12px 14px !important;
+
+    box-sizing: border-box !important;
+
+    background: #ffffff !important;
+
+    border: 1px solid #e1e6eb !important;
+    border-radius: 12px !important;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease !important;
+}
+
+#deploymentVerificationModal .deployment-document-row:hover {
+    border-color: #cbd5e1 !important;
+
+    box-shadow:
+        0 2px 8px rgba(15, 23, 42, 0.05) !important;
+}
+
+
+/* Number */
+
+#deploymentVerificationModal .deployment-document-number {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 40px !important;
+    height: 40px !important;
+
+    margin: 0 !important;
+
+    color: #235e26 !important;
+    background: #edf6ee !important;
+
+    border-radius: 10px !important;
+
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+
+/* Criterion */
+
+#deploymentVerificationModal .deployment-document-info {
+    min-width: 0 !important;
+}
+
+#deploymentVerificationModal .deployment-document-name {
+    color: #1f2937 !important;
+
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.42 !important;
+
+    white-space: normal !important;
+
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+}
+
+
+/* Status badge */
+
+#deploymentVerificationModal .deployment-document-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 150px !important;
+    min-width: 150px !important;
+    max-width: 150px !important;
+    min-height: 38px !important;
+
+    padding: 7px 10px !important;
+
+    box-sizing: border-box !important;
+
+    border-radius: 999px !important;
+
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+
+    white-space: nowrap !important;
+}
+
+#deploymentVerificationModal .deployment-status-approved {
+    color: #166534 !important;
+    background: #dcfce7 !important;
+}
+
+#deploymentVerificationModal .deployment-status-pending {
+    color: #92400e !important;
+    background: #fef3c7 !important;
+}
+
+#deploymentVerificationModal .deployment-status-missing {
+    color: #6b7280 !important;
+    background: #f3f4f6 !important;
+}
+
+
+/* ============================================================
+   REAL CHECKLIST ADMIN CONTROLS
+   ============================================================ */
+
+#deploymentVerificationModal .deployment-document-actions {
+    display: grid !important;
+
+    grid-template-columns:
+        150px
+        110px !important;
+
+    align-items: center !important;
+    justify-content: end !important;
+
+    gap: 10px !important;
+
+    width: 270px !important;
+    min-width: 270px !important;
+
+    margin: 0 !important;
+
+    box-sizing: border-box !important;
+}
+
+#deploymentVerificationModal
+.deployment-document-actions
+select {
+    appearance: auto;
+
+    width: 150px !important;
+    min-width: 150px !important;
+    height: 44px !important;
+
+    margin: 0 !important;
+    padding: 0 34px 0 12px !important;
+
+    box-sizing: border-box !important;
+
+    color: #374151 !important;
+    background: #ffffff !important;
+
+    border: 1px solid #cfd8e3 !important;
+    border-radius: 10px !important;
+
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+
+    outline: none !important;
+
+    cursor: pointer !important;
+}
+
+#deploymentVerificationModal
+.deployment-document-actions
+select:focus {
+    border-color: #235e26 !important;
+
+    box-shadow:
+        0 0 0 3px rgba(35, 94, 38, 0.10) !important;
+}
+
+#deploymentVerificationModal .deployment-document-action {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 110px !important;
+    min-width: 110px !important;
+    height: 44px !important;
+
+    margin: 0 !important;
+    padding: 0 14px !important;
+
+    box-sizing: border-box !important;
+
+    color: #ffffff !important;
+    background: #235e26 !important;
+
+    border: 1px solid #235e26 !important;
+    border-radius: 10px !important;
+
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+
+    white-space: nowrap !important;
+
+    cursor: pointer !important;
+
+    transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.15s ease !important;
+}
+
+#deploymentVerificationModal
+.deployment-document-action:hover:not(:disabled) {
+    background: #19491d !important;
+    border-color: #19491d !important;
+
+    transform: translateY(-1px);
+}
+
+#deploymentVerificationModal
+.deployment-document-action:disabled {
+    opacity: 0.55 !important;
+
+    cursor: not-allowed !important;
+}
+
+
+/* ============================================================
+   REAL CHECKLIST FOOTER
+   ============================================================ */
+
+#deploymentVerificationModal .deployment-checklist-footer {
+    flex: 0 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 18px 28px;
+
+    background: #f9fafb;
+
+    border-top: 1px solid #e5e7eb;
+}
+
+#deploymentVerificationOverallStatus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    max-width: 100%;
+
+    padding: 8px 12px;
+
+    box-sizing: border-box;
+
+    border-radius: 8px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    text-align: center;
+    white-space: normal;
+}
+
+#deploymentVerificationOverallStatus.deployment-ready {
+    color: #166534;
+    background: #dcfce7;
+}
+
+#deploymentVerificationOverallStatus.deployment-not-ready {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+
+/* ============================================================
+   OPTIONAL DEPLOYMENT DOCUMENTS LABELING
+   Keep the old document functionality and styling intact.
+   ============================================================ */
+
+.deployment-documents-action {
+    color: #334155;
+}
+
+.deployment-documents-action:hover {
+    background: #f1f5f9;
+}
+
+
+/* ============================================================
+   REAL CHECKLIST RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 920px) {
+
+    #deploymentVerificationModal
+    .deployment-checklist-modal-content {
+        width: calc(100vw - 24px) !important;
+    }
+
+    #deploymentVerificationModal
+    .deployment-document-row {
+        grid-template-columns:
+            42px
+            minmax(200px, 1fr)
+            145px !important;
+
+        gap: 12px !important;
+    }
+
+    #deploymentVerificationModal
+    .deployment-document-status {
+        width: 145px !important;
+        min-width: 145px !important;
+        max-width: 145px !important;
+    }
+
+    #deploymentVerificationModal
+    .deployment-document-actions {
+        grid-column: 2 / -1 !important;
+
+        width: 100% !important;
+        min-width: 0 !important;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            110px !important;
+    }
+
+    #deploymentVerificationModal
+    .deployment-document-actions
+    select {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+
+
+@media (max-width: 620px) {
+
+    #deploymentVerificationModal .modal-header {
+        padding: 20px;
+    }
+
+    #deploymentVerificationModal
+    .deployment-readiness-card {
+        margin: 18px 20px 15px;
+    }
+
+    #deploymentVerificationList {
+        padding: 0 16px 18px !important;
+    }
+
+    #deploymentVerificationModal
+    .deployment-document-row {
+        grid-template-columns:
+            40px
+            minmax(0, 1fr) !important;
+
+        align-items: start !important;
+
+        padding: 12px !important;
+    }
+
+    #deploymentVerificationModal
+    .deployment-document-status {
+        grid-column: 2 !important;
+
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: 180px !important;
+
+        justify-self: start !important;
+    }
+
+    #deploymentVerificationModal
+    .deployment-document-actions {
+        grid-column: 2 !important;
+
+        grid-template-columns: 1fr !important;
+
+        width: 100% !important;
+    }
+
+    #deploymentVerificationModal
+    .deployment-document-actions
+    select,
+    #deploymentVerificationModal
+    .deployment-document-action {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    #deploymentVerificationModal
+    .deployment-checklist-footer {
+        padding: 16px 20px;
+
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #deploymentVerificationOverallStatus {
+        width: 100%;
+    }
+
+    #closeDeploymentVerificationFooterBtn {
+        width: 100%;
+    }
+}
+
 

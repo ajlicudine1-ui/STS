@@ -652,7 +652,117 @@
 
 
     <!-- =====================================================
-     DEPLOYMENT CHECKLIST MODAL
+         REAL DEPLOYMENT CHECKLIST MODAL
+         Readiness is controlled ONLY by these 8 criteria.
+         All 8 must be Pass.
+         ===================================================== -->
+
+    <div
+        class="modal"
+        id="deploymentVerificationModal"
+    >
+        <div
+            class="modal-content deployment-checklist-modal-content"
+            style="width:min(940px,calc(100vw - 40px));max-width:940px;max-height:90vh;padding:0;overflow:hidden;display:flex;flex-direction:column;"
+        >
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>Deployment Checklist</h2>
+
+                    <p id="deploymentVerificationProjectName">
+                        Project
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeDeploymentVerificationModal"
+                    aria-label="Close"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <div class="deployment-readiness-card">
+
+                <div class="deployment-readiness-info">
+
+                    <span class="deployment-readiness-label">
+                        Deployment Readiness
+                    </span>
+
+                    <strong id="deploymentVerificationCount">
+                        0 / 8 Pass
+                    </strong>
+
+                </div>
+
+
+                <div class="deployment-progress-track">
+
+                    <div
+                        class="deployment-progress-bar"
+                        id="deploymentVerificationProgressBar"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="deployment-checklist-loading"
+                id="deploymentVerificationLoading"
+                hidden
+            >
+                Loading deployment checklist...
+            </div>
+
+
+            <div
+                class="deployment-checklist-error"
+                id="deploymentVerificationError"
+                hidden
+            ></div>
+
+
+            <div
+                class="deployment-document-list"
+                id="deploymentVerificationList"
+                style="min-height:0;max-height:510px;padding:0 24px 20px;overflow-y:auto;overflow-x:hidden;"
+            ></div>
+
+
+            <div class="deployment-checklist-footer">
+
+                <div
+                    class="deployment-overall-status deployment-not-ready"
+                    id="deploymentVerificationOverallStatus"
+                >
+                    NOT READY FOR DEPLOYMENT
+                </div>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="closeDeploymentVerificationFooterBtn"
+                >
+                    Close
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- =====================================================
+     OPTIONAL DEPLOYMENT DOCUMENTS MODAL
      ===================================================== -->
 
     <div
@@ -664,7 +774,7 @@
             <div class="modal-header">
 
                 <div>
-                    <h2>Deployment Checklist</h2>
+                    <h2>Deployment Documents</h2>
 
                     <p id="deploymentChecklistProjectName">
                         Project
@@ -690,11 +800,11 @@
                 <div class="deployment-readiness-info">
 
                     <span class="deployment-readiness-label">
-                        Deployment Readiness
+                        Optional Deployment Documents
                     </span>
 
                     <strong id="deploymentReadinessCount">
-                        0 / 8 Approved
+                        0 / 8 Approved (Optional)
                     </strong>
 
                 </div>
@@ -745,10 +855,10 @@
             <div class="deployment-checklist-footer">
 
                 <div
-                    class="deployment-overall-status deployment-not-ready"
+                    class="deployment-overall-status deployment-ready"
                     id="deploymentOverallStatus"
                 >
-                    NOT READY FOR DEPLOYMENT
+                    OPTIONAL — NOT REQUIRED FOR DEPLOYMENT
                 </div>
 
                 <button
