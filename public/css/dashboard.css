@@ -408,6 +408,211 @@
 }
 
 /* ============================================================
+   ACTION SECTIONS / ACCORDION
+   ============================================================ */
+
+.project-action-section-toggle {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 24px 1fr 20px;
+    align-items: center;
+
+    gap: 10px;
+
+    margin: 0;
+
+    padding: 12px 12px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: #243247;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.16s ease,
+        color 0.16s ease;
+}
+
+
+.project-action-section-toggle + .project-action-section-toggle,
+.project-action-section-content + .project-action-section-toggle {
+    margin-top: 2px;
+}
+
+
+.project-action-section-toggle:hover:not(:disabled) {
+    background: #edf7ee;
+    color: #1b5e20;
+}
+
+
+.project-action-section-toggle:active:not(:disabled) {
+    background: #dff0e1;
+}
+
+
+/* Category icon */
+
+.project-action-section-icon {
+    width: 24px;
+    height: 24px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 24px;
+
+    color: #2e7d32;
+
+    font-size: 16px;
+}
+
+
+/* Category name */
+
+.project-action-section-label {
+    min-width: 0;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+/* Right arrow */
+
+.project-action-section-arrow {
+    justify-self: end;
+
+    color: #7b8491;
+
+    font-size: 18px;
+    line-height: 1;
+
+    transition:
+        transform 0.16s ease,
+        color 0.16s ease;
+}
+
+
+.project-action-section-toggle:hover:not(:disabled)
+.project-action-section-arrow {
+    color: #2e7d32;
+}
+
+
+/* ============================================================
+   SECTION CONTENT
+   ============================================================ */
+
+.project-action-section-content {
+    margin: 2px 0 6px;
+
+    padding: 4px 0 4px 12px;
+
+    border-left: 2px solid #dce9dd;
+
+    background: #fbfdfb;
+}
+
+
+.project-action-section-content[hidden] {
+    display: none !important;
+}
+
+
+/* Make inner action rows slightly smaller */
+
+.project-action-section-content
+.project-action-item {
+    padding: 9px 10px;
+
+    font-size: 13px;
+
+    border-radius: 7px;
+}
+
+
+/* ============================================================
+   DISABLED MAINTENANCE
+   ============================================================ */
+
+.project-action-section-toggle:disabled,
+.project-action-section-disabled {
+    background: #f8f9fa;
+
+    color: #a1a8b2;
+
+    cursor: not-allowed;
+
+    opacity: 0.72;
+}
+
+
+.project-action-section-toggle:disabled
+.project-action-section-icon {
+    color: #aeb5bd;
+}
+
+
+.project-action-section-toggle:disabled
+.project-action-section-arrow {
+    color: #aeb5bd;
+
+    font-size: 13px;
+}
+
+
+/* ============================================================
+   DEPLOYMENT PLACEHOLDERS
+   ============================================================ */
+
+.deployment-checklist-action {
+    color: #334155;
+}
+
+
+.ready-for-deployment-action:disabled {
+    color: #9ca3af;
+
+    background: transparent;
+
+    cursor: not-allowed;
+
+    opacity: 0.65;
+}
+
+
+.ready-for-deployment-action:disabled:hover {
+    background: transparent;
+}
+
+
+/* ============================================================
+   MANAGE / DELETE SEPARATION
+   ============================================================ */
+
+[data-action-section-content="manage"] {
+    border-left-color: #e5e7eb;
+}
+
+/* ============================================================
    ACTION ITEMS
    ============================================================ */
 
