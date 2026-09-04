@@ -276,6 +276,9 @@ function getProjectStatusClass(status) {
         case "Completed":
             return "status-completed";
 
+        case "Ready for Deployment":
+            return "status-ready-deployment";
+
         case "Deployed":
             return "status-deployed";
 
