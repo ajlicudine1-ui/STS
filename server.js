@@ -2022,7 +2022,7 @@ app.get(
             } = await db
                 .from("projects")
                 .select(
-                    "project_id, project_name, project_status"
+                    "project_id, project_name, project_status, drive_folder_id"
                 )
                 .eq(
                     "project_id",
@@ -2087,152 +2087,207 @@ app.get(
 
 
             // ------------------------------------------------
-            // VERIFY SAVED DEPLOYMENT FILES STILL EXIST IN DRIVE
+            // VERIFY SAVED DEPLOYMENT FILES STILL EXIST
+            // IN THEIR EXPECTED DRIVE DOCUMENT FOLDERS
             // ------------------------------------------------
+
+            let releaseFolder =
+                null;
+
+
+            if (project.drive_folder_id) {
+
+                releaseFolder =
+                    await findChildDriveFolder(
+                        project.drive_folder_id,
+                        "System Release & Deployment"
+                    );
+            }
+
 
             for (const document of savedDocuments || []) {
 
                 if (!document.drive_file_id) {
-            continue;
+                    continue;
                 }
 
 
-                let fileStillExists =
-            true;
+                let fileIsValid =
+                    true;
 
 
-                try {
+                // The file must still be inside:
+                //
+                // Project Folder
+                //   -> System Release & Deployment
+                //      -> <document.document_type>
+                //
+                // Checking only the file ID is not enough because a file
+                // can still exist in Google Drive after it is moved out
+                // of the checklist folder.
 
-            const driveFile =
-                await googleDrive.files.get({
-                    fileId:
-                        document.drive_file_id,
-
-                    fields:
-                        "id, trashed"
-                });
-
-
-            if (
-                !driveFile.data?.id ||
-                driveFile.data?.trashed === true
-            ) {
-
-                fileStillExists =
-                    false;
-            }
+                let expectedDocumentFolder =
+                    null;
 
 
-                } catch (driveError) {
+                if (releaseFolder?.id) {
 
-            const statusCode =
-                driveError?.code ||
-                driveError?.response?.status;
-
-
-            // File was manually deleted from Google Drive.
-            if (
-                statusCode === 404 ||
-                statusCode === 410
-            ) {
-
-                fileStillExists =
-                    false;
-
-            } else {
-
-                console.error(
-                    "DEPLOYMENT DRIVE FILE CHECK ERROR:",
-                    driveError
-                );
-
-                // Do not mark the document missing for temporary
-                // Google API/network errors.
-                continue;
-            }
+                    expectedDocumentFolder =
+                        await findChildDriveFolder(
+                            releaseFolder.id,
+                            document.document_type
+                        );
                 }
 
 
-                if (!fileStillExists) {
+                if (!expectedDocumentFolder?.id) {
 
-            const now =
-                new Date().toISOString();
+                    fileIsValid =
+                        false;
 
+                } else {
 
-            const {
-                error: missingFileUpdateError
-            } = await db
-                .from("deployment_documents")
-                .update({
-                    status:
-                        "Missing",
+                    try {
 
-                    drive_file_id:
-                        null,
+                        const driveFile =
+                            await googleDrive.files.get({
+                                fileId:
+                                    document.drive_file_id,
 
-                    drive_file_url:
-                        null,
-
-                    file_name:
-                        null,
-
-                    submitted_by:
-                        null,
-
-                    submitted_at:
-                        null,
-
-                    reviewed_by:
-                        null,
-
-                    reviewed_at:
-                        null,
-
-                    review_remarks:
-                        null,
-
-                    updated_at:
-                        now
-                })
-                .eq(
-                    "deployment_document_id",
-                    document.deployment_document_id
-                );
+                                fields:
+                                    "id, trashed, parents"
+                            });
 
 
-            if (missingFileUpdateError) {
-                throw missingFileUpdateError;
-            }
+                        const parents =
+                            Array.isArray(
+                                driveFile.data?.parents
+                            )
+                                ? driveFile.data.parents
+                                : [];
 
 
-            // Also update the local array used to build
-            // the current checklist response.
-            document.status =
-                "Missing";
+                        if (
+                            !driveFile.data?.id ||
+                            driveFile.data?.trashed === true ||
+                            !parents.includes(
+                                expectedDocumentFolder.id
+                            )
+                        ) {
 
-            document.drive_file_id =
-                null;
+                            fileIsValid =
+                                false;
+                        }
 
-            document.drive_file_url =
-                null;
 
-            document.file_name =
-                null;
+                    } catch (driveError) {
 
-            document.submitted_by =
-                null;
+                        const statusCode =
+                            driveError?.code ||
+                            driveError?.response?.status;
 
-            document.submitted_at =
-                null;
 
-            document.reviewed_by =
-                null;
+                        if (
+                            statusCode === 404 ||
+                            statusCode === 410
+                        ) {
 
-            document.reviewed_at =
-                null;
+                            fileIsValid =
+                                false;
 
-            document.review_remarks =
-                null;
+                        } else {
+
+                            console.error(
+                                "DEPLOYMENT DRIVE FILE CHECK ERROR:",
+                                driveError
+                            );
+
+                            // Temporary Google API/network errors should
+                            // not erase a valid checklist record.
+                            continue;
+                        }
+                    }
+                }
+
+
+                if (!fileIsValid) {
+
+                    const now =
+                        new Date().toISOString();
+
+
+                    const {
+                        error: missingFileUpdateError
+                    } = await db
+                        .from("deployment_documents")
+                        .update({
+                            status:
+                                "Missing",
+
+                            drive_file_id:
+                                null,
+
+                            drive_file_url:
+                                null,
+
+                            file_name:
+                                null,
+
+                            submitted_by:
+                                null,
+
+                            submitted_at:
+                                null,
+
+                            reviewed_by:
+                                null,
+
+                            reviewed_at:
+                                null,
+
+                            review_remarks:
+                                null,
+
+                            updated_at:
+                                now
+                        })
+                        .eq(
+                            "deployment_document_id",
+                            document.deployment_document_id
+                        );
+
+
+                    if (missingFileUpdateError) {
+                        throw missingFileUpdateError;
+                    }
+
+
+                    document.status =
+                        "Missing";
+
+                    document.drive_file_id =
+                        null;
+
+                    document.drive_file_url =
+                        null;
+
+                    document.file_name =
+                        null;
+
+                    document.submitted_by =
+                        null;
+
+                    document.submitted_at =
+                        null;
+
+                    document.reviewed_by =
+                        null;
+
+                    document.reviewed_at =
+                        null;
+
+                    document.review_remarks =
+                        null;
                 }
             }
 
