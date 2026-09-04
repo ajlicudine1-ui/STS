@@ -455,6 +455,30 @@
         hidden
     >
 
+    <!-- Hidden repository pickers used after a project exists -->
+    <input
+        type="file"
+        id="projectFileInput"
+        multiple
+        hidden
+    >
+
+    <input
+        type="file"
+        id="projectFolderInput"
+        webkitdirectory
+        directory
+        multiple
+        hidden
+    >
+
+
+    <!-- Hidden deployment checklist document picker -->
+    <input
+        type="file"
+        id="deploymentDocumentFileInput"
+        hidden
+    >
     <!-- =====================================================
      CHOOSE UPLOAD DESTINATION MODAL
      ===================================================== -->
@@ -624,6 +648,120 @@
 
         </div>
 
+    </div>
+
+
+    <!-- =====================================================
+     DEPLOYMENT CHECKLIST MODAL
+     ===================================================== -->
+
+    <div
+        class="modal"
+        id="deploymentChecklistModal"
+    >
+        <div class="modal-content deployment-checklist-modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>Deployment Checklist</h2>
+
+                    <p id="deploymentChecklistProjectName">
+                        Project
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeDeploymentChecklistModal"
+                    aria-label="Close"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <!-- Deployment readiness -->
+
+            <div class="deployment-readiness-card">
+
+                <div class="deployment-readiness-info">
+
+                    <span class="deployment-readiness-label">
+                        Deployment Readiness
+                    </span>
+
+                    <strong id="deploymentReadinessCount">
+                        0 / 8 Approved
+                    </strong>
+
+                </div>
+
+
+                <div class="deployment-progress-track">
+
+                    <div
+                        class="deployment-progress-bar"
+                        id="deploymentProgressBar"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Loading -->
+
+            <div
+                class="deployment-checklist-loading"
+                id="deploymentChecklistLoading"
+                hidden
+            >
+                Loading deployment checklist...
+            </div>
+
+
+            <!-- Error -->
+
+            <div
+                class="deployment-checklist-error"
+                id="deploymentChecklistError"
+                hidden
+            ></div>
+
+
+            <!-- Documents -->
+
+            <div
+                class="deployment-document-list"
+                id="deploymentDocumentList"
+            ></div>
+
+
+            <!-- Footer -->
+
+            <div class="deployment-checklist-footer">
+
+                <div
+                    class="deployment-overall-status deployment-not-ready"
+                    id="deploymentOverallStatus"
+                >
+                    NOT READY FOR DEPLOYMENT
+                </div>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="closeDeploymentChecklistFooterBtn"
+                >
+                    Close
+                </button>
+
+            </div>
+
+        </div>
     </div>
 
     <!-- =====================================================

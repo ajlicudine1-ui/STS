@@ -2258,6 +2258,112 @@ app.get(
     }
 );
 
+
+if (deploymentDocumentFileInput) {
+
+    deploymentDocumentFileInput.addEventListener(
+        "change",
+        async () => {
+
+            const file =
+                deploymentDocumentFileInput
+                    .files?.[0];
+
+
+            if (
+                !file ||
+                !pendingDeploymentDocumentType ||
+                !currentDeploymentChecklistProject
+                    ?.project_id
+            ) {
+
+                deploymentDocumentFileInput.value =
+                    "";
+
+                return;
+            }
+
+
+            const documentType =
+                pendingDeploymentDocumentType;
+
+
+            try {
+
+                deploymentDocumentFileInput.disabled =
+                    true;
+
+
+                if (deploymentChecklistLoading) {
+
+                    deploymentChecklistLoading.textContent =
+                        `Uploading ${file.name}...`;
+
+                    deploymentChecklistLoading.hidden =
+                        false;
+                }
+
+
+                await uploadDeploymentDocument(
+
+                    currentDeploymentChecklistProject
+                        .project_id,
+
+                    documentType,
+
+                    file
+                );
+
+
+                pendingDeploymentDocumentType =
+                    null;
+
+
+                deploymentDocumentFileInput.value =
+                    "";
+
+
+                await openDeploymentChecklist(
+                    currentDeploymentChecklistProject
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "DEPLOYMENT DOCUMENT UPLOAD ERROR:",
+                    error
+                );
+
+
+                alert(
+                    "Upload failed: " +
+                    error.message
+                );
+
+
+            } finally {
+
+                deploymentDocumentFileInput.disabled =
+                    false;
+
+
+                deploymentDocumentFileInput.value =
+                    "";
+
+
+                if (deploymentChecklistLoading) {
+
+                    deploymentChecklistLoading.textContent =
+                        "Loading deployment checklist...";
+
+                    deploymentChecklistLoading.hidden =
+                        true;
+                }
+            }
+        }
+    );
+}
 // ============================================================
 // LIST PROJECT REPOSITORY CONTENTS
 // ============================================================

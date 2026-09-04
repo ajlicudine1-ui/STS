@@ -96,8 +96,73 @@ let currentRepositoryProject =
 let pendingProjectFileUploads = [];
 let pendingProjectFolderUploads = [];
 
+// ============================================================
+// DEPLOYMENT CHECKLIST ELEMENTS
+// ============================================================
+
+const deploymentChecklistModal =
+    document.getElementById(
+        "deploymentChecklistModal"
+    );
+
+const closeDeploymentChecklistModalBtn =
+    document.getElementById(
+        "closeDeploymentChecklistModal"
+    );
+
+const closeDeploymentChecklistFooterBtn =
+    document.getElementById(
+        "closeDeploymentChecklistFooterBtn"
+    );
+
+const deploymentChecklistProjectName =
+    document.getElementById(
+        "deploymentChecklistProjectName"
+    );
+
+const deploymentReadinessCount =
+    document.getElementById(
+        "deploymentReadinessCount"
+    );
+
+const deploymentProgressBar =
+    document.getElementById(
+        "deploymentProgressBar"
+    );
+
+const deploymentChecklistLoading =
+    document.getElementById(
+        "deploymentChecklistLoading"
+    );
+
+const deploymentChecklistError =
+    document.getElementById(
+        "deploymentChecklistError"
+    );
+
+const deploymentDocumentList =
+    document.getElementById(
+        "deploymentDocumentList"
+    );
+
+const deploymentOverallStatus =
+    document.getElementById(
+        "deploymentOverallStatus"
+    );
 
 
+
+const deploymentDocumentFileInput =
+    document.getElementById(
+        "deploymentDocumentFileInput"
+    );
+
+
+let currentDeploymentChecklistProject =
+    null;
+
+let pendingDeploymentDocumentType =
+    null;
 // ============================================================
 // HELPERS
 // ============================================================
@@ -1904,6 +1969,701 @@ if (projectModal) {
     );
 }
 
+// ============================================================
+// DEPLOYMENT CHECKLIST
+// ============================================================
+
+function closeDeploymentChecklistModal() {
+
+    if (!deploymentChecklistModal) {
+        return;
+    }
+
+    deploymentChecklistModal.classList.remove(
+        "show"
+    );
+}
+
+
+function getDeploymentStatusClass(status) {
+
+    switch (status) {
+
+        case "Approved":
+            return "deployment-status-approved";
+
+        case "Pending Review":
+            return "deployment-status-pending";
+
+        case "Needs Revision":
+            return "deployment-status-revision";
+
+        case "Missing":
+        default:
+            return "deployment-status-missing";
+    }
+}
+
+
+function getDeploymentStatusIcon(status) {
+
+    switch (status) {
+
+        case "Approved":
+            return "✓";
+
+        case "Pending Review":
+            return "●";
+
+        case "Needs Revision":
+            return "!";
+
+        case "Missing":
+        default:
+            return "—";
+    }
+}
+
+
+function renderDeploymentChecklist(data) {
+
+    if (
+        !deploymentDocumentList ||
+        !data
+    ) {
+        return;
+    }
+
+    const summary =
+        data.summary || {};
+
+    const documents =
+        Array.isArray(data.documents)
+            ? data.documents
+            : [];
+
+
+    if (deploymentChecklistProjectName) {
+
+        deploymentChecklistProjectName.textContent =
+            `${data.project?.project_id || ""} — ${data.project?.project_name || ""}`;
+    }
+
+
+    const approved =
+        Number(
+            summary.approved || 0
+        );
+
+    const total =
+        Number(
+            summary.total || 8
+        );
+
+
+    if (deploymentReadinessCount) {
+
+        deploymentReadinessCount.textContent =
+            `${approved} / ${total} Approved`;
+    }
+
+
+    const progress =
+        total > 0
+            ? Math.round(
+                (approved / total) *
+                100
+            )
+            : 0;
+
+
+    if (deploymentProgressBar) {
+
+        deploymentProgressBar.style.width =
+            `${progress}%`;
+    }
+
+
+    deploymentDocumentList.innerHTML =
+        "";
+
+
+    documents.forEach(
+        (
+            deploymentDocument,
+            index
+        ) => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                "deployment-document-row";
+
+
+            const number =
+                document.createElement(
+                    "div"
+                );
+
+            number.className =
+                "deployment-document-number";
+
+            number.textContent =
+                String(index + 1);
+
+
+            const information =
+                document.createElement(
+                    "div"
+                );
+
+            information.className =
+                "deployment-document-info";
+
+
+            const name =
+                document.createElement(
+                    "div"
+                );
+
+            name.className =
+                "deployment-document-name";
+
+            name.textContent =
+                deploymentDocument.document_type ||
+                "Required Document";
+
+
+            information.appendChild(
+                name
+            );
+
+
+            const status =
+                document.createElement(
+                    "span"
+                );
+
+            status.className =
+                `deployment-document-status ${getDeploymentStatusClass(
+                    deploymentDocument.status
+                )}`;
+
+            status.textContent =
+                `${getDeploymentStatusIcon(
+                    deploymentDocument.status
+                )} ${deploymentDocument.status || "Missing"}`;
+
+
+            const action =
+                document.createElement(
+                    "button"
+                );
+
+            action.type =
+                "button";
+
+            action.className =
+                "deployment-document-action";
+
+        const canUpload =
+            deploymentDocument.status ===
+                "Missing" ||
+            deploymentDocument.status ===
+                "Needs Revision";
+
+
+        if (canUpload) {
+
+            action.textContent =
+                deploymentDocument.status ===
+                "Needs Revision"
+                    ? "Resubmit"
+                    : "Upload";
+
+
+            action.disabled =
+                false;
+
+
+            action.addEventListener(
+                "click",
+                event => {
+
+                    event.stopPropagation();
+
+
+                    pendingDeploymentDocumentType =
+                        deploymentDocument.document_type;
+
+
+                    if (
+                        deploymentDocumentFileInput
+                    ) {
+
+                        deploymentDocumentFileInput.value =
+                            "";
+
+                        deploymentDocumentFileInput.click();
+                    }
+                }
+            );
+
+
+        } else {
+
+            action.textContent =
+                "View";
+
+
+            action.disabled =
+                !deploymentDocument.drive_file_url;
+
+
+            if (
+                deploymentDocument.drive_file_url
+            ) {
+
+                action.addEventListener(
+                    "click",
+                    event => {
+
+                        event.stopPropagation();
+
+
+                        window.open(
+                            deploymentDocument.drive_file_url,
+                            "_blank",
+                            "noopener,noreferrer"
+                        );
+                    }
+                );
+            }
+        }
+            
+
+
+            row.appendChild(
+                number
+            );
+
+            row.appendChild(
+                information
+            );
+
+            row.appendChild(
+                status
+            );
+
+            row.appendChild(
+                action
+            );
+
+
+            deploymentDocumentList.appendChild(
+                row
+            );
+        }
+    );
+
+
+    if (deploymentOverallStatus) {
+
+        if (
+            summary.ready_for_deployment ===
+            true
+        ) {
+
+            deploymentOverallStatus.textContent =
+                "READY FOR DEPLOYMENT";
+
+            deploymentOverallStatus.classList.remove(
+                "deployment-not-ready"
+            );
+
+            deploymentOverallStatus.classList.add(
+                "deployment-ready"
+            );
+
+        } else {
+
+            deploymentOverallStatus.textContent =
+                "NOT READY FOR DEPLOYMENT";
+
+            deploymentOverallStatus.classList.remove(
+                "deployment-ready"
+            );
+
+            deploymentOverallStatus.classList.add(
+                "deployment-not-ready"
+            );
+        }
+    }
+}
+
+
+async function openDeploymentChecklist(
+    project
+) {
+
+    if (
+        !deploymentChecklistModal ||
+        !project
+    ) {
+        return;
+    }
+
+    currentDeploymentChecklistProject =
+        project;
+
+
+    deploymentChecklistModal.classList.add(
+        "show"
+    );
+
+
+    if (deploymentChecklistProjectName) {
+
+        deploymentChecklistProjectName.textContent =
+            `${project.project_id} — ${project.project_name}`;
+    }
+
+
+    if (deploymentChecklistLoading) {
+
+        deploymentChecklistLoading.hidden =
+            false;
+    }
+
+
+    if (deploymentChecklistError) {
+
+        deploymentChecklistError.hidden =
+            true;
+
+        deploymentChecklistError.textContent =
+            "";
+    }
+
+
+    if (deploymentDocumentList) {
+
+        deploymentDocumentList.innerHTML =
+            "";
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/projects/${encodeURIComponent(
+                    project.project_id
+                )}/deployment-checklist`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.error ||
+                "Unable to load deployment checklist."
+            );
+        }
+
+
+        renderDeploymentChecklist(
+            data
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "DEPLOYMENT CHECKLIST ERROR:",
+            error
+        );
+
+
+        if (deploymentChecklistError) {
+
+            deploymentChecklistError.textContent =
+                error.message ||
+                "Unable to load deployment checklist.";
+
+            deploymentChecklistError.hidden =
+                false;
+        }
+
+    } finally {
+
+        if (deploymentChecklistLoading) {
+
+            deploymentChecklistLoading.hidden =
+                true;
+        }
+    }
+}
+
+// ============================================================
+// UPLOAD DEPLOYMENT DOCUMENT
+// ============================================================
+
+async function uploadDeploymentDocument(
+    projectId,
+    documentType,
+    file
+) {
+
+    if (
+        !projectId ||
+        !documentType ||
+        !file
+    ) {
+
+        throw new Error(
+            "Deployment upload information is incomplete."
+        );
+    }
+
+
+    const response =
+        await fetch(
+            `/api/projects/${encodeURIComponent(
+                projectId
+            )}/deployment-checklist/upload`,
+            {
+                method:
+                    "POST",
+
+                headers: {
+
+                    "Content-Type":
+                        "application/octet-stream",
+
+                    "X-Document-Type":
+                        encodeURIComponent(
+                            documentType
+                        ),
+
+                    "X-File-Name":
+                        encodeURIComponent(
+                            file.name
+                        ),
+
+                    "X-File-Mime-Type":
+                        encodeURIComponent(
+                            file.type ||
+                            "application/octet-stream"
+                        )
+                },
+
+                body:
+                    file
+            }
+        );
+
+
+    const responseText =
+        await response.text();
+
+
+    let result = {};
+
+
+    if (responseText) {
+
+        try {
+
+            result =
+                JSON.parse(
+                    responseText
+                );
+
+        } catch (_) {
+
+            result = {
+                error:
+                    responseText
+            };
+        }
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            result.error ||
+            result.details ||
+            "Unable to upload deployment document."
+        );
+    }
+
+
+    return result;
+}
+
+
+// ============================================================
+// DEPLOYMENT DOCUMENT FILE INPUT
+// ============================================================
+
+if (deploymentDocumentFileInput) {
+
+    deploymentDocumentFileInput.addEventListener(
+        "change",
+        async () => {
+
+            const file =
+                deploymentDocumentFileInput
+                    .files?.[0];
+
+
+            if (
+                !file ||
+                !pendingDeploymentDocumentType ||
+                !currentDeploymentChecklistProject
+                    ?.project_id
+            ) {
+
+                deploymentDocumentFileInput.value =
+                    "";
+
+                return;
+            }
+
+
+            const documentType =
+                pendingDeploymentDocumentType;
+
+
+            try {
+
+                deploymentDocumentFileInput.disabled =
+                    true;
+
+
+                if (deploymentChecklistLoading) {
+
+                    deploymentChecklistLoading.textContent =
+                        `Uploading ${file.name}...`;
+
+                    deploymentChecklistLoading.hidden =
+                        false;
+                }
+
+
+                await uploadDeploymentDocument(
+
+                    currentDeploymentChecklistProject
+                        .project_id,
+
+                    documentType,
+
+                    file
+                );
+
+
+                pendingDeploymentDocumentType =
+                    null;
+
+
+                deploymentDocumentFileInput.value =
+                    "";
+
+
+                await openDeploymentChecklist(
+                    currentDeploymentChecklistProject
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "DEPLOYMENT DOCUMENT UPLOAD ERROR:",
+                    error
+                );
+
+
+                alert(
+                    "Upload failed: " +
+                    error.message
+                );
+
+
+            } finally {
+
+                deploymentDocumentFileInput.disabled =
+                    false;
+
+
+                deploymentDocumentFileInput.value =
+                    "";
+
+
+                if (deploymentChecklistLoading) {
+
+                    deploymentChecklistLoading.textContent =
+                        "Loading deployment checklist...";
+
+                    deploymentChecklistLoading.hidden =
+                        true;
+                }
+            }
+        }
+    );
+}
+
+
+// ============================================================
+// DEPLOYMENT CHECKLIST MODAL LISTENERS
+// ============================================================
+
+if (closeDeploymentChecklistModalBtn) {
+
+    closeDeploymentChecklistModalBtn.addEventListener(
+        "click",
+        closeDeploymentChecklistModal
+    );
+}
+
+
+if (closeDeploymentChecklistFooterBtn) {
+
+    closeDeploymentChecklistFooterBtn.addEventListener(
+        "click",
+        closeDeploymentChecklistModal
+    );
+}
+
+
+if (deploymentChecklistModal) {
+
+    deploymentChecklistModal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                deploymentChecklistModal
+            ) {
+
+                closeDeploymentChecklistModal();
+            }
+        }
+    );
+}
+
 
 // ============================================================
 // CLOSE ALL ACTION MENUS
@@ -2316,6 +3076,34 @@ function bindProjectActionMenuItems(
             }
         );
     });
+
+
+    // ============================================================
+    // DEPLOYMENT CHECKLIST ACTION
+    // ============================================================
+
+    const deploymentChecklistAction =
+        menu.querySelector(
+            ".deployment-checklist-action"
+        );
+
+
+    if (deploymentChecklistAction) {
+
+        deploymentChecklistAction.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+                closeAllProjectActionMenus();
+
+                openDeploymentChecklist(
+                    project
+                );
+            }
+        );
+    }
 
 
     const viewTasksAction =
