@@ -3037,11 +3037,13 @@ async function submitDeploymentReview() {
 
         closeDeploymentReviewModal();
 
-
         await openDeploymentChecklist(
             currentDeploymentChecklistProject
         );
 
+        // Refresh project status and Actions immediately
+        await loadDashboard();
+            
 
     } catch (error) {
 
