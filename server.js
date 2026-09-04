@@ -2876,45 +2876,70 @@ app.patch(
             }
 
 
-            // Never change a project that is already deployed.
+            // ------------------------------------------------
+            // DETERMINE PROJECT STATUS FROM DEPLOYMENT CHECKLIST
+            // ------------------------------------------------
+
+            let nextProjectStatus =
+                null;
+
+
+            if (allRequiredDocumentsApproved) {
+
+                // All 8 are approved.
+                // If it is already deployed, keep it deployed.
+                // Otherwise it becomes Ready for Deployment.
+
+                nextProjectStatus =
+                    currentProject?.project_status ===
+                    "Deployed"
+                        ? "Deployed"
+                        : "Ready for Deployment";
+
+            } else {
+
+                // Any deployment requirement is no longer approved.
+                // The project is no longer deployment-ready,
+                // even if it had previously been deployed.
+
+                if (
+                    currentProject?.project_status ===
+                        "Ready for Deployment" ||
+                    currentProject?.project_status ===
+                        "Deployed"
+                ) {
+
+                    nextProjectStatus =
+                        "Active";
+                }
+            }
+
+
             if (
-                currentProject?.project_status !==
-                "Deployed"
+                nextProjectStatus &&
+                nextProjectStatus !==
+                    currentProject?.project_status
             ) {
 
-                const nextProjectStatus =
-                    allRequiredDocumentsApproved
-                        ? "Ready for Deployment"
-                        : (
-                            currentProject?.project_status ===
-                            "Ready for Deployment"
-                                ? "Active"
-                                : null
-                        );
+                const {
+                    error: projectStatusUpdateError
+                } = await db
+                    .from("projects")
+                    .update({
+                        project_status:
+                            nextProjectStatus,
+
+                        updated_at:
+                            new Date().toISOString()
+                    })
+                    .eq(
+                        "project_id",
+                        projectId
+                    );
 
 
-                if (nextProjectStatus) {
-
-                    const {
-                        error: projectStatusUpdateError
-                    } = await db
-                        .from("projects")
-                        .update({
-                            project_status:
-                                nextProjectStatus,
-
-                            updated_at:
-                                new Date().toISOString()
-                        })
-                        .eq(
-                            "project_id",
-                            projectId
-                        );
-
-
-                    if (projectStatusUpdateError) {
-                        throw projectStatusUpdateError;
-                    }
+                if (projectStatusUpdateError) {
+                    throw projectStatusUpdateError;
                 }
             }
 
