@@ -3413,15 +3413,4 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
     #deploymentReviewViewFileBtn {
         width: 100% !important;
     }
-
-
-    .status-ready-deployment {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.status-deployed {
-    background: #dcfce7;
-    color: #166534;
-}
 }
