@@ -3388,6 +3388,140 @@ app.post(
 
 
 // ============================================================
+// DELETE OPTIONAL DEPLOYMENT DOCUMENT FILE
+// Admin and assigned development-team users may delete.
+// This does NOT affect deployment readiness.
+// ============================================================
+
+app.delete(
+    "/api/projects/:projectId/deployment-documents/:documentId",
+
+    async (req, res) => {
+
+        try {
+
+            const {
+                projectId,
+                documentId
+            } = req.params;
+
+
+            const db =
+                getDatabaseClient();
+
+
+            const {
+                data: deploymentDocument,
+                error: documentError
+            } = await db
+                .from("deployment_documents")
+                .select(
+                    "deployment_document_id, project_id, document_type, drive_file_id"
+                )
+                .eq(
+                    "deployment_document_id",
+                    documentId
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .maybeSingle();
+
+
+            if (documentError) {
+                throw documentError;
+            }
+
+
+            if (!deploymentDocument) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Deployment document not found."
+                });
+            }
+
+
+            if (deploymentDocument.drive_file_id) {
+
+                try {
+
+                    await googleDrive.files.delete({
+                        fileId:
+                            deploymentDocument.drive_file_id
+                    });
+
+
+                } catch (driveError) {
+
+                    const statusCode =
+                        driveError?.code ||
+                        driveError?.response?.status;
+
+
+                    // If the Drive file is already gone, still clean
+                    // up the database record.
+                    if (
+                        statusCode !== 404 &&
+                        statusCode !== 410
+                    ) {
+                        throw driveError;
+                    }
+                }
+            }
+
+
+            const {
+                error: deleteError
+            } = await db
+                .from("deployment_documents")
+                .delete()
+                .eq(
+                    "deployment_document_id",
+                    deploymentDocument.deployment_document_id
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                );
+
+
+            if (deleteError) {
+                throw deleteError;
+            }
+
+
+            return res.json({
+                success: true,
+                message:
+                    "Deployment document deleted successfully."
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "DELETE DEPLOYMENT DOCUMENT ERROR:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Could not delete the deployment document.",
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+
+// ============================================================
 // REVIEW / EDIT DEPLOYMENT DOCUMENT
 // ADMIN ONLY
 // ============================================================

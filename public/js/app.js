@@ -2554,21 +2554,43 @@ function renderDeploymentVerificationChecklist(
 
                         try {
 
-                            await updateDeploymentVerificationItem(
-                                data.project?.project_id,
-                                checklistItem.criterion_key,
-                                statusSelect.value,
-                                ""
-                            );
+                            const updateResult =
+                                await updateDeploymentVerificationItem(
+                                    data.project?.project_id,
+                                    checklistItem.criterion_key,
+                                    statusSelect.value,
+                                    ""
+                                );
 
 
-                            await openDeploymentVerificationChecklist(
-                                currentDeploymentVerificationProject
-                            );
+                            // Re-render immediately from the PATCH response.
+                            // This keeps the checklist visible while Save is working
+                            // instead of clearing it and showing the loading state again.
+                            renderDeploymentVerificationChecklist({
+                                project: {
+                                    ...(currentDeploymentVerificationProject || {}),
+                                    project_id:
+                                        data.project?.project_id ||
+                                        currentDeploymentVerificationProject?.project_id,
+                                    project_name:
+                                        data.project?.project_name ||
+                                        currentDeploymentVerificationProject?.project_name,
+                                    project_status:
+                                        updateResult.project_status ||
+                                        currentDeploymentVerificationProject?.project_status
+                                },
+
+                                summary:
+                                    updateResult.summary || {},
+
+                                items:
+                                    Array.isArray(updateResult.items)
+                                        ? updateResult.items
+                                        : []
+                            });
 
 
-                            // Project status may have changed to/from
-                            // Ready for Deployment.
+                            // Refresh only the dashboard table/status in the background.
                             await loadDashboard();
 
 
@@ -2857,8 +2879,6 @@ function renderDeploymentChecklist(data) {
         return;
     }
 
-    const summary =
-        data.summary || {};
 
     const documents =
         Array.isArray(data.documents)
@@ -2873,28 +2893,28 @@ function renderDeploymentChecklist(data) {
     }
 
 
-    const approved =
-        Number(
-            summary.approved || 0
-        );
+    const uploadedCount =
+        documents.filter(
+            deploymentDocument =>
+                !!deploymentDocument.drive_file_id
+        ).length;
+
 
     const total =
-        Number(
-            summary.total || 8
-        );
+        documents.length || 8;
 
 
     if (deploymentReadinessCount) {
 
         deploymentReadinessCount.textContent =
-            `${approved} / ${total} Approved (Optional)`;
+            `${uploadedCount} / ${total} Uploaded (Optional)`;
     }
 
 
     const progress =
         total > 0
             ? Math.round(
-                (approved / total) *
+                (uploadedCount / total) *
                 100
             )
             : 0;
@@ -2923,7 +2943,7 @@ function renderDeploymentChecklist(data) {
                 );
 
             row.className =
-                "deployment-document-row";
+                "deployment-document-row deployment-document-simple-row";
 
 
             const number =
@@ -2957,7 +2977,7 @@ function renderDeploymentChecklist(data) {
 
             name.textContent =
                 deploymentDocument.document_type ||
-                "Required Document";
+                "Deployment Document";
 
 
             information.appendChild(
@@ -2965,20 +2985,23 @@ function renderDeploymentChecklist(data) {
             );
 
 
-            const status =
+            const fileMeta =
                 document.createElement(
-                    "span"
+                    "div"
                 );
 
-            status.className =
-                `deployment-document-status ${getDeploymentStatusClass(
-                    deploymentDocument.status
-                )}`;
+            fileMeta.className =
+                "deployment-document-file-meta";
 
-            status.textContent =
-                `${getDeploymentStatusIcon(
-                    deploymentDocument.status
-                )} ${deploymentDocument.status || "Missing"}`;
+            fileMeta.textContent =
+                deploymentDocument.file_name
+                    ? `File: ${deploymentDocument.file_name}`
+                    : "No file uploaded";
+
+
+            information.appendChild(
+                fileMeta
+            );
 
 
             const actions =
@@ -2987,147 +3010,161 @@ function renderDeploymentChecklist(data) {
                 );
 
             actions.className =
-                "deployment-document-actions";
-
-
-            const primaryAction =
-                document.createElement(
-                    "button"
-                );
-
-            primaryAction.type =
-                "button";
-
-            primaryAction.className =
-                "deployment-document-action";
+                "deployment-document-actions deployment-document-simple-actions";
 
 
             if (
-                deploymentDocument.status ===
-                "Missing"
+                !deploymentDocument.drive_file_id
             ) {
 
-                primaryAction.textContent =
-                    "Upload";
-
-                primaryAction.addEventListener(
-                    "click",
-                    event => {
-
-                        event.stopPropagation();
-
-                        pendingDeploymentDocumentType =
-                            deploymentDocument.document_type;
-
-                        if (deploymentDocumentFileInput) {
-
-                            deploymentDocumentFileInput.value =
-                                "";
-
-                            deploymentDocumentFileInput.click();
-                        }
-                    }
-                );
-
-            } else if (
-                deploymentDocument.status ===
-                "Needs Revision" &&
-                !isAdminViewer
-            ) {
-
-                primaryAction.textContent =
-                    "Resubmit";
-
-                primaryAction.addEventListener(
-                    "click",
-                    event => {
-
-                        event.stopPropagation();
-
-                        pendingDeploymentDocumentType =
-                            deploymentDocument.document_type;
-
-                        if (deploymentDocumentFileInput) {
-
-                            deploymentDocumentFileInput.value =
-                                "";
-
-                            deploymentDocumentFileInput.click();
-                        }
-                    }
-                );
-
-            } else {
-
-                primaryAction.textContent =
-                    "View";
-
-                primaryAction.disabled =
-                    !deploymentDocument.drive_file_url;
-
-                if (
-                    deploymentDocument.drive_file_url
-                ) {
-
-                    primaryAction.addEventListener(
-                        "click",
-                        event => {
-
-                            event.stopPropagation();
-
-                            window.open(
-                                deploymentDocument.drive_file_url,
-                                "_blank",
-                                "noopener,noreferrer"
-                            );
-                        }
-                    );
-                }
-            }
-
-
-            actions.appendChild(
-                primaryAction
-            );
-
-
-            if (
-                isAdminViewer &&
-                deploymentDocument.status !==
-                "Missing"
-            ) {
-
-                const reviewAction =
+                const uploadAction =
                     document.createElement(
                         "button"
                     );
 
-                reviewAction.type =
+                uploadAction.type =
                     "button";
 
-                reviewAction.className =
-                    "deployment-document-action deployment-review-action";
+                uploadAction.className =
+                    "deployment-document-action";
 
-                reviewAction.textContent =
-                    deploymentDocument.status ===
-                    "Pending Review"
-                        ? "Review"
-                        : "Edit Review";
+                uploadAction.textContent =
+                    "Upload";
 
-                reviewAction.addEventListener(
+                uploadAction.addEventListener(
                     "click",
                     event => {
 
                         event.stopPropagation();
 
-                        openDeploymentReviewModal(
-                            deploymentDocument
-                        );
+                        pendingDeploymentDocumentType =
+                            deploymentDocument.document_type;
+
+                        if (deploymentDocumentFileInput) {
+
+                            deploymentDocumentFileInput.value =
+                                "";
+
+                            deploymentDocumentFileInput.click();
+                        }
                     }
                 );
 
+
                 actions.appendChild(
-                    reviewAction
+                    uploadAction
+                );
+
+            } else {
+
+                const deleteAction =
+                    document.createElement(
+                        "button"
+                    );
+
+                deleteAction.type =
+                    "button";
+
+                deleteAction.className =
+                    "deployment-document-action deployment-document-delete-action";
+
+                deleteAction.textContent =
+                    "Delete";
+
+                deleteAction.addEventListener(
+                    "click",
+                    async event => {
+
+                        event.stopPropagation();
+
+
+                        const confirmed =
+                            window.confirm(
+                                `Delete the uploaded file for "${deploymentDocument.document_type}"?`
+                            );
+
+
+                        if (!confirmed) {
+                            return;
+                        }
+
+
+                        deleteAction.disabled =
+                            true;
+
+                        const originalText =
+                            deleteAction.textContent;
+
+                        deleteAction.textContent =
+                            "Deleting...";
+
+
+                        try {
+
+                            const response =
+                                await fetch(
+                                    `/api/projects/${encodeURIComponent(
+                                        data.project?.project_id
+                                    )}/deployment-documents/${encodeURIComponent(
+                                        deploymentDocument.deployment_document_id
+                                    )}`,
+                                    {
+                                        method:
+                                            "DELETE"
+                                    }
+                                );
+
+
+                            const result =
+                                await response.json();
+
+
+                            if (
+                                !response.ok ||
+                                !result.success
+                            ) {
+
+                                throw new Error(
+                                    result.error ||
+                                    result.details ||
+                                    "Unable to delete deployment document."
+                                );
+                            }
+
+
+                            await openDeploymentChecklist(
+                                currentDeploymentChecklistProject
+                            );
+
+
+                        } catch (error) {
+
+                            console.error(
+                                "DELETE DEPLOYMENT DOCUMENT ERROR:",
+                                error
+                            );
+
+
+                            alert(
+                                "Delete failed: " +
+                                error.message
+                            );
+
+
+                        } finally {
+
+                            deleteAction.disabled =
+                                false;
+
+                            deleteAction.textContent =
+                                originalText;
+                        }
+                    }
+                );
+
+
+                actions.appendChild(
+                    deleteAction
                 );
             }
 
@@ -3138,10 +3175,6 @@ function renderDeploymentChecklist(data) {
 
             row.appendChild(
                 information
-            );
-
-            row.appendChild(
-                status
             );
 
             row.appendChild(
@@ -3228,7 +3261,7 @@ async function openDeploymentChecklist(
             await fetch(
                 `/api/projects/${encodeURIComponent(
                     project.project_id
-                )}/deployment-checklist-items`
+                )}/deployment-checklist`
             );
 
 
@@ -3243,7 +3276,7 @@ async function openDeploymentChecklist(
 
             throw new Error(
                 data.error ||
-                "Unable to load deployment checklist."
+                "Unable to load deployment documents."
             );
         }
 
@@ -3252,13 +3285,12 @@ async function openDeploymentChecklist(
             data
         );
 
-        await loadDashboard();
 
 
     } catch (error) {
 
         console.error(
-            "DEPLOYMENT CHECKLIST ERROR:",
+            "DEPLOYMENT DOCUMENTS ERROR:",
             error
         );
 
@@ -3267,7 +3299,7 @@ async function openDeploymentChecklist(
 
             deploymentChecklistError.textContent =
                 error.message ||
-                "Unable to load deployment checklist.";
+                "Unable to load deployment documents.";
 
             deploymentChecklistError.hidden =
                 false;
@@ -3482,7 +3514,7 @@ if (deploymentDocumentFileInput) {
                 if (deploymentChecklistLoading) {
 
                     deploymentChecklistLoading.textContent =
-                        "Loading deployment checklist...";
+                        "Loading deployment documents...";
 
                     deploymentChecklistLoading.hidden =
                         true;
