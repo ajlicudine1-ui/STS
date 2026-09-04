@@ -316,6 +316,7 @@
 
     border: 1px solid #2e7d32;
     border-radius: 9px;
+    margin-right: 10px;
 
     color: #1b5e20;
 
@@ -329,6 +330,7 @@
         background 0.2s ease,
         border-color 0.2s ease,
         color 0.2s ease;
+
 }
 
 .project-action-trigger:hover,
