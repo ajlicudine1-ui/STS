@@ -2439,6 +2439,10 @@ function createProjectActionMenu(
         "project-action-wrapper";
 
 
+    const maintenanceEnabled =
+    project.project_status === "Deployed";
+
+
     wrapper.innerHTML = `
         <button
             type="button"
@@ -2454,64 +2458,257 @@ function createProjectActionMenu(
             </span>
         </button>
 
+
         <div class="project-action-menu">
 
-            <button
-                type="button"
-                class="project-action-item view-project-tasks"
-            >
-                <span class="project-action-icon">
-                    ☷
-                </span>
 
-                <span>
-                    View Tasks
-                </span>
-            </button>
+            <!-- =========================================
+                PROJECT
+                ========================================= -->
 
             <button
                 type="button"
-                class="project-action-item view-repository-files-action"
+                class="project-action-section-toggle"
+                data-action-section="project"
             >
-                <span class="project-action-icon">
-                    ☰
+                <span class="project-action-section-icon">
+                    ▦
                 </span>
 
-                <span>
-                     Project Repository
+                <span class="project-action-section-label">
+                    Project
+                </span>
+
+                <span class="project-action-section-arrow">
+                    ›
                 </span>
             </button>
+
+
+            <div
+                class="project-action-section-content"
+                data-action-section-content="project"
+                hidden
+            >
+
+                <button
+                    type="button"
+                    class="project-action-item view-project-tasks"
+                >
+                    <span class="project-action-icon">
+                        ☷
+                    </span>
+
+                    <span>
+                        View Tasks
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="project-action-item view-repository-files-action"
+                >
+                    <span class="project-action-icon">
+                        ☰
+                    </span>
+
+                    <span>
+                        Project Repository
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="project-action-item upload-project-content-action"
+                >
+                    <span class="project-action-icon">
+                        ↑
+                    </span>
+
+                    <span>
+                        Upload Files / Folder
+                    </span>
+                </button>
+
+            </div>
+
+
+
+            <!-- =========================================
+                DEPLOYMENT
+                ========================================= -->
 
             <button
                 type="button"
-                class="project-action-item upload-project-content-action"
+                class="project-action-section-toggle"
+                data-action-section="deployment"
             >
-                <span class="project-action-icon">
-                    ↑
+                <span class="project-action-section-icon">
+                    ✓
                 </span>
 
-                <span>
-                    Upload Files / Folder
+                <span class="project-action-section-label">
+                    Deployment
+                </span>
+
+                <span class="project-action-section-arrow">
+                    ›
                 </span>
             </button>
+
+
+            <div
+                class="project-action-section-content"
+                data-action-section-content="deployment"
+                hidden
+            >
+
+                <button
+                    type="button"
+                    class="project-action-item deployment-checklist-action"
+                >
+                    <span class="project-action-icon">
+                        ☑
+                    </span>
+
+                    <span>
+                        Deployment Checklist
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="project-action-item ready-for-deployment-action"
+                    disabled
+                >
+                    <span class="project-action-icon">
+                        ✓
+                    </span>
+
+                    <span>
+                        Ready for Deployment
+                    </span>
+                </button>
+
+            </div>
+
+
+
+            <!-- =========================================
+                MAINTENANCE
+                ========================================= -->
+
+            <button
+                type="button"
+                class="project-action-section-toggle ${maintenanceEnabled ? "" : "project-action-section-disabled"}"
+                data-action-section="maintenance"
+                ${maintenanceEnabled ? "" : "disabled"}
+            >
+                <span class="project-action-section-icon">
+                    ⚒
+                </span>
+
+                <span class="project-action-section-label">
+                    Maintenance
+                </span>
+
+                <span class="project-action-section-arrow">
+                    ${maintenanceEnabled ? "›" : "🔒"}
+                </span>
+            </button>
+
+
+            <div
+                class="project-action-section-content"
+                data-action-section-content="maintenance"
+                hidden
+            >
+
+                <button
+                    type="button"
+                    class="project-action-item maintenance-action"
+                >
+                    <span class="project-action-icon">
+                        ⚒
+                    </span>
+
+                    <span>
+                        Maintenance
+                    </span>
+                </button>
+
+            </div>
+
+
 
             ${isAdminViewer ? `
-            <button
-                type="button"
-                class="project-action-item edit-project-action"
-            >
-                <span class="project-action-icon">✎</span>
-                <span>Edit</span>
-            </button>
+
+            <!-- =========================================
+                MANAGE
+                ========================================= -->
 
             <button
                 type="button"
-                class="project-action-item delete-project-action"
-                style="color: #dc2626;"
+                class="project-action-section-toggle"
+                data-action-section="manage"
             >
-                <span class="project-action-icon" style="color: #dc2626;">🗑</span>
-                <span>Delete</span>
-            </button>` : ""}
+                <span class="project-action-section-icon">
+                    ⚙
+                </span>
+
+                <span class="project-action-section-label">
+                    Manage
+                </span>
+
+                <span class="project-action-section-arrow">
+                    ›
+                </span>
+            </button>
+
+
+            <div
+                class="project-action-section-content"
+                data-action-section-content="manage"
+                hidden
+            >
+
+                <button
+                    type="button"
+                    class="project-action-item edit-project-action"
+                >
+                    <span class="project-action-icon">
+                        ✎
+                    </span>
+
+                    <span>
+                        Edit
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="project-action-item delete-project-action"
+                    style="color: #dc2626;"
+                >
+                    <span
+                        class="project-action-icon"
+                        style="color: #dc2626;"
+                    >
+                        🗑
+                    </span>
+
+                    <span>
+                        Delete
+                    </span>
+                </button>
+
+            </div>
+
+            ` : ""}
 
         </div>
     `;
