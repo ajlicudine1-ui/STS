@@ -3243,7 +3243,7 @@ function renderDeploymentChecklist(data) {
     if (deploymentOverallStatus) {
 
         deploymentOverallStatus.textContent =
-            "OPTIONAL — NOT REQUIRED FOR DEPLOYMENT";
+
 
         deploymentOverallStatus.classList.remove(
             "deployment-not-ready"
@@ -6049,3 +6049,4 @@ document.addEventListener(
     "DOMContentLoaded",
     initializeSelectProjectMode
 );
+
