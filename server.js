@@ -2259,111 +2259,351 @@ app.get(
 );
 
 
-if (deploymentDocumentFileInput) {
+// ============================================================
+// UPLOAD DEPLOYMENT CHECKLIST DOCUMENT
+// ============================================================
 
-    deploymentDocumentFileInput.addEventListener(
-        "change",
-        async () => {
+app.post(
+    "/api/projects/:projectId/deployment-checklist/upload",
 
-            const file =
-                deploymentDocumentFileInput
-                    .files?.[0];
+    express.raw({
+        type:
+            "application/octet-stream",
 
+        limit:
+            "25mb"
+    }),
 
-            if (
-                !file ||
-                !pendingDeploymentDocumentType ||
-                !currentDeploymentChecklistProject
-                    ?.project_id
-            ) {
+    async (req, res) => {
 
-                deploymentDocumentFileInput.value =
-                    "";
+        try {
 
-                return;
-            }
+            const { projectId } =
+                req.params;
 
 
             const documentType =
-                pendingDeploymentDocumentType;
+                decodeURIComponent(
+                    req.get("X-Document-Type") ||
+                    ""
+                ).trim();
 
 
-            try {
-
-                deploymentDocumentFileInput.disabled =
-                    true;
-
-
-                if (deploymentChecklistLoading) {
-
-                    deploymentChecklistLoading.textContent =
-                        `Uploading ${file.name}...`;
-
-                    deploymentChecklistLoading.hidden =
-                        false;
-                }
+            const fileName =
+                decodeURIComponent(
+                    req.get("X-File-Name") ||
+                    ""
+                ).trim();
 
 
-                await uploadDeploymentDocument(
+            const mimeType =
+                decodeURIComponent(
+                    req.get("X-File-Mime-Type") ||
+                    "application/octet-stream"
+                ).trim();
 
-                    currentDeploymentChecklistProject
-                        .project_id,
 
+            if (
+                !REQUIRED_DEPLOYMENT_DOCUMENTS.includes(
+                    documentType
+                )
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Invalid deployment document type."
+                });
+            }
+
+
+            if (!fileName) {
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "File name is required."
+                });
+            }
+
+
+            if (
+                !Buffer.isBuffer(req.body) ||
+                req.body.length === 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Uploaded file is empty."
+                });
+            }
+
+
+            const db =
+                getDatabaseClient();
+
+
+            const {
+                data: project,
+                error: projectError
+            } = await db
+                .from("projects")
+                .select(
+                    "project_id, project_name, drive_folder_id"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .maybeSingle();
+
+
+            if (projectError) {
+                throw projectError;
+            }
+
+
+            if (!project) {
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Project not found."
+                });
+            }
+
+
+            if (!project.drive_folder_id) {
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Project Google Drive folder is missing."
+                });
+            }
+
+
+            let releaseFolder =
+                await findChildDriveFolder(
+                    project.drive_folder_id,
+                    "System Release & Deployment"
+                );
+
+
+            if (!releaseFolder) {
+                const createdReleaseFolder =
+                    await createDriveFolder({
+                        name:
+                            "System Release & Deployment",
+
+                        parentFolderId:
+                            project.drive_folder_id
+                    });
+
+                releaseFolder = {
+                    id:
+                        createdReleaseFolder.id,
+
+                    name:
+                        createdReleaseFolder.name
+                };
+            }
+
+
+            let documentFolder =
+                await findChildDriveFolder(
+                    releaseFolder.id,
+                    documentType
+                );
+
+
+            if (!documentFolder) {
+                const createdDocumentFolder =
+                    await createDriveFolder({
+                        name:
+                            documentType,
+
+                        parentFolderId:
+                            releaseFolder.id
+                    });
+
+                documentFolder = {
+                    id:
+                        createdDocumentFolder.id,
+
+                    name:
+                        createdDocumentFolder.name
+                };
+            }
+
+
+            const {
+                data: existingDocument,
+                error: existingError
+            } = await db
+                .from("deployment_documents")
+                .select(
+                    "deployment_document_id, version"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .eq(
+                    "document_type",
+                    documentType
+                )
+                .maybeSingle();
+
+
+            if (existingError) {
+                throw existingError;
+            }
+
+
+            const nextVersion =
+                existingDocument
+                    ? Number(
+                        existingDocument.version || 1
+                    ) + 1
+                    : 1;
+
+
+            const uploaded =
+                await uploadBufferToDrive({
+                    fileName:
+                        fileName,
+
+                    mimeType:
+                        mimeType,
+
+                    buffer:
+                        req.body,
+
+                    parentFolderId:
+                        documentFolder.id
+                });
+
+
+            if (!uploaded?.id) {
+                throw new Error(
+                    "Google Drive did not return an uploaded file ID."
+                );
+            }
+
+
+            const now =
+                new Date().toISOString();
+
+
+            const documentData = {
+                project_id:
+                    projectId,
+
+                document_type:
                     documentType,
 
-                    file
-                );
+                status:
+                    "Pending Review",
+
+                drive_file_id:
+                    uploaded.id,
+
+                drive_file_url:
+                    uploaded.webViewLink ||
+                    null,
+
+                file_name:
+                    uploaded.name ||
+                    fileName,
+
+                version:
+                    nextVersion,
+
+                submitted_by:
+                    req.authUser?.id ||
+                    null,
+
+                submitted_at:
+                    now,
+
+                reviewed_by:
+                    null,
+
+                reviewed_at:
+                    null,
+
+                review_remarks:
+                    null,
+
+                updated_at:
+                    now
+            };
 
 
-                pendingDeploymentDocumentType =
-                    null;
+            const {
+                data: savedDocument,
+                error: saveError
+            } = await db
+                .from("deployment_documents")
+                .upsert(
+                    documentData,
+                    {
+                        onConflict:
+                            "project_id,document_type"
+                    }
+                )
+                .select()
+                .single();
 
 
-                deploymentDocumentFileInput.value =
-                    "";
-
-
-                await openDeploymentChecklist(
-                    currentDeploymentChecklistProject
-                );
-
-
-            } catch (error) {
-
+            if (saveError) {
                 console.error(
-                    "DEPLOYMENT DOCUMENT UPLOAD ERROR:",
-                    error
+                    "SAVE DEPLOYMENT DOCUMENT ERROR:",
+                    saveError
                 );
 
-
-                alert(
-                    "Upload failed: " +
-                    error.message
-                );
-
-
-            } finally {
-
-                deploymentDocumentFileInput.disabled =
-                    false;
-
-
-                deploymentDocumentFileInput.value =
-                    "";
-
-
-                if (deploymentChecklistLoading) {
-
-                    deploymentChecklistLoading.textContent =
-                        "Loading deployment checklist...";
-
-                    deploymentChecklistLoading.hidden =
-                        true;
+                try {
+                    await googleDrive.files.delete({
+                        fileId:
+                            uploaded.id
+                    });
+                } catch (_) {
+                    // Ignore rollback failure.
                 }
+
+                throw saveError;
             }
+
+
+            return res.status(201).json({
+                success:
+                    true,
+
+                message:
+                    "Deployment document uploaded successfully.",
+
+                document:
+                    savedDocument
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "UPLOAD DEPLOYMENT DOCUMENT ERROR:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Could not upload deployment document.",
+                details:
+                    error.message
+            });
         }
-    );
-}
+    }
+);
+
+
 // ============================================================
 // LIST PROJECT REPOSITORY CONTENTS
 // ============================================================
