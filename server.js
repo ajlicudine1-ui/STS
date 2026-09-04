@@ -2055,6 +2055,159 @@ app.get(
                 });
             }
 
+            // ------------------------------------------------
+    // VERIFY SAVED DEPLOYMENT FILES STILL EXIST IN DRIVE
+    // ------------------------------------------------
+
+    for (const document of savedDocuments || []) {
+
+        if (!document.drive_file_id) {
+            continue;
+        }
+
+
+        let fileStillExists =
+            true;
+
+
+        try {
+
+            const driveFile =
+                await googleDrive.files.get({
+                    fileId:
+                        document.drive_file_id,
+
+                    fields:
+                        "id, trashed"
+                });
+
+
+            if (
+                !driveFile.data?.id ||
+                driveFile.data?.trashed === true
+            ) {
+
+                fileStillExists =
+                    false;
+            }
+
+
+        } catch (driveError) {
+
+            const statusCode =
+                driveError?.code ||
+                driveError?.response?.status;
+
+
+            // File was manually deleted from Google Drive.
+            if (
+                statusCode === 404 ||
+                statusCode === 410
+            ) {
+
+                fileStillExists =
+                    false;
+
+            } else {
+
+                console.error(
+                    "DEPLOYMENT DRIVE FILE CHECK ERROR:",
+                    driveError
+                );
+
+                // Do not mark the document missing for temporary
+                // Google API/network errors.
+                continue;
+            }
+        }
+
+
+        if (!fileStillExists) {
+
+            const now =
+                new Date().toISOString();
+
+
+            const {
+                error: missingFileUpdateError
+            } = await db
+                .from("deployment_documents")
+                .update({
+                    status:
+                        "Missing",
+
+                    drive_file_id:
+                        null,
+
+                    drive_file_url:
+                        null,
+
+                    file_name:
+                        null,
+
+                    submitted_by:
+                        null,
+
+                    submitted_at:
+                        null,
+
+                    reviewed_by:
+                        null,
+
+                    reviewed_at:
+                        null,
+
+                    review_remarks:
+                        null,
+
+                    updated_at:
+                        now
+                })
+                .eq(
+                    "deployment_document_id",
+                    document.deployment_document_id
+                );
+
+
+            if (missingFileUpdateError) {
+                throw missingFileUpdateError;
+            }
+
+
+            // Also update the local array used to build
+            // the current checklist response.
+            document.status =
+                "Missing";
+
+            document.drive_file_id =
+                null;
+
+            document.drive_file_url =
+                null;
+
+            document.file_name =
+                null;
+
+            document.submitted_by =
+                null;
+
+            document.submitted_at =
+                null;
+
+            document.reviewed_by =
+                null;
+
+            document.reviewed_at =
+                null;
+
+            document.review_remarks =
+                null;
+        }
+    }
+
+
+            
+
 
             // ------------------------------------------------
             // LOAD SAVED DEPLOYMENT DOCUMENTS
@@ -2200,6 +2353,46 @@ app.get(
             const readyForDeployment =
                 approvedCount ===
                 REQUIRED_DEPLOYMENT_DOCUMENTS.length;
+
+            // ------------------------------------------------
+            // SYNC PROJECT STATUS AFTER DRIVE FILE CHECK
+            // ------------------------------------------------
+
+            if (
+                !readyForDeployment &&
+                (
+                    project.project_status ===
+                        "Ready for Deployment" ||
+                    project.project_status ===
+                        "Deployed"
+                )
+            ) {
+
+                const {
+                    error: projectStatusError
+                } = await db
+                    .from("projects")
+                    .update({
+                        project_status:
+                            "Active",
+
+                        updated_at:
+                            new Date().toISOString()
+                    })
+                    .eq(
+                        "project_id",
+                        projectId
+                    );
+
+
+                if (projectStatusError) {
+                    throw projectStatusError;
+                }
+
+
+                project.project_status =
+                    "Active";
+            }
 
 
             // ------------------------------------------------
