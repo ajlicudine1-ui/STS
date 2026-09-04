@@ -150,6 +150,64 @@ const deploymentOverallStatus =
         "deploymentOverallStatus"
     );
 
+// ============================================================
+// DEPLOYMENT REVIEW MODAL
+// ============================================================
+
+const deploymentReviewModal =
+    document.getElementById(
+        "deploymentReviewModal"
+    );
+
+const deploymentReviewTitle =
+    document.getElementById(
+        "deploymentReviewTitle"
+    );
+
+const deploymentReviewDocumentName =
+    document.getElementById(
+        "deploymentReviewDocumentName"
+    );
+
+const deploymentReviewFileName =
+    document.getElementById(
+        "deploymentReviewFileName"
+    );
+
+const deploymentReviewViewFileBtn =
+    document.getElementById(
+        "deploymentReviewViewFileBtn"
+    );
+
+const deploymentReviewRemarks =
+    document.getElementById(
+        "deploymentReviewRemarks"
+    );
+
+const deploymentReviewError =
+    document.getElementById(
+        "deploymentReviewError"
+    );
+
+const closeDeploymentReviewModalBtn =
+    document.getElementById(
+        "closeDeploymentReviewModal"
+    );
+
+const cancelDeploymentReviewBtn =
+    document.getElementById(
+        "cancelDeploymentReviewBtn"
+    );
+
+const submitDeploymentReviewBtn =
+    document.getElementById(
+        "submitDeploymentReviewBtn"
+    );
+
+
+let currentDeploymentReviewDocument =
+    null;
+
 
 
 const deploymentDocumentFileInput =
@@ -2160,92 +2218,155 @@ function renderDeploymentChecklist(data) {
                 )} ${deploymentDocument.status || "Missing"}`;
 
 
-            const action =
+            const actions =
+                document.createElement(
+                    "div"
+                );
+
+            actions.className =
+                "deployment-document-actions";
+
+
+            const primaryAction =
                 document.createElement(
                     "button"
                 );
 
-            action.type =
+            primaryAction.type =
                 "button";
 
-            action.className =
+            primaryAction.className =
                 "deployment-document-action";
-
-        const canUpload =
-            deploymentDocument.status ===
-                "Missing" ||
-            deploymentDocument.status ===
-                "Needs Revision";
-
-
-        if (canUpload) {
-
-            action.textContent =
-                deploymentDocument.status ===
-                "Needs Revision"
-                    ? "Resubmit"
-                    : "Upload";
-
-
-            action.disabled =
-                false;
-
-
-            action.addEventListener(
-                "click",
-                event => {
-
-                    event.stopPropagation();
-
-
-                    pendingDeploymentDocumentType =
-                        deploymentDocument.document_type;
-
-
-                    if (
-                        deploymentDocumentFileInput
-                    ) {
-
-                        deploymentDocumentFileInput.value =
-                            "";
-
-                        deploymentDocumentFileInput.click();
-                    }
-                }
-            );
-
-
-        } else {
-
-            action.textContent =
-                "View";
-
-
-            action.disabled =
-                !deploymentDocument.drive_file_url;
 
 
             if (
-                deploymentDocument.drive_file_url
+                deploymentDocument.status ===
+                "Missing"
             ) {
 
-                action.addEventListener(
+                primaryAction.textContent =
+                    "Upload";
+
+                primaryAction.addEventListener(
                     "click",
                     event => {
 
                         event.stopPropagation();
 
+                        pendingDeploymentDocumentType =
+                            deploymentDocument.document_type;
 
-                        window.open(
-                            deploymentDocument.drive_file_url,
-                            "_blank",
-                            "noopener,noreferrer"
+                        if (deploymentDocumentFileInput) {
+
+                            deploymentDocumentFileInput.value =
+                                "";
+
+                            deploymentDocumentFileInput.click();
+                        }
+                    }
+                );
+
+            } else if (
+                deploymentDocument.status ===
+                "Needs Revision" &&
+                !isAdminViewer
+            ) {
+
+                primaryAction.textContent =
+                    "Resubmit";
+
+                primaryAction.addEventListener(
+                    "click",
+                    event => {
+
+                        event.stopPropagation();
+
+                        pendingDeploymentDocumentType =
+                            deploymentDocument.document_type;
+
+                        if (deploymentDocumentFileInput) {
+
+                            deploymentDocumentFileInput.value =
+                                "";
+
+                            deploymentDocumentFileInput.click();
+                        }
+                    }
+                );
+
+            } else {
+
+                primaryAction.textContent =
+                    "View";
+
+                primaryAction.disabled =
+                    !deploymentDocument.drive_file_url;
+
+                if (
+                    deploymentDocument.drive_file_url
+                ) {
+
+                    primaryAction.addEventListener(
+                        "click",
+                        event => {
+
+                            event.stopPropagation();
+
+                            window.open(
+                                deploymentDocument.drive_file_url,
+                                "_blank",
+                                "noopener,noreferrer"
+                            );
+                        }
+                    );
+                }
+            }
+
+
+            actions.appendChild(
+                primaryAction
+            );
+
+
+            if (
+                isAdminViewer &&
+                deploymentDocument.status !==
+                "Missing"
+            ) {
+
+                const reviewAction =
+                    document.createElement(
+                        "button"
+                    );
+
+                reviewAction.type =
+                    "button";
+
+                reviewAction.className =
+                    "deployment-document-action deployment-review-action";
+
+                reviewAction.textContent =
+                    deploymentDocument.status ===
+                    "Pending Review"
+                        ? "Review"
+                        : "Edit Review";
+
+                reviewAction.addEventListener(
+                    "click",
+                    event => {
+
+                        event.stopPropagation();
+
+                        openDeploymentReviewModal(
+                            deploymentDocument
                         );
                     }
                 );
+
+                actions.appendChild(
+                    reviewAction
+                );
             }
-        }
-            
 
 
             row.appendChild(
@@ -2261,7 +2382,7 @@ function renderDeploymentChecklist(data) {
             );
 
             row.appendChild(
-                action
+                actions
             );
 
 
@@ -2305,7 +2426,6 @@ function renderDeploymentChecklist(data) {
         }
     }
 }
-
 
 async function openDeploymentChecklist(
     project
@@ -2621,6 +2741,374 @@ if (deploymentDocumentFileInput) {
                     deploymentChecklistLoading.hidden =
                         true;
                 }
+            }
+        }
+    );
+}
+
+
+// ============================================================
+// DEPLOYMENT DOCUMENT REVIEW
+// ============================================================
+
+function closeDeploymentReviewModal() {
+
+    if (!deploymentReviewModal) {
+        return;
+    }
+
+    deploymentReviewModal.classList.remove(
+        "show"
+    );
+
+    currentDeploymentReviewDocument =
+        null;
+}
+
+
+function openDeploymentReviewModal(
+    deploymentDocument
+) {
+
+    if (
+        !deploymentReviewModal ||
+        !deploymentDocument
+    ) {
+        return;
+    }
+
+
+    currentDeploymentReviewDocument =
+        deploymentDocument;
+
+
+    const isExistingReview =
+        deploymentDocument.status ===
+            "Approved" ||
+        deploymentDocument.status ===
+            "Needs Revision";
+
+
+    if (deploymentReviewTitle) {
+
+        deploymentReviewTitle.textContent =
+            isExistingReview
+                ? "Edit Deployment Review"
+                : "Review Deployment Document";
+    }
+
+
+    if (deploymentReviewDocumentName) {
+
+        deploymentReviewDocumentName.textContent =
+            deploymentDocument.document_type ||
+            "Document";
+    }
+
+
+    if (deploymentReviewFileName) {
+
+        deploymentReviewFileName.textContent =
+            deploymentDocument.file_name ||
+            "Uploaded file";
+    }
+
+
+    if (deploymentReviewRemarks) {
+
+        deploymentReviewRemarks.value =
+            deploymentDocument.review_remarks ||
+            "";
+    }
+
+
+    document
+        .querySelectorAll(
+            'input[name="deploymentReviewDecision"]'
+        )
+        .forEach(radio => {
+
+            radio.checked =
+                radio.value ===
+                deploymentDocument.status;
+        });
+
+
+    if (deploymentReviewViewFileBtn) {
+
+        deploymentReviewViewFileBtn.disabled =
+            !deploymentDocument.drive_file_url;
+
+        deploymentReviewViewFileBtn.onclick =
+            () => {
+
+                if (
+                    deploymentDocument
+                        .drive_file_url
+                ) {
+
+                    window.open(
+                        deploymentDocument
+                            .drive_file_url,
+                        "_blank",
+                        "noopener,noreferrer"
+                    );
+                }
+            };
+    }
+
+
+    if (deploymentReviewError) {
+
+        deploymentReviewError.hidden =
+            true;
+
+        deploymentReviewError.textContent =
+            "";
+    }
+
+
+    if (submitDeploymentReviewBtn) {
+
+        submitDeploymentReviewBtn.textContent =
+            isExistingReview
+                ? "Update Review"
+                : "Submit Review";
+    }
+
+
+    deploymentReviewModal.classList.add(
+        "show"
+    );
+}
+
+// ============================================================
+// SUBMIT DEPLOYMENT REVIEW
+// ============================================================
+
+async function submitDeploymentReview() {
+
+    if (
+        !currentDeploymentReviewDocument ||
+        !currentDeploymentChecklistProject
+            ?.project_id
+    ) {
+        return;
+    }
+
+
+    const selectedDecision =
+        document.querySelector(
+            'input[name="deploymentReviewDecision"]:checked'
+        );
+
+
+    if (!selectedDecision) {
+
+        if (deploymentReviewError) {
+            deploymentReviewError.textContent =
+                "Please select a review decision.";
+
+            deploymentReviewError.hidden =
+                false;
+        }
+
+        return;
+    }
+
+
+    const status =
+        selectedDecision.value;
+
+
+    const remarks =
+        deploymentReviewRemarks
+            ?.value
+            ?.trim() ||
+        "";
+
+
+    if (
+        status ===
+            "Needs Revision" &&
+        !remarks
+    ) {
+
+        if (deploymentReviewError) {
+            deploymentReviewError.textContent =
+                "Please enter remarks or findings for the required revision.";
+
+            deploymentReviewError.hidden =
+                false;
+        }
+
+        return;
+    }
+
+
+    try {
+
+        if (deploymentReviewError) {
+            deploymentReviewError.hidden =
+                true;
+
+            deploymentReviewError.textContent =
+                "";
+        }
+
+
+        if (submitDeploymentReviewBtn) {
+            submitDeploymentReviewBtn.disabled =
+                true;
+
+            submitDeploymentReviewBtn.textContent =
+                "Saving...";
+        }
+
+
+        const response =
+            await fetch(
+                `/api/projects/${encodeURIComponent(
+                    currentDeploymentChecklistProject
+                        .project_id
+                )}/deployment-checklist/${encodeURIComponent(
+                    currentDeploymentReviewDocument
+                        .deployment_document_id
+                )}/review`,
+                {
+                    method:
+                        "PATCH",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            status:
+                                status,
+
+                            review_remarks:
+                                remarks
+                        })
+                }
+            );
+
+
+        const responseText =
+            await response.text();
+
+        let result = {};
+
+        if (responseText) {
+            try {
+                result =
+                    JSON.parse(
+                        responseText
+                    );
+            } catch (_) {
+                result = {
+                    error:
+                        responseText
+                };
+            }
+        }
+
+
+        if (
+            !response.ok ||
+            !result.success
+        ) {
+
+            throw new Error(
+                result.error ||
+                result.details ||
+                "Unable to save review."
+            );
+        }
+
+
+        closeDeploymentReviewModal();
+
+
+        await openDeploymentChecklist(
+            currentDeploymentChecklistProject
+        );
+
+
+    } catch (error) {
+
+        if (deploymentReviewError) {
+            deploymentReviewError.textContent =
+                error.message ||
+                "Unable to save review.";
+
+            deploymentReviewError.hidden =
+                false;
+        }
+
+
+    } finally {
+
+        if (submitDeploymentReviewBtn) {
+            submitDeploymentReviewBtn.disabled =
+                false;
+
+            submitDeploymentReviewBtn.textContent =
+                currentDeploymentReviewDocument &&
+                (
+                    currentDeploymentReviewDocument.status ===
+                        "Approved" ||
+                    currentDeploymentReviewDocument.status ===
+                        "Needs Revision"
+                )
+                    ? "Update Review"
+                    : "Submit Review";
+        }
+    }
+}
+
+
+if (submitDeploymentReviewBtn) {
+
+    submitDeploymentReviewBtn.addEventListener(
+        "click",
+        submitDeploymentReview
+    );
+}
+
+
+if (closeDeploymentReviewModalBtn) {
+
+    closeDeploymentReviewModalBtn.addEventListener(
+        "click",
+        closeDeploymentReviewModal
+    );
+}
+
+
+if (cancelDeploymentReviewBtn) {
+
+    cancelDeploymentReviewBtn.addEventListener(
+        "click",
+        closeDeploymentReviewModal
+    );
+}
+
+
+if (deploymentReviewModal) {
+
+    deploymentReviewModal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                deploymentReviewModal
+            ) {
+
+                closeDeploymentReviewModal();
             }
         }
     );

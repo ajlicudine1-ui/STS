@@ -764,6 +764,161 @@
         </div>
     </div>
 
+
+    <!-- =====================================================
+     DEPLOYMENT DOCUMENT REVIEW MODAL
+     ===================================================== -->
+
+<div class="modal" id="deploymentReviewModal">
+
+    <div class="modal-content deployment-review-modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <h2 id="deploymentReviewTitle">
+                    Review Deployment Document
+                </h2>
+
+                <p id="deploymentReviewDocumentName">
+                    Document
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                id="closeDeploymentReviewModal"
+                aria-label="Close"
+            >
+                &times;
+            </button>
+
+        </div>
+
+
+        <div class="deployment-review-body">
+
+            <div class="deployment-review-file-card">
+
+                <div>
+                    <span class="deployment-review-label">
+                        Uploaded File
+                    </span>
+
+                    <strong id="deploymentReviewFileName">
+                        No file
+                    </strong>
+                </div>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="deploymentReviewViewFileBtn"
+                >
+                    View File
+                </button>
+
+            </div>
+
+
+            <div class="deployment-review-field">
+
+                <label class="deployment-review-label">
+                    Review Decision
+                </label>
+
+                <div class="deployment-review-decisions">
+
+                    <label class="deployment-review-decision">
+
+                        <input
+                            type="radio"
+                            name="deploymentReviewDecision"
+                            value="Approved"
+                        >
+
+                        <span>
+                            Approve
+                        </span>
+
+                    </label>
+
+
+                    <label class="deployment-review-decision">
+
+                        <input
+                            type="radio"
+                            name="deploymentReviewDecision"
+                            value="Needs Revision"
+                        >
+
+                        <span>
+                            Needs Revision
+                        </span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div class="deployment-review-field">
+
+                <label
+                    for="deploymentReviewRemarks"
+                    class="deployment-review-label"
+                >
+                    Remarks / Findings
+                </label>
+
+                <textarea
+                    id="deploymentReviewRemarks"
+                    rows="5"
+                    placeholder="Enter review remarks or findings..."
+                ></textarea>
+
+                <small>
+                    Remarks are required when the document needs revision.
+                </small>
+
+            </div>
+
+
+            <div
+                class="deployment-review-error"
+                id="deploymentReviewError"
+                hidden
+            ></div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                id="cancelDeploymentReviewBtn"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                id="submitDeploymentReviewBtn"
+            >
+                Submit Review
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
     <!-- =====================================================
          JAVASCRIPT
          ===================================================== -->

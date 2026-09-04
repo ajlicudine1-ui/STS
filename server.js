@@ -2611,6 +2611,243 @@ app.post(
 );
 
 
+
+// ============================================================
+// REVIEW / EDIT DEPLOYMENT DOCUMENT
+// ADMIN ONLY
+// ============================================================
+
+app.patch(
+    "/api/projects/:projectId/deployment-checklist/:documentId/review",
+
+    async (req, res) => {
+
+        try {
+
+            const {
+                projectId,
+                documentId
+            } = req.params;
+
+
+            // ------------------------------------------------
+            // ADMIN ONLY
+            // ------------------------------------------------
+
+            if (
+                req.profile?.role !==
+                "admin"
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    error:
+                        "Only administrators can review deployment documents."
+                });
+            }
+
+
+            // ------------------------------------------------
+            // REQUEST BODY
+            // ------------------------------------------------
+
+            const status =
+                String(
+                    req.body?.status ||
+                    ""
+                ).trim();
+
+
+            const reviewRemarks =
+                String(
+                    req.body?.review_remarks ||
+                    ""
+                ).trim();
+
+
+            // ------------------------------------------------
+            // VALIDATE DECISION
+            // ------------------------------------------------
+
+            if (
+                ![
+                    "Approved",
+                    "Needs Revision"
+                ].includes(status)
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Invalid review decision."
+                });
+            }
+
+
+            if (
+                status ===
+                    "Needs Revision" &&
+                !reviewRemarks
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Remarks are required when the document needs revision."
+                });
+            }
+
+
+            const db =
+                getDatabaseClient();
+
+
+            // ------------------------------------------------
+            // FIND DEPLOYMENT DOCUMENT
+            // ------------------------------------------------
+
+            const {
+                data: deploymentDocument,
+                error: lookupError
+            } = await db
+                .from(
+                    "deployment_documents"
+                )
+                .select("*")
+                .eq(
+                    "deployment_document_id",
+                    documentId
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .maybeSingle();
+
+
+            if (lookupError) {
+                throw lookupError;
+            }
+
+
+            if (!deploymentDocument) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Deployment document not found."
+                });
+            }
+
+
+            // ------------------------------------------------
+            // MUST HAVE AN UPLOADED FILE
+            // ------------------------------------------------
+
+            if (
+                !deploymentDocument
+                    .drive_file_id
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "This document has not been uploaded yet."
+                });
+            }
+
+
+            const now =
+                new Date().toISOString();
+
+
+            // ------------------------------------------------
+            // UPDATE REVIEW
+            // ------------------------------------------------
+
+            const {
+                data: updatedDocument,
+                error: updateError
+            } = await db
+                .from(
+                    "deployment_documents"
+                )
+                .update({
+
+                    status:
+                        status,
+
+                    review_remarks:
+                        reviewRemarks ||
+                        null,
+
+                    reviewed_by:
+                        req.authUser?.id ||
+                        null,
+
+                    reviewed_at:
+                        now,
+
+                    updated_at:
+                        now
+
+                })
+                .eq(
+                    "deployment_document_id",
+                    documentId
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .select()
+                .single();
+
+
+            if (updateError) {
+                throw updateError;
+            }
+
+
+            // ------------------------------------------------
+            // SUCCESS
+            // ------------------------------------------------
+
+            return res.json({
+
+                success:
+                    true,
+
+                message:
+                    status ===
+                    "Approved"
+                        ? "Deployment document approved successfully."
+                        : "Deployment document marked as Needs Revision.",
+
+                document:
+                    updatedDocument
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "REVIEW DEPLOYMENT DOCUMENT ERROR:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Could not save deployment document review.",
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
 // ============================================================
 // LIST PROJECT REPOSITORY CONTENTS
 // ============================================================
