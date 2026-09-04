@@ -1974,6 +1974,291 @@ app.post("/api/projects", async (req, res) => {
 });
 
 // ============================================================
+// DEPLOYMENT CHECKLIST
+// ============================================================
+
+const REQUIRED_DEPLOYMENT_DOCUMENTS = [
+    "Deployment Record / Turnover Document",
+    "INFORMATION REQUISITION FORM",
+    "Maintenance Log",
+    "REQUIREMENTS AND DESIGN INPUT CHECKLIST AND EVALUATION REPORT",
+    "SYSTEM CHANGE FORM",
+    "SYSTEM COMPLIANCE MATRIX",
+    "SYSTEM DESIGN DOCUMENT",
+    "System Test Report"
+];
+
+// ============================================================
+// GET PROJECT DEPLOYMENT CHECKLIST
+// ============================================================
+
+app.get(
+    "/api/projects/:projectId/deployment-checklist",
+    async (req, res) => {
+
+        try {
+
+            const { projectId } =
+                req.params;
+
+            const db =
+                getDatabaseClient();
+
+
+            // ------------------------------------------------
+            // VERIFY PROJECT
+            // ------------------------------------------------
+
+            const {
+                data: project,
+                error: projectError
+            } = await db
+                .from("projects")
+                .select(
+                    "project_id, project_name, project_status"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .maybeSingle();
+
+
+            if (projectError) {
+
+                console.error(
+                    "DEPLOYMENT CHECKLIST PROJECT LOOKUP ERROR:",
+                    projectError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to load the project."
+                });
+            }
+
+
+            if (!project) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Project not found."
+                });
+            }
+
+
+            // ------------------------------------------------
+            // LOAD SAVED DEPLOYMENT DOCUMENTS
+            // ------------------------------------------------
+
+            const {
+                data: savedDocuments,
+                error: documentsError
+            } = await db
+                .from("deployment_documents")
+                .select("*")
+                .eq(
+                    "project_id",
+                    projectId
+                );
+
+
+            if (documentsError) {
+
+                console.error(
+                    "DEPLOYMENT DOCUMENTS LOOKUP ERROR:",
+                    documentsError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to load the deployment checklist."
+                });
+            }
+
+
+            // ------------------------------------------------
+            // BUILD ALL 8 CHECKLIST ITEMS
+            // ------------------------------------------------
+
+            const documents =
+                REQUIRED_DEPLOYMENT_DOCUMENTS.map(
+                    documentType => {
+
+                        const saved =
+                            (savedDocuments || [])
+                                .find(
+                                    item =>
+                                        item.document_type ===
+                                        documentType
+                                );
+
+
+                        if (saved) {
+
+                            return {
+                                ...saved,
+                                is_submitted:
+                                    !!saved.drive_file_id
+                            };
+                        }
+
+
+                        return {
+                            deployment_document_id:
+                                null,
+
+                            project_id:
+                                projectId,
+
+                            document_type:
+                                documentType,
+
+                            status:
+                                "Missing",
+
+                            drive_file_id:
+                                null,
+
+                            drive_file_url:
+                                null,
+
+                            file_name:
+                                null,
+
+                            version:
+                                null,
+
+                            submitted_by:
+                                null,
+
+                            submitted_at:
+                                null,
+
+                            reviewed_by:
+                                null,
+
+                            reviewed_at:
+                                null,
+
+                            review_remarks:
+                                null,
+
+                            is_submitted:
+                                false
+                        };
+                    }
+                );
+
+
+            // ------------------------------------------------
+            // CALCULATE READINESS
+            // ------------------------------------------------
+
+            const approvedCount =
+                documents.filter(
+                    document =>
+                        document.status ===
+                        "Approved"
+                ).length;
+
+
+            const pendingReviewCount =
+                documents.filter(
+                    document =>
+                        document.status ===
+                        "Pending Review"
+                ).length;
+
+
+            const needsRevisionCount =
+                documents.filter(
+                    document =>
+                        document.status ===
+                        "Needs Revision"
+                ).length;
+
+
+            const missingCount =
+                documents.filter(
+                    document =>
+                        document.status ===
+                        "Missing"
+                ).length;
+
+
+            const readyForDeployment =
+                approvedCount ===
+                REQUIRED_DEPLOYMENT_DOCUMENTS.length;
+
+
+            // ------------------------------------------------
+            // RESPONSE
+            // ------------------------------------------------
+
+            return res.json({
+
+                success:
+                    true,
+
+                project: {
+                    project_id:
+                        project.project_id,
+
+                    project_name:
+                        project.project_name,
+
+                    project_status:
+                        project.project_status
+                },
+
+                summary: {
+                    total:
+                        REQUIRED_DEPLOYMENT_DOCUMENTS.length,
+
+                    approved:
+                        approvedCount,
+
+                    pending_review:
+                        pendingReviewCount,
+
+                    needs_revision:
+                        needsRevisionCount,
+
+                    missing:
+                        missingCount,
+
+                    ready_for_deployment:
+                        readyForDeployment
+                },
+
+                documents:
+                    documents
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "GET DEPLOYMENT CHECKLIST ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Could not load the deployment checklist.",
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+// ============================================================
 // LIST PROJECT REPOSITORY CONTENTS
 // ============================================================
 
