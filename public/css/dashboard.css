@@ -2064,3 +2064,408 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
         width: 100%;
     }
 }
+
+
+
+/* ============================================================
+   DEPLOYMENT CHECKLIST MODAL
+   ============================================================ */
+
+#deploymentChecklistModal .deployment-checklist-modal-content {
+    width: min(900px, calc(100vw - 40px));
+    max-height: 90vh;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 16px;
+    background: #ffffff;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+#deploymentChecklistModal .modal-header {
+    padding: 24px 28px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#deploymentChecklistModal .modal-header h2 {
+    margin: 0 0 5px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+#deploymentChecklistProjectName {
+    margin: 0;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+
+/* ============================================================
+   DEPLOYMENT READINESS
+   ============================================================ */
+
+.deployment-readiness-card {
+    margin: 22px 28px 18px;
+    padding: 18px 20px;
+    background: #f8faf8;
+    border: 1px solid #dfe9df;
+    border-radius: 12px;
+}
+
+.deployment-readiness-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.deployment-readiness-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+#deploymentReadinessCount {
+    font-size: 15px;
+    font-weight: 700;
+    color: #235e26;
+}
+
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+
+.deployment-progress-track {
+    width: 100%;
+    height: 9px;
+    overflow: hidden;
+    background: #e5e7eb;
+    border-radius: 999px;
+}
+
+.deployment-progress-bar {
+    width: 0;
+    height: 100%;
+    background: #235e26;
+    border-radius: inherit;
+    transition: width 0.3s ease;
+}
+
+
+/* ============================================================
+   LOADING / ERROR
+   ============================================================ */
+
+.deployment-checklist-loading {
+    margin: 0 28px 15px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: #4b5563;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.deployment-checklist-error {
+    margin: 0 28px 15px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: #991b1b;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+}
+
+
+/* ============================================================
+   DOCUMENT LIST
+   ============================================================ */
+
+.deployment-document-list {
+    max-height: 470px;
+    padding: 0 28px 20px;
+    overflow-y: auto;
+}
+
+
+/* ============================================================
+   DOCUMENT ROW
+   ============================================================ */
+
+.deployment-document-row {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr) 145px 95px;
+    align-items: center;
+    gap: 14px;
+
+    min-height: 68px;
+    padding: 12px 14px;
+    margin-bottom: 9px;
+
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.deployment-document-row:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.05);
+}
+
+
+/* ============================================================
+   DOCUMENT NUMBER
+   ============================================================ */
+
+.deployment-document-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    height: 32px;
+
+    font-size: 13px;
+    font-weight: 700;
+    color: #235e26;
+
+    background: #edf6ed;
+    border-radius: 8px;
+}
+
+
+/* ============================================================
+   DOCUMENT INFORMATION
+   ============================================================ */
+
+.deployment-document-info {
+    min-width: 0;
+}
+
+.deployment-document-name {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #1f2937;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* ============================================================
+   STATUS BADGES
+   ============================================================ */
+
+.deployment-document-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 125px;
+    min-height: 30px;
+    padding: 6px 10px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+
+/* Missing */
+
+.deployment-status-missing {
+    color: #6b7280;
+    background: #f3f4f6;
+}
+
+
+/* Pending Review */
+
+.deployment-status-pending {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+
+/* Approved */
+
+.deployment-status-approved {
+    color: #166534;
+    background: #dcfce7;
+}
+
+
+/* Needs Revision */
+
+.deployment-status-revision {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+
+/* ============================================================
+   UPLOAD / VIEW / RESUBMIT BUTTON
+   ============================================================ */
+
+.deployment-document-action {
+    min-width: 88px;
+    height: 36px;
+    padding: 0 14px;
+
+    border: none;
+    border-radius: 8px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    color: #ffffff;
+    background: #235e26;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.1s ease;
+}
+
+.deployment-document-action:hover:not(:disabled) {
+    background: #194b1c;
+}
+
+.deployment-document-action:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.deployment-document-action:disabled {
+    color: #9ca3af;
+    background: #e5e7eb;
+    cursor: not-allowed;
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.deployment-checklist-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 18px 28px;
+
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+
+/* ============================================================
+   OVERALL DEPLOYMENT STATUS
+   ============================================================ */
+
+.deployment-overall-status {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 8px 12px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    border-radius: 8px;
+}
+
+.deployment-not-ready {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+.deployment-ready {
+    color: #166534;
+    background: #dcfce7;
+}
+
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+.deployment-document-list::-webkit-scrollbar {
+    width: 7px;
+}
+
+.deployment-document-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.deployment-document-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 760px) {
+
+    #deploymentChecklistModal .deployment-checklist-modal-content {
+        width: calc(100vw - 24px);
+        max-height: 92vh;
+    }
+
+    #deploymentChecklistModal .modal-header {
+        padding: 20px;
+    }
+
+    .deployment-readiness-card {
+        margin: 18px 20px 15px;
+    }
+
+    .deployment-document-list {
+        padding: 0 20px 18px;
+    }
+
+    .deployment-document-row {
+        grid-template-columns: 34px 1fr;
+        gap: 10px;
+    }
+
+    .deployment-document-status {
+        grid-column: 2;
+        justify-self: start;
+    }
+
+    .deployment-document-action {
+        grid-column: 2;
+        justify-self: start;
+    }
+
+    .deployment-checklist-footer {
+        padding: 16px 20px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .deployment-overall-status {
+        justify-content: center;
+        text-align: center;
+    }
+
+    #closeDeploymentChecklistFooterBtn {
+        width: 100%;
+    }
+}
