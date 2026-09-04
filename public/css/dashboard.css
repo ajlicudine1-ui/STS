@@ -2469,3 +2469,65 @@ body.select-project-mode .select-project-focus-table .project-action-trigger {
         width: 100%;
     }
 }
+
+/* ============================================================
+   DEPLOYMENT DOCUMENT ACTION BUTTONS
+   ============================================================ */
+
+.deployment-document-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+
+.deployment-document-action {
+    min-width: 88px;
+    height: 36px;
+
+    padding: 0 14px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+
+.deployment-document-action:hover:not(:disabled) {
+    background: #f3f4f6;
+    transform: translateY(-1px);
+}
+
+
+.deployment-document-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* Review / Edit Review */
+
+.deployment-review-action {
+    background: #235e26;
+    border-color: #235e26;
+    color: #ffffff;
+}
+
+
+.deployment-review-action:hover:not(:disabled) {
+    background: #19481c;
+    border-color: #19481c;
+}
