@@ -2808,6 +2808,116 @@ app.patch(
                 throw updateError;
             }
 
+                        // ------------------------------------------------
+            // UPDATE PROJECT DEPLOYMENT READINESS STATUS
+            // ------------------------------------------------
+
+            const {
+                data: allDeploymentDocuments,
+                error: deploymentReadinessError
+            } = await db
+                .from("deployment_documents")
+                .select(
+                    "document_type, status"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                );
+
+
+            if (deploymentReadinessError) {
+                throw deploymentReadinessError;
+            }
+
+
+            const approvedDocumentTypes =
+                new Set(
+                    (allDeploymentDocuments || [])
+                        .filter(
+                            document =>
+                                document.status ===
+                                "Approved"
+                        )
+                        .map(
+                            document =>
+                                document.document_type
+                        )
+                );
+
+
+            const allRequiredDocumentsApproved =
+                REQUIRED_DEPLOYMENT_DOCUMENTS
+                    .every(
+                        documentType =>
+                            approvedDocumentTypes.has(
+                                documentType
+                            )
+                    );
+
+
+            const {
+                data: currentProject,
+                error: currentProjectError
+            } = await db
+                .from("projects")
+                .select(
+                    "project_status"
+                )
+                .eq(
+                    "project_id",
+                    projectId
+                )
+                .maybeSingle();
+
+
+            if (currentProjectError) {
+                throw currentProjectError;
+            }
+
+
+            // Never change a project that is already deployed.
+            if (
+                currentProject?.project_status !==
+                "Deployed"
+            ) {
+
+                const nextProjectStatus =
+                    allRequiredDocumentsApproved
+                        ? "Ready for Deployment"
+                        : (
+                            currentProject?.project_status ===
+                            "Ready for Deployment"
+                                ? "Active"
+                                : null
+                        );
+
+
+                if (nextProjectStatus) {
+
+                    const {
+                        error: projectStatusUpdateError
+                    } = await db
+                        .from("projects")
+                        .update({
+                            project_status:
+                                nextProjectStatus,
+
+                            updated_at:
+                                new Date().toISOString()
+                        })
+                        .eq(
+                            "project_id",
+                            projectId
+                        );
+
+
+                    if (projectStatusUpdateError) {
+                        throw projectStatusUpdateError;
+                    }
+                }
+            }
+
 
             // ------------------------------------------------
             // SUCCESS
