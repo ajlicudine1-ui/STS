@@ -2232,6 +2232,92 @@ function bindProjectActionMenuItems(
     }
 
 
+    // ============================================================
+    // PROJECT ACTION SECTIONS / ACCORDION
+    // ============================================================
+
+    const sectionToggles =
+        menu.querySelectorAll(
+            ".project-action-section-toggle"
+        );
+
+
+    sectionToggles.forEach(toggle => {
+
+        toggle.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+                if (toggle.disabled) {
+                    return;
+                }
+
+                const sectionName =
+                    toggle.dataset.actionSection;
+
+                const targetContent =
+                    menu.querySelector(
+                        `[data-action-section-content="${sectionName}"]`
+                    );
+
+                if (!targetContent) {
+                    return;
+                }
+
+                const shouldOpen =
+                    targetContent.hidden;
+
+
+                menu.querySelectorAll(
+                    ".project-action-section-content"
+                ).forEach(content => {
+
+                    content.hidden = true;
+                });
+
+
+                menu.querySelectorAll(
+                    ".project-action-section-toggle"
+                ).forEach(button => {
+
+                    const arrow =
+                        button.querySelector(
+                            ".project-action-section-arrow"
+                        );
+
+                    if (!arrow) {
+                        return;
+                    }
+
+                    arrow.textContent =
+                        button.disabled
+                            ? "🔒"
+                            : "›";
+                });
+
+
+                if (shouldOpen) {
+
+                    targetContent.hidden =
+                        false;
+
+                    const arrow =
+                        toggle.querySelector(
+                            ".project-action-section-arrow"
+                        );
+
+                    if (arrow) {
+                        arrow.textContent =
+                            "⌄";
+                    }
+                }
+            }
+        );
+    });
+
+
     const viewTasksAction =
         menu.querySelector(
             ".view-project-tasks"
@@ -2723,104 +2809,6 @@ function createProjectActionMenu(
         wrapper.querySelector(
             ".project-action-menu"
         );
-    const sectionToggles =
-    wrapper.querySelectorAll(
-        ".project-action-section-toggle"
-    );
-
-
-    sectionToggles.forEach(toggle => {
-
-        toggle.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                if (toggle.disabled) {
-                    return;
-                }
-
-                const sectionName =
-                    toggle.dataset.actionSection;
-
-                const sectionContents =
-                    wrapper.querySelectorAll(
-                        ".project-action-section-content"
-                    );
-
-                const sectionButtons =
-                    wrapper.querySelectorAll(
-                        ".project-action-section-toggle"
-                    );
-
-
-                sectionContents.forEach(content => {
-
-                    const isCurrentSection =
-                        content.dataset.actionSectionContent ===
-                        sectionName;
-
-                    if (isCurrentSection) {
-
-                        content.hidden =
-                            !content.hidden;
-
-                    } else {
-
-                        content.hidden =
-                            true;
-                    }
-                });
-
-
-                sectionButtons.forEach(button => {
-
-                    const arrow =
-                        button.querySelector(
-                            ".project-action-section-arrow"
-                        );
-
-                    if (!arrow) {
-                        return;
-                    }
-
-                    if (button.disabled) {
-                        arrow.textContent =
-                            "🔒";
-
-                        return;
-                    }
-
-                    const isCurrentButton =
-                        button.dataset.actionSection ===
-                        sectionName;
-
-                    const currentContent =
-                        wrapper.querySelector(
-                            `[data-action-section-content="${button.dataset.actionSection}"]`
-                        );
-
-                    if (
-                        isCurrentButton &&
-                        currentContent &&
-                        !currentContent.hidden
-                    ) {
-
-                        arrow.textContent =
-                            "⌄";
-
-                    } else {
-
-                        arrow.textContent =
-                            "›";
-                    }
-                });
-            }
-        );
-    });
-
-
     if (menu) {
 
         menu._projectActionWrapper =
