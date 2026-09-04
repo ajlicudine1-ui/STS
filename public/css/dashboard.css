@@ -177,7 +177,7 @@
 /* Status */
 .table-container th:nth-child(5),
 .table-container td:nth-child(5) {
-    width: 18%;
+    width: 16%;
     white-space: nowrap;
     overflow: visible;
 }
@@ -192,8 +192,9 @@
 /* Actions */
 .table-container th:nth-child(7),
 .table-container td:nth-child(7) {
-    width: 12%;
-    min-width: 145px;
+    width: 14%;
+    min-width: 165px;
+    padding-right: 16px;
     white-space: nowrap;
     overflow: visible;
 }
