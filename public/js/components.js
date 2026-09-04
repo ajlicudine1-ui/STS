@@ -409,10 +409,10 @@
 // ============================================================
 
 const DEVT_SIDEBAR_CACHE_KEY =
-    "devt_sidebar_html_v1";
+    "devt_sidebar_html_v2";
 
 const DEVT_HEADER_CACHE_KEY =
-    "devt_header_html_v1";
+    "devt_header_html_v2";
 
 
 function configureSidebar(
@@ -636,7 +636,7 @@ async function refreshCachedComponent({
             await fetch(
                 url,
                 {
-                    cache: "force-cache"
+                     cache: "no-store"
                 }
             );
 
@@ -751,7 +751,7 @@ document.addEventListener(
                             "/components/sidebar.html",
                             {
                                 cache:
-                                    "force-cache"
+                                   "no-store"
                             }
                         );
 
