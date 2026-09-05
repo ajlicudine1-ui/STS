@@ -4443,11 +4443,19 @@ async function refreshDeployActionState(
     }
 
 
+    // Keep the status-based state while the server verification runs.
+    // This prevents Ready for Deployment from flashing as disabled.
+    const currentlyReady =
+        project.project_status ===
+        "Ready for Deployment";
+
     deployAction.disabled =
-        true;
+        !currentlyReady;
 
     deployAction.title =
-        "Checking deployment readiness...";
+        currentlyReady
+            ? "Ready to deploy this project."
+            : "Checking deployment readiness...";
 
 
     try {
@@ -5050,6 +5058,8 @@ function createProjectActionMenu(
     const maintenanceEnabled =
     project.project_status === "Deployed";
 
+    const readyForDeployment =
+        project.project_status === "Ready for Deployment";
 
     wrapper.innerHTML = `
         <button
@@ -5204,11 +5214,18 @@ function createProjectActionMenu(
                 <button
                     type="button"
                     class="project-action-item ready-for-deployment-action deploy-project-action"
-                    disabled
+                    ${
+                        maintenanceEnabled ||
+                        !readyForDeployment
+                            ? "disabled"
+                            : ""
+                    }
                     title="${
                         maintenanceEnabled
                             ? "This project is already deployed."
-                            : "All 8 deployment checklist criteria must be Pass before deployment."
+                            : readyForDeployment
+                                ? "Ready to deploy this project."
+                                : "All 8 deployment checklist criteria must be Pass before deployment."
                     }"
                 >
                     <span class="project-action-icon">
