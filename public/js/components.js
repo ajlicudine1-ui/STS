@@ -409,7 +409,7 @@
 // ============================================================
 
 const DEVT_SIDEBAR_CACHE_KEY =
-    "devt_sidebar_html_v2";
+    "devt_sidebar_html_v3";
 
 const DEVT_HEADER_CACHE_KEY =
     "devt_header_html_v2";
