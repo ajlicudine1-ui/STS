@@ -4126,6 +4126,22 @@ app.post(
                 ).trim();
 
 
+            // Generic project uploads are repository-only.
+            // Deployment-related files must be uploaded through
+            // the dedicated Deployment Forms workflow.
+            if (
+                uploadDestination !==
+                "repository"
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Project files and folders can only be uploaded to Project Repository. Use Deployment Forms for deployment files."
+                });
+            }
+
+
             if (!fileName) {
 
                 return res.status(400).json({
@@ -4196,48 +4212,18 @@ app.post(
             }
 
 
-            let baseFolderId;
+            if (!project.repository_folder_id) {
 
-            if (uploadDestination === "release") {
-
-                if (!project.drive_folder_id) {
-                    return res.status(400).json({
-                        success: false,
-                        error:
-                            "Project Google Drive folder is missing for this project."
-                    });
-                }
-
-                const releaseFolder =
-                    await findChildDriveFolder(
-                        project.drive_folder_id,
-                        "System Release & Deployment"
-                    );
-
-                if (!releaseFolder?.id) {
-                    return res.status(400).json({
-                        success: false,
-                        error:
-                            "System Release & Deployment folder is missing for this project."
-                    });
-                }
-
-                baseFolderId =
-                    releaseFolder.id;
-
-            } else {
-
-                if (!project.repository_folder_id) {
-                    return res.status(400).json({
-                        success: false,
-                        error:
-                            "Project Repository folder is missing for this project."
-                    });
-                }
-
-                baseFolderId =
-                    project.repository_folder_id;
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Project Repository folder is missing for this project."
+                });
             }
+
+
+            const baseFolderId =
+                project.repository_folder_id;
 
             const destinationFolderId =
                 await ensureDriveFolderPath(

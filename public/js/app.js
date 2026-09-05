@@ -1020,7 +1020,7 @@ async function uploadFileToProjectRepository(
                         ),
 
                     "X-Upload-Destination":
-                        selectedProjectUploadDestination
+                        "repository"
                                     },
 
                                     body:
@@ -4303,9 +4303,17 @@ function showUploadOptionsInActionMenu(
 
                 closeAllProjectActionMenus();
 
-                openUploadDestinationModal(
-                    "file"
-                );
+                // Project uploads always go directly to Project Repository.
+                selectedProjectUploadDestination =
+                    "repository";
+
+                if (projectFileInput) {
+
+                    projectFileInput.value =
+                        "";
+
+                    projectFileInput.click();
+                }
             }
         );
     }
@@ -4327,9 +4335,17 @@ function showUploadOptionsInActionMenu(
 
                 closeAllProjectActionMenus();
 
-                openUploadDestinationModal(
-                    "folder"
-                );
+                // Project folder uploads always go directly to Project Repository.
+                selectedProjectUploadDestination =
+                    "repository";
+
+                if (projectFolderInput) {
+
+                    projectFolderInput.value =
+                        "";
+
+                    projectFolderInput.click();
+                }
             }
         );
     }
