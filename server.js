@@ -6670,6 +6670,1193 @@ app.delete("/api/project-members/:memberId", async (req, res) => {
 });
 
 
+
+// ============================================================
+// INFORMATION SYSTEM REQUESTS
+// Separate module. Existing Project / Task / Deployment routes
+// are intentionally left unchanged.
+// ============================================================
+
+function getRequestReferenceYear() {
+    return String(
+        new Date().getFullYear()
+    ).slice(-2);
+}
+
+
+async function getNextRequestReferenceNo() {
+
+    return getLowestAvailableFormattedId({
+        tableName:
+            "requests",
+
+        columnName:
+            "request_reference_no",
+
+        prefix:
+            "IS-Req",
+
+        year:
+            getRequestReferenceYear()
+    });
+}
+
+
+async function ensureRequestsRootFolder() {
+
+    const parentFolderId =
+        process.env
+            .GOOGLE_DRIVE_PARENT_FOLDER_ID;
+
+    if (!parentFolderId) {
+        throw new Error(
+            "GOOGLE_DRIVE_PARENT_FOLDER_ID is missing."
+        );
+    }
+
+    const existing =
+        await findChildDriveFolder(
+            parentFolderId,
+            "IS Requests"
+        );
+
+    if (existing?.id) {
+        return {
+            id:
+                existing.id,
+
+            url:
+                existing.webViewLink ||
+                getDriveFolderUrl(
+                    existing.id
+                )
+        };
+    }
+
+    return createDriveFolder({
+        name:
+            "IS Requests",
+
+        parentFolderId:
+            parentFolderId
+    });
+}
+
+
+async function safeDeleteDriveFile(fileId) {
+
+    if (!fileId) {
+        return;
+    }
+
+    try {
+
+        await googleDrive.files.delete({
+            fileId:
+                fileId
+        });
+
+    } catch (error) {
+
+        const status =
+            error?.response?.status ||
+            error?.code;
+
+        if (
+            status === 404 ||
+            status === 410
+        ) {
+            return;
+        }
+
+        console.error(
+            "REQUEST DRIVE FILE DELETE ERROR:",
+            error.message
+        );
+    }
+}
+
+
+// ------------------------------------------------------------
+// NEXT REQUEST REFERENCE
+// IS-Req-26-001, IS-Req-26-002, ...
+// ------------------------------------------------------------
+
+app.get(
+    "/api/requests-next-reference",
+    async (req, res) => {
+
+        try {
+
+            const requestReferenceNo =
+                await getNextRequestReferenceNo();
+
+            return res.json({
+                success:
+                    true,
+
+                request_reference_no:
+                    requestReferenceNo
+            });
+
+        } catch (error) {
+
+            console.error(
+                "GET NEXT REQUEST REFERENCE ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                error:
+                    "Unable to generate the next request reference number.",
+
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ------------------------------------------------------------
+// LIST REQUESTS
+// ------------------------------------------------------------
+
+app.get(
+    "/api/requests",
+    async (req, res) => {
+
+        try {
+
+            const db =
+                getDatabaseClient();
+
+            const {
+                data,
+                error
+            } = await db
+                .from("requests")
+                .select("*")
+                .order(
+                    "created_at",
+                    {
+                        ascending:
+                            false
+                    }
+                );
+
+            if (error) {
+                throw error;
+            }
+
+            return res.json({
+                success:
+                    true,
+
+                requests:
+                    data || [],
+
+                viewer:
+                    req.profile
+            });
+
+        } catch (error) {
+
+            console.error(
+                "GET REQUESTS ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                error:
+                    "Unable to load requests.",
+
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ------------------------------------------------------------
+// GET ONE REQUEST
+// ------------------------------------------------------------
+
+app.get(
+    "/api/requests/:requestId",
+    async (req, res) => {
+
+        try {
+
+            const db =
+                getDatabaseClient();
+
+            const {
+                data,
+                error
+            } = await db
+                .from("requests")
+                .select("*")
+                .eq(
+                    "request_id",
+                    req.params.requestId
+                )
+                .maybeSingle();
+
+            if (error) {
+                throw error;
+            }
+
+            if (!data) {
+
+                return res.status(404).json({
+                    success:
+                        false,
+
+                    error:
+                        "Request not found."
+                });
+            }
+
+            return res.json({
+                success:
+                    true,
+
+                request:
+                    data
+            });
+
+        } catch (error) {
+
+            console.error(
+                "GET REQUEST ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                error:
+                    "Unable to load the request.",
+
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ------------------------------------------------------------
+// CREATE REQUEST
+// ------------------------------------------------------------
+
+app.post(
+    "/api/requests",
+    async (req, res) => {
+
+        try {
+
+            const dateRequested =
+                String(
+                    req.body.date_requested ||
+                    ""
+                ).trim();
+
+            const requestingOffice =
+                String(
+                    req.body.requesting_office ||
+                    ""
+                ).trim();
+
+            const endUser =
+                String(
+                    req.body.end_user ||
+                    ""
+                ).trim();
+
+            const systemApplicationName =
+                String(
+                    req.body.system_application_name ||
+                    ""
+                ).trim();
+
+            const requestType =
+                String(
+                    req.body.request_type ||
+                    ""
+                ).trim();
+
+            const requestTypeOther =
+                String(
+                    req.body.request_type_other ||
+                    ""
+                ).trim();
+
+            const allowedTypes =
+                new Set([
+                    "New Development",
+                    "Modification/Enhancement",
+                    "Other"
+                ]);
+
+            if (
+                !dateRequested ||
+                !requestingOffice ||
+                !endUser ||
+                !systemApplicationName ||
+                !requestType
+            ) {
+
+                return res.status(400).json({
+                    success:
+                        false,
+
+                    error:
+                        "Date requested, requesting office, end user, system/application name, and request type are required."
+                });
+            }
+
+            if (!allowedTypes.has(requestType)) {
+
+                return res.status(400).json({
+                    success:
+                        false,
+
+                    error:
+                        "Invalid request type."
+                });
+            }
+
+            if (
+                requestType === "Other" &&
+                !requestTypeOther
+            ) {
+
+                return res.status(400).json({
+                    success:
+                        false,
+
+                    error:
+                        "Please specify the other request type."
+                });
+            }
+
+            const db =
+                getDatabaseClient();
+
+            let createdRequest =
+                null;
+
+            let insertError =
+                null;
+
+            const maxAttempts =
+                10;
+
+            for (
+                let attempt = 1;
+                attempt <= maxAttempts;
+                attempt += 1
+            ) {
+
+                const requestReferenceNo =
+                    await getNextRequestReferenceNo();
+
+                const insertResult =
+                    await db
+                        .from("requests")
+                        .insert([
+                            {
+                                request_reference_no:
+                                    requestReferenceNo,
+
+                                date_requested:
+                                    dateRequested,
+
+                                requesting_office:
+                                    requestingOffice,
+
+                                end_user:
+                                    endUser,
+
+                                system_application_name:
+                                    systemApplicationName,
+
+                                request_type:
+                                    requestType,
+
+                                request_type_other:
+                                    requestType === "Other"
+                                        ? requestTypeOther
+                                        : null,
+
+                                status:
+                                    "Pending",
+
+                                created_by:
+                                    req.authUser?.id ||
+                                    null
+                            }
+                        ])
+                        .select()
+                        .single();
+
+                createdRequest =
+                    insertResult.data;
+
+                insertError =
+                    insertResult.error;
+
+                if (!insertError) {
+                    break;
+                }
+
+                const duplicateReference =
+                    insertError.code ===
+                        "23505" &&
+                    (
+                        String(
+                            insertError.message ||
+                            ""
+                        )
+                            .toLowerCase()
+                            .includes(
+                                "request_reference_no"
+                            ) ||
+                        String(
+                            insertError.details ||
+                            ""
+                        )
+                            .toLowerCase()
+                            .includes(
+                                "request_reference_no"
+                            )
+                    );
+
+                if (
+                    duplicateReference &&
+                    attempt < maxAttempts
+                ) {
+                    continue;
+                }
+
+                break;
+            }
+
+            if (
+                insertError ||
+                !createdRequest
+            ) {
+                throw insertError ||
+                    new Error(
+                        "Unable to create a unique request reference number."
+                    );
+            }
+
+            let requestFolder =
+                null;
+
+            try {
+
+                const requestsRoot =
+                    await ensureRequestsRootFolder();
+
+                requestFolder =
+                    await createDriveFolder({
+                        name:
+                            createdRequest
+                                .request_reference_no,
+
+                        parentFolderId:
+                            requestsRoot.id
+                    });
+
+                const {
+                    data: updatedRequest,
+                    error: folderUpdateError
+                } = await db
+                    .from("requests")
+                    .update({
+                        drive_folder_id:
+                            requestFolder.id,
+
+                        drive_folder_url:
+                            requestFolder.url,
+
+                        updated_at:
+                            new Date()
+                                .toISOString()
+                    })
+                    .eq(
+                        "request_id",
+                        createdRequest.request_id
+                    )
+                    .select()
+                    .single();
+
+                if (folderUpdateError) {
+                    throw folderUpdateError;
+                }
+
+                createdRequest =
+                    updatedRequest;
+
+            } catch (driveError) {
+
+                console.error(
+                    "REQUEST DRIVE FOLDER CREATION FAILED:",
+                    driveError
+                );
+
+                if (requestFolder?.id) {
+                    await deleteDriveFolder(
+                        requestFolder.id
+                    );
+                }
+
+                await db
+                    .from("requests")
+                    .delete()
+                    .eq(
+                        "request_id",
+                        createdRequest.request_id
+                    );
+
+                return res.status(500).json({
+                    success:
+                        false,
+
+                    error:
+                        "Request could not be created because its Google Drive folder could not be created.",
+
+                    details:
+                        driveError.message
+                });
+            }
+
+            return res.status(201).json({
+                success:
+                    true,
+
+                message:
+                    "Request created successfully.",
+
+                request:
+                    createdRequest
+            });
+
+        } catch (error) {
+
+            console.error(
+                "CREATE REQUEST ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                error:
+                    "Unable to create the request.",
+
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ------------------------------------------------------------
+// UPDATE REQUEST
+// Admin only.
+// ------------------------------------------------------------
+
+app.patch(
+    "/api/requests/:requestId",
+    async (req, res) => {
+
+        if (
+            req.profile?.role !==
+            "admin"
+        ) {
+
+            return res.status(403).json({
+                success:
+                    false,
+
+                error:
+                    "Administrator access required."
+            });
+        }
+
+        try {
+
+            const db =
+                getDatabaseClient();
+
+            const {
+                data: existing,
+                error: existingError
+            } = await db
+                .from("requests")
+                .select("*")
+                .eq(
+                    "request_id",
+                    req.params.requestId
+                )
+                .maybeSingle();
+
+            if (existingError) {
+                throw existingError;
+            }
+
+            if (!existing) {
+
+                return res.status(404).json({
+                    success:
+                        false,
+
+                    error:
+                        "Request not found."
+                });
+            }
+
+            const allowedStatuses =
+                new Set([
+                    "Pending",
+                    "For Review",
+                    "Approved",
+                    "Rejected",
+                    "Completed"
+                ]);
+
+            const allowedTypes =
+                new Set([
+                    "New Development",
+                    "Modification/Enhancement",
+                    "Other"
+                ]);
+
+            const updates = {
+                updated_at:
+                    new Date()
+                        .toISOString()
+            };
+
+            const textFields = [
+                "date_requested",
+                "requesting_office",
+                "end_user",
+                "system_application_name"
+            ];
+
+            for (const field of textFields) {
+
+                if (
+                    Object.prototype.hasOwnProperty.call(
+                        req.body,
+                        field
+                    )
+                ) {
+                    updates[field] =
+                        String(
+                            req.body[field] ||
+                            ""
+                        ).trim() ||
+                        null;
+                }
+            }
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    req.body,
+                    "request_type"
+                )
+            ) {
+
+                const requestType =
+                    String(
+                        req.body.request_type ||
+                        ""
+                    ).trim();
+
+                if (!allowedTypes.has(requestType)) {
+
+                    return res.status(400).json({
+                        success:
+                            false,
+
+                        error:
+                            "Invalid request type."
+                    });
+                }
+
+                updates.request_type =
+                    requestType;
+
+                updates.request_type_other =
+                    requestType === "Other"
+                        ? String(
+                            req.body
+                                .request_type_other ||
+                            ""
+                        ).trim() ||
+                            existing
+                                .request_type_other ||
+                            null
+                        : null;
+            }
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    req.body,
+                    "status"
+                )
+            ) {
+
+                const status =
+                    String(
+                        req.body.status ||
+                        ""
+                    ).trim();
+
+                if (!allowedStatuses.has(status)) {
+
+                    return res.status(400).json({
+                        success:
+                            false,
+
+                        error:
+                            "Invalid request status."
+                    });
+                }
+
+                updates.status =
+                    status;
+            }
+
+            const {
+                data,
+                error
+            } = await db
+                .from("requests")
+                .update(
+                    updates
+                )
+                .eq(
+                    "request_id",
+                    req.params.requestId
+                )
+                .select()
+                .single();
+
+            if (error) {
+                throw error;
+            }
+
+            return res.json({
+                success:
+                    true,
+
+                message:
+                    "Request updated successfully.",
+
+                request:
+                    data
+            });
+
+        } catch (error) {
+
+            console.error(
+                "UPDATE REQUEST ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                error:
+                    "Unable to update the request.",
+
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ------------------------------------------------------------
+// UPLOAD / REPLACE REQUEST FORM
+// File is stored directly inside the request's Drive folder.
+// ------------------------------------------------------------
+
+app.post(
+    "/api/requests/:requestId/upload",
+
+    express.raw({
+        type:
+            "application/octet-stream",
+
+        limit:
+            "25mb"
+    }),
+
+    async (req, res) => {
+
+        try {
+
+            const fileName =
+                decodeURIComponent(
+                    req.get(
+                        "X-File-Name"
+                    ) ||
+                    ""
+                ).trim();
+
+            const mimeType =
+                decodeURIComponent(
+                    req.get(
+                        "X-File-Mime-Type"
+                    ) ||
+                    ""
+                ).trim();
+
+            if (!fileName) {
+
+                return res.status(400).json({
+                    success:
+                        false,
+
+                    error:
+                        "File name is required."
+                });
+            }
+
+            if (
+                !Buffer.isBuffer(
+                    req.body
+                ) ||
+                req.body.length === 0
+            ) {
+
+                return res.status(400).json({
+                    success:
+                        false,
+
+                    error:
+                        "Uploaded file is empty."
+                });
+            }
+
+            const db =
+                getDatabaseClient();
+
+            const {
+                data: requestRecord,
+                error: requestError
+            } = await db
+                .from("requests")
+                .select("*")
+                .eq(
+                    "request_id",
+                    req.params.requestId
+                )
+                .maybeSingle();
+
+            if (requestError) {
+                throw requestError;
+            }
+
+            if (!requestRecord) {
+
+                return res.status(404).json({
+                    success:
+                        false,
+
+                    error:
+                        "Request not found."
+                });
+            }
+
+            let folderId =
+                requestRecord
+                    .drive_folder_id;
+
+            if (!folderId) {
+
+                const requestsRoot =
+                    await ensureRequestsRootFolder();
+
+                const requestFolder =
+                    await createDriveFolder({
+                        name:
+                            requestRecord
+                                .request_reference_no,
+
+                        parentFolderId:
+                            requestsRoot.id
+                    });
+
+                folderId =
+                    requestFolder.id;
+
+                const {
+                    error: folderSaveError
+                } = await db
+                    .from("requests")
+                    .update({
+                        drive_folder_id:
+                            requestFolder.id,
+
+                        drive_folder_url:
+                            requestFolder.url,
+
+                        updated_at:
+                            new Date()
+                                .toISOString()
+                    })
+                    .eq(
+                        "request_id",
+                        requestRecord.request_id
+                    );
+
+                if (folderSaveError) {
+                    throw folderSaveError;
+                }
+            }
+
+            const uploaded =
+                await uploadBufferToDrive({
+                    fileName:
+                        fileName,
+
+                    mimeType:
+                        mimeType,
+
+                    buffer:
+                        req.body,
+
+                    parentFolderId:
+                        folderId
+                });
+
+            if (!uploaded?.id) {
+
+                throw new Error(
+                    "Google Drive did not return the uploaded file ID."
+                );
+            }
+
+            const uploadedFileUrl =
+                uploaded.webViewLink ||
+                `https://drive.google.com/file/d/${uploaded.id}/view`;
+
+            const {
+                data: updatedRequest,
+                error: updateError
+            } = await db
+                .from("requests")
+                .update({
+                    uploaded_file_id:
+                        uploaded.id,
+
+                    uploaded_file_url:
+                        uploadedFileUrl,
+
+                    uploaded_file_name:
+                        uploaded.name ||
+                        fileName,
+
+                    updated_at:
+                        new Date()
+                            .toISOString()
+                })
+                .eq(
+                    "request_id",
+                    requestRecord.request_id
+                )
+                .select()
+                .single();
+
+            if (updateError) {
+
+                await safeDeleteDriveFile(
+                    uploaded.id
+                );
+
+                throw updateError;
+            }
+
+            if (
+                requestRecord
+                    .uploaded_file_id &&
+                requestRecord
+                    .uploaded_file_id !==
+                    uploaded.id
+            ) {
+
+                await safeDeleteDriveFile(
+                    requestRecord
+                        .uploaded_file_id
+                );
+            }
+
+            return res.json({
+                success:
+                    true,
+
+                message:
+                    "Request form uploaded successfully.",
+
+                request:
+                    updatedRequest
+            });
+
+        } catch (error) {
+
+            console.error(
+                "UPLOAD REQUEST FORM ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                error:
+                    "Unable to upload the request form.",
+
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ------------------------------------------------------------
+// DELETE REQUEST
+// Admin only.
+// ------------------------------------------------------------
+
+app.delete(
+    "/api/requests/:requestId",
+    async (req, res) => {
+
+        if (
+            req.profile?.role !==
+            "admin"
+        ) {
+
+            return res.status(403).json({
+                success:
+                    false,
+
+                error:
+                    "Administrator access required."
+            });
+        }
+
+        try {
+
+            const db =
+                getDatabaseClient();
+
+            const {
+                data: requestRecord,
+                error: requestError
+            } = await db
+                .from("requests")
+                .select("*")
+                .eq(
+                    "request_id",
+                    req.params.requestId
+                )
+                .maybeSingle();
+
+            if (requestError) {
+                throw requestError;
+            }
+
+            if (!requestRecord) {
+
+                return res.status(404).json({
+                    success:
+                        false,
+
+                    error:
+                        "Request not found."
+                });
+            }
+
+            if (
+                requestRecord
+                    .drive_folder_id
+            ) {
+
+                await deleteDriveFolder(
+                    requestRecord
+                        .drive_folder_id
+                );
+            }
+
+            const {
+                error: deleteError
+            } = await db
+                .from("requests")
+                .delete()
+                .eq(
+                    "request_id",
+                    requestRecord.request_id
+                );
+
+            if (deleteError) {
+                throw deleteError;
+            }
+
+            return res.json({
+                success:
+                    true,
+
+                message:
+                    "Request deleted successfully."
+            });
+
+        } catch (error) {
+
+            console.error(
+                "DELETE REQUEST ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                error:
+                    "Unable to delete the request.",
+
+                details:
+                    error.message
+            });
+        }
+    }
+);
+
+
+
 // ============================================================
 // START SERVER
 // ============================================================

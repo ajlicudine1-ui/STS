@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>DevTrack - Requests</title>
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="/images/DT%20LOGO.png"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/css/global.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/css/sidebar-account.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/css/requests.css"
+    >
+</head>
+
+
+<body>
+
+    <!-- ============================================================
+         SHARED SIDEBAR
+         ============================================================ -->
+    <div id="sidebar-container"></div>
+
+
+    <!-- ============================================================
+         MAIN CONTENT
+         ============================================================ -->
+    <main class="main">
+
+        <div class="requests-page">
+
+            <!-- ====================================================
+                 HEADER
+                 ==================================================== -->
+            <div class="requests-header">
+
+                <div class="requests-header-copy">
+                    <h1>Requests</h1>
+                    <p>
+                        Manage Information Systems requests for new development,
+                        modifications, enhancements, and other system-related requests.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="newRequestBtn"
+                >
+                    + New Request
+                </button>
+
+            </div>
+
+
+            <!-- ====================================================
+                 SEARCH / FILTERS
+                 ==================================================== -->
+            <div class="requests-toolbar">
+
+                <div class="requests-search-wrap">
+                    <input
+                        type="search"
+                        class="requests-search"
+                        id="requestSearchInput"
+                        placeholder="Search request number, office, end user, or system..."
+                        autocomplete="off"
+                    >
+                </div>
+
+                <select
+                    class="requests-filter"
+                    id="requestStatusFilter"
+                    aria-label="Filter requests by status"
+                >
+                    <option value="">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="For Review">For Review</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Completed">Completed</option>
+                </select>
+
+                <select
+                    class="requests-filter"
+                    id="requestTypeFilter"
+                    aria-label="Filter requests by type"
+                >
+                    <option value="">All Request Types</option>
+                    <option value="New Development">New Development</option>
+                    <option value="Modification/Enhancement">
+                        Modification / Enhancement
+                    </option>
+                    <option value="Other">Other</option>
+                </select>
+
+            </div>
+
+
+            <!-- ====================================================
+                 REQUESTS TABLE
+                 ==================================================== -->
+            <section class="requests-card">
+
+                <div class="requests-table-wrap">
+
+                    <table class="requests-table">
+
+                        <thead>
+                            <tr>
+                                <th>Request Reference No.</th>
+                                <th>Date Requested</th>
+                                <th>Requesting Office</th>
+                                <th>End User</th>
+                                <th>System / Application Name</th>
+                                <th>Request Type</th>
+                                <th>Uploaded Form</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="requestsTableBody">
+
+                            <tr>
+                                <td
+                                    class="request-empty-state"
+                                    colspan="9"
+                                >
+                                    No requests found.
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <!-- ============================================================
+         NEW / EDIT REQUEST MODAL
+         ============================================================ -->
+    <div
+        class="modal"
+        id="requestModal"
+    >
+
+        <div class="modal-content requests-modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2 id="requestModalTitle">
+                        New Request
+                    </h2>
+
+                    <p id="requestModalSubtitle">
+                        Encode the Information Systems request details.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeRequestModal"
+                    aria-label="Close"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <form
+                id="requestForm"
+                enctype="multipart/form-data"
+            >
+
+                <!-- =================================================
+                     REFERENCE + DATE
+                     ================================================= -->
+                <div class="request-reference-box">
+
+                    <div class="form-group">
+                        <label for="requestReferenceNo">
+                            Request Reference No.
+                        </label>
+
+                        <input
+                            type="text"
+                            id="requestReferenceNo"
+                            placeholder="Auto-generated"
+                            readonly
+                        >
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="requestDate">
+                            Date Requested *
+                        </label>
+
+                        <input
+                            type="date"
+                            id="requestDate"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     REQUESTING OFFICE
+                     ================================================= -->
+                <div class="form-group">
+
+                    <label for="requestingOffice">
+                        Requesting Office *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="requestingOffice"
+                        required
+                        placeholder="Enter requesting office"
+                    >
+
+                </div>
+
+
+                <!-- =================================================
+                     END USER
+                     ================================================= -->
+                <div class="form-group">
+
+                    <label for="requestEndUser">
+                        End User *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="requestEndUser"
+                        required
+                        placeholder="Enter end user"
+                    >
+
+                </div>
+
+
+                <!-- =================================================
+                     SYSTEM / APPLICATION
+                     ================================================= -->
+                <div class="form-group">
+
+                    <label for="requestSystemName">
+                        System / Application Name *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="requestSystemName"
+                        required
+                        placeholder="Enter system or application name"
+                    >
+
+                </div>
+
+
+                <!-- =================================================
+                     REQUEST TYPE
+                     ================================================= -->
+                <div class="form-group">
+
+                    <label>
+                        Request Type *
+                    </label>
+
+                    <div class="request-type-options">
+
+                        <label class="request-type-option">
+                            <input
+                                type="radio"
+                                name="requestType"
+                                value="New Development"
+                                required
+                            >
+                            <span>New Development</span>
+                        </label>
+
+                        <label class="request-type-option">
+                            <input
+                                type="radio"
+                                name="requestType"
+                                value="Modification/Enhancement"
+                            >
+                            <span>Modification / Enhancement</span>
+                        </label>
+
+                        <label class="request-type-option">
+                            <input
+                                type="radio"
+                                name="requestType"
+                                value="Other"
+                            >
+                            <span>Other</span>
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="form-group"
+                    id="requestOtherTypeGroup"
+                    hidden
+                >
+
+                    <label for="requestOtherType">
+                        Specify Other Request Type *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="requestOtherType"
+                        placeholder="Enter other request type"
+                    >
+
+                </div>
+
+
+                <!-- =================================================
+                     UPLOADED REQUEST FORM
+                     ================================================= -->
+                <div class="form-group">
+
+                    <label for="requestFormFile">
+                        Upload Request Form
+                    </label>
+
+                    <div class="request-file-box">
+
+                        <input
+                            type="file"
+                            id="requestFormFile"
+                            accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                        >
+
+                        <div class="request-form-note">
+                            The uploaded file will later be stored under this
+                            request's Google Drive folder.
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     FORM ACTIONS
+                     ================================================= -->
+                <div class="form-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="cancelRequestBtn"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="saveRequestBtn"
+                    >
+                        Save Request
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         SHARED COMPONENT / AUTH SCRIPT
+         ============================================================ -->
+    <script src="/js/components.js"></script>
+
+
+    <!-- ============================================================
+         REQUESTS PAGE UI ONLY
+         Backend/API logic will be added in requests.js next.
+         ============================================================ -->
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            () => {
+
+                const requestModal =
+                    document.getElementById(
+                        "requestModal"
+                    );
+
+                const newRequestBtn =
+                    document.getElementById(
+                        "newRequestBtn"
+                    );
+
+                const closeRequestModal =
+                    document.getElementById(
+                        "closeRequestModal"
+                    );
+
+                const cancelRequestBtn =
+                    document.getElementById(
+                        "cancelRequestBtn"
+                    );
+
+                const requestOtherTypeGroup =
+                    document.getElementById(
+                        "requestOtherTypeGroup"
+                    );
+
+                const requestOtherType =
+                    document.getElementById(
+                        "requestOtherType"
+                    );
+
+
+                function openRequestModal() {
+
+                    if (!requestModal) {
+                        return;
+                    }
+
+                    requestModal.classList.add(
+                        "show"
+                    );
+                }
+
+
+                function closeRequestModalWindow() {
+
+                    if (!requestModal) {
+                        return;
+                    }
+
+                    requestModal.classList.remove(
+                        "show"
+                    );
+                }
+
+
+                if (newRequestBtn) {
+
+                    newRequestBtn.addEventListener(
+                        "click",
+                        openRequestModal
+                    );
+                }
+
+
+                if (closeRequestModal) {
+
+                    closeRequestModal.addEventListener(
+                        "click",
+                        closeRequestModalWindow
+                    );
+                }
+
+
+                if (cancelRequestBtn) {
+
+                    cancelRequestBtn.addEventListener(
+                        "click",
+                        closeRequestModalWindow
+                    );
+                }
+
+
+                if (requestModal) {
+
+                    requestModal.addEventListener(
+                        "click",
+                        event => {
+
+                            if (
+                                event.target ===
+                                requestModal
+                            ) {
+                                closeRequestModalWindow();
+                            }
+                        }
+                    );
+                }
+
+
+                document
+                    .querySelectorAll(
+                        'input[name="requestType"]'
+                    )
+                    .forEach(radio => {
+
+                        radio.addEventListener(
+                            "change",
+                            () => {
+
+                                const isOther =
+                                    radio.checked &&
+                                    radio.value ===
+                                    "Other";
+
+                                if (
+                                    requestOtherTypeGroup
+                                ) {
+                                    requestOtherTypeGroup.hidden =
+                                        !isOther;
+                                }
+
+                                if (requestOtherType) {
+
+                                    requestOtherType.required =
+                                        isOther;
+
+                                    if (!isOther) {
+                                        requestOtherType.value =
+                                            "";
+                                    }
+                                }
+                            }
+                        );
+                    });
+
+
+                const requestForm =
+                    document.getElementById(
+                        "requestForm"
+                    );
+
+
+                if (requestForm) {
+
+                    requestForm.addEventListener(
+                        "submit",
+                        event => {
+
+                            // API save will be connected in requests.js.
+                            event.preventDefault();
+                        }
+                    );
+                }
+            }
+        );
+    </script>
+
+</body>
+</html>

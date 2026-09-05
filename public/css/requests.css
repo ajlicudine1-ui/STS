@@ -1,0 +1,264 @@
+/* ============================================================
+           REQUESTS PAGE
+           Page-only styling so no existing CSS files are changed.
+           ============================================================ */
+
+        .requests-page {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .requests-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .requests-header-copy h1 {
+            margin: 0;
+            color: #172b4d;
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: -0.6px;
+        }
+
+        .requests-header-copy p {
+            margin: 8px 0 0;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .requests-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .requests-search-wrap {
+            flex: 1 1 320px;
+            max-width: 500px;
+        }
+
+        .requests-search {
+            width: 100%;
+            min-height: 44px;
+            padding: 0 14px;
+            border: 1px solid #d8e0e8;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #172b4d;
+            font: inherit;
+            outline: none;
+        }
+
+        .requests-search:focus {
+            border-color: #556b35;
+            box-shadow: 0 0 0 3px rgba(85, 107, 53, 0.12);
+        }
+
+        .requests-filter {
+            min-height: 44px;
+            padding: 0 12px;
+            border: 1px solid #d8e0e8;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #52637a;
+            font: inherit;
+            outline: none;
+        }
+
+        .requests-card {
+            overflow: hidden;
+            border: 1px solid #e7ebf0;
+            border-radius: 14px;
+            background: #ffffff;
+            box-shadow: 0 8px 24px rgba(23, 43, 77, 0.05);
+        }
+
+        .requests-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .requests-table {
+            width: 100%;
+            min-width: 1180px;
+            border-collapse: collapse;
+        }
+
+        .requests-table th {
+            padding: 15px 16px;
+            border-bottom: 1px solid #e7ebf0;
+            background: #f8fafc;
+            color: #52637a;
+            font-size: 12px;
+            font-weight: 800;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.45px;
+            white-space: nowrap;
+        }
+
+        .requests-table td {
+            padding: 16px;
+            border-bottom: 1px solid #eef2f6;
+            color: #334155;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .requests-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .requests-table tbody tr:hover {
+            background: #fbfcfa;
+        }
+
+        .request-empty-state {
+            padding: 58px 20px !important;
+            color: #94a3b8 !important;
+            text-align: center;
+        }
+
+        .request-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 92px;
+            min-height: 30px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .request-status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .request-status-review {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        .request-status-approved,
+        .request-status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .request-status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .request-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .request-action-btn {
+            min-height: 34px;
+            padding: 0 12px;
+            border: 1px solid #d8e0e8;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #52637a;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .request-action-btn:hover {
+            border-color: #b8c8a8;
+            background: #f5f7f2;
+            color: #526832;
+        }
+
+        .requests-modal-content {
+            width: min(760px, calc(100vw - 40px));
+            max-width: 760px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .request-reference-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .request-type-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .request-type-option {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 48px;
+            padding: 11px 12px;
+            border: 1px solid #d8e0e8;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #52637a;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .request-type-option input {
+            width: auto !important;
+            margin: 0;
+        }
+
+        .request-file-box {
+            padding: 14px;
+            border: 1px dashed #b8c8a8;
+            border-radius: 10px;
+            background: #fbfcfa;
+        }
+
+        .request-file-box input {
+            padding: 8px 0;
+            border: none;
+            background: transparent;
+        }
+
+        .request-form-note {
+            margin-top: 6px;
+            color: #94a3b8;
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        #requestOtherTypeGroup[hidden] {
+            display: none !important;
+        }
+
+        @media (max-width: 800px) {
+            .requests-header {
+                flex-direction: column;
+            }
+
+            .request-reference-box,
+            .request-type-options {
+                grid-template-columns: 1fr;
+            }
+
+            .requests-header .btn {
+                width: 100%;
+            }
+        }
