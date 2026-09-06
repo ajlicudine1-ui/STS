@@ -51,11 +51,11 @@
 
     grid-template-columns:
         minmax(420px, 650px)
+        1fr
         180px
         230px;
 
     align-items: center;
-    justify-content: start;
 
     gap: 12px;
 
@@ -63,9 +63,7 @@
 }
 
 
-/* ============================================================
-   SEARCH
-   ============================================================ */
+/* SEARCH */
 
 .requests-search-wrap {
     width: 100%;
@@ -89,15 +87,6 @@
     font-size: 14px;
 
     outline: none;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-
-.requests-search::placeholder {
-    color: #7b8798;
 }
 
 
@@ -110,12 +99,9 @@
 }
 
 
-/* ============================================================
-   FILTERS
-   ============================================================ */
+/* FILTERS */
 
 .requests-filter {
-    width: 100%;
     height: 46px;
 
     padding: 0 14px;
@@ -131,10 +117,20 @@
 
     outline: none;
     cursor: pointer;
+}
 
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+
+#requestStatusFilter {
+    width: 180px;
+
+    grid-column: 3;
+}
+
+
+#requestTypeFilter {
+    width: 230px;
+
+    grid-column: 4;
 }
 
 
