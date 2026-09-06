@@ -1090,9 +1090,12 @@ async function saveRequest(event) {
             !response.ok ||
             !result.success
         ) {
+
             throw new Error(
-                result.error ||
-                "Unable to save request."
+                result.details
+                    ? `${result.error}\n\n${result.details}`
+                    : result.error ||
+                    "Unable to save request."
             );
         }
 
