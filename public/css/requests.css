@@ -31,17 +31,23 @@
             line-height: 1.55;
         }
 
-        .requests-toolbar {
+       .requests-toolbar {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 14px;
+            justify-content: flex-start;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
         .requests-search-wrap {
-            flex: 1 1 320px;
-            max-width: 500px;
+            flex: 0 1 520px;
+            max-width: 520px;
+            min-width: 280px;
+        }
+
+        
+        #requestTypeFilter {
+            min-width: 210px;
         }
 
         .requests-search {
@@ -61,13 +67,17 @@
             box-shadow: 0 0 0 3px rgba(85, 107, 53, 0.12);
         }
 
-        .requests-filter {
+            .requests-filter {
             min-height: 44px;
+            min-width: 160px;
             padding: 0 12px;
+
             border: 1px solid #d8e0e8;
             border-radius: 10px;
+
             background: #ffffff;
             color: #52637a;
+
             font: inherit;
             outline: none;
         }
