@@ -961,9 +961,14 @@ function bindRequestRowActions() {
 // LOAD
 // ============================================================
 
-async function loadRequests() {
+async function loadRequests(
+    showLoading = true
+) {
 
-    if (requestsTableBody) {
+    if (
+        showLoading &&
+        requestsTableBody
+    ) {
 
         requestsTableBody.innerHTML = `
             <tr>
