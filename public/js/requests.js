@@ -248,6 +248,222 @@ function updateOtherTypeVisibility() {
 }
 
 
+// ============================================================
+// REQUEST FORM FILE SELECTION
+// - Upload is required when creating a new request.
+// - The selected file is shown with an X so the user can remove
+//   a wrong file before saving.
+// ============================================================
+
+let requestSelectedFileDisplay =
+    null;
+
+
+function ensureRequestSelectedFileDisplay() {
+
+    if (
+        requestSelectedFileDisplay ||
+        !requestFormFile
+    ) {
+        return;
+    }
+
+    requestSelectedFileDisplay =
+        document.createElement(
+            "div"
+        );
+
+    requestSelectedFileDisplay.id =
+        "requestSelectedFileDisplay";
+
+    requestSelectedFileDisplay.style.display =
+        "none";
+
+    requestSelectedFileDisplay.style.marginTop =
+        "10px";
+
+    requestFormFile.insertAdjacentElement(
+        "afterend",
+        requestSelectedFileDisplay
+    );
+}
+
+
+function renderRequestSelectedFile() {
+
+    ensureRequestSelectedFileDisplay();
+
+    if (!requestSelectedFileDisplay) {
+        return;
+    }
+
+    const file =
+        requestFormFile
+            ?.files?.[0] ||
+        null;
+
+    if (!file) {
+
+        requestSelectedFileDisplay.innerHTML =
+            "";
+
+        requestSelectedFileDisplay.style.display =
+            "none";
+
+        return;
+    }
+
+    const fileSizeMb =
+        (
+            Number(file.size || 0) /
+            1024 /
+            1024
+        ).toFixed(2);
+
+    requestSelectedFileDisplay.style.display =
+        "flex";
+
+    requestSelectedFileDisplay.style.alignItems =
+        "center";
+
+    requestSelectedFileDisplay.style.justifyContent =
+        "space-between";
+
+    requestSelectedFileDisplay.style.gap =
+        "12px";
+
+    requestSelectedFileDisplay.style.padding =
+        "10px 12px";
+
+    requestSelectedFileDisplay.style.border =
+        "1px solid #d8e0e8";
+
+    requestSelectedFileDisplay.style.borderRadius =
+        "9px";
+
+    requestSelectedFileDisplay.style.background =
+        "#ffffff";
+
+    requestSelectedFileDisplay.innerHTML = `
+        <div
+            style="
+                min-width:0;
+                display:flex;
+                align-items:center;
+                gap:9px;
+            "
+        >
+            <span aria-hidden="true">📄</span>
+
+            <div style="min-width:0;">
+                <div
+                    style="
+                        color:#334155;
+                        font-size:13px;
+                        font-weight:700;
+                        white-space:nowrap;
+                        overflow:hidden;
+                        text-overflow:ellipsis;
+                        max-width:420px;
+                    "
+                    title="${escapeHtml(file.name)}"
+                >
+                    ${escapeHtml(file.name)}
+                </div>
+
+                <div
+                    style="
+                        margin-top:2px;
+                        color:#94a3b8;
+                        font-size:11px;
+                    "
+                >
+                    ${escapeHtml(fileSizeMb)} MB
+                </div>
+            </div>
+        </div>
+
+        <button
+            type="button"
+            id="removeRequestSelectedFileBtn"
+            aria-label="Remove selected file"
+            title="Remove selected file"
+            style="
+                width:30px;
+                height:30px;
+                flex:0 0 30px;
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                border:1px solid #fecaca;
+                border-radius:8px;
+                background:#fff;
+                color:#b91c1c;
+                font-size:20px;
+                line-height:1;
+                cursor:pointer;
+            "
+        >
+            &times;
+        </button>
+    `;
+
+    const removeButton =
+        requestSelectedFileDisplay.querySelector(
+            "#removeRequestSelectedFileBtn"
+        );
+
+    if (removeButton) {
+
+        removeButton.addEventListener(
+            "click",
+            () => {
+
+                if (requestFormFile) {
+                    requestFormFile.value =
+                        "";
+                }
+
+                renderRequestSelectedFile();
+
+                requestFormFile?.focus();
+            }
+        );
+    }
+}
+
+
+function setRequestUploadRequirement() {
+
+    if (!requestFormFile) {
+        return;
+    }
+
+    // A new request must always include a request form.
+    // When editing, an already-uploaded form satisfies the requirement.
+    const existingRequest =
+        editingRequestId
+            ? requestsData.find(
+                item =>
+                    String(item.request_id) ===
+                    String(editingRequestId)
+            )
+            : null;
+
+    const hasExistingUpload =
+        Boolean(
+            existingRequest
+                ?.uploaded_file_id ||
+            existingRequest
+                ?.uploaded_file_url
+        );
+
+    requestFormFile.required =
+        !editingRequestId ||
+        !hasExistingUpload;
+}
+
+
 async function getNextRequestReference() {
 
     const response =
@@ -285,6 +501,14 @@ async function openNewRequestModal() {
     if (requestForm) {
         requestForm.reset();
     }
+
+    if (requestFormFile) {
+        requestFormFile.value =
+            "";
+    }
+
+    renderRequestSelectedFile();
+    setRequestUploadRequirement();
 
     if (requestModalTitle) {
         requestModalTitle.textContent =
@@ -410,6 +634,9 @@ function openEditRequestModal(request) {
         requestFormFile.value =
             "";
     }
+
+    renderRequestSelectedFile();
+    setRequestUploadRequirement();
 
     updateOtherTypeVisibility();
 
@@ -810,11 +1037,6 @@ function bindRequestRowActions() {
         .querySelectorAll(
             ".view-request-form"
         )
-
-    document
-        .querySelectorAll(
-            ".view-request-form"
-        )
         .forEach(
             button => {
 
@@ -916,6 +1138,17 @@ function bindRequestRowActions() {
                             return;
                         }
 
+                        const originalButtonHtml =
+                            button.innerHTML;
+
+                        button.disabled =
+                            true;
+
+                        button.innerHTML = `
+                            <span class="request-dropdown-icon">⌛</span>
+                            <span>Deleting...</span>
+                        `;
+
                         try {
 
                             const response =
@@ -942,13 +1175,21 @@ function bindRequestRowActions() {
                                 );
                             }
 
-                            await loadRequests();
+                            await loadRequests(
+                                false
+                            );
 
                         } catch (error) {
 
                             alert(
                                 error.message
                             );
+
+                            button.disabled =
+                                false;
+
+                            button.innerHTML =
+                                originalButtonHtml;
                         }
                     }
                 );
@@ -1111,6 +1352,23 @@ async function saveRequest(event) {
         )?.value ||
         "";
 
+    setRequestUploadRequirement();
+
+    const selectedFileBeforeSave =
+        requestFormFile
+            ?.files?.[0] ||
+        null;
+
+    if (
+        requestFormFile?.required &&
+        !selectedFileBeforeSave
+    ) {
+
+        requestFormFile.reportValidity();
+
+        return;
+    }
+
     const payload = {
         date_requested:
             requestDate?.value ||
@@ -1203,9 +1461,7 @@ async function saveRequest(event) {
             result.request;
 
         const selectedFile =
-            requestFormFile
-                ?.files?.[0] ||
-            null;
+            selectedFileBeforeSave;
 
         if (
             selectedFile &&
@@ -1225,7 +1481,9 @@ async function saveRequest(event) {
 
         closeRequestModalWindow();
 
-        await loadRequests();
+        await loadRequests(
+            false
+        );
 
     } catch (error) {
 
@@ -1312,6 +1570,15 @@ document
     );
 
 
+if (requestFormFile) {
+
+    requestFormFile.addEventListener(
+        "change",
+        renderRequestSelectedFile
+    );
+}
+
+
 if (requestForm) {
 
     requestForm.addEventListener(
@@ -1355,6 +1622,9 @@ if (requestTypeFilter) {
 document.addEventListener(
     "DOMContentLoaded",
     () => {
+
+        ensureRequestSelectedFileDisplay();
+        renderRequestSelectedFile();
 
         loadRequests();
     }
