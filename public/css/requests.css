@@ -311,9 +311,7 @@
         }
 
         .request-action-dropdown {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
+            position: fixed;
 
             width: 170px;
 
@@ -328,8 +326,10 @@
                 0 12px 30px
                 rgba(23, 43, 77, 0.14);
 
-            z-index: 500;
+            z-index: 20000;
         }
+
+           
 
         .request-action-dropdown[hidden] {
             display: none !important;

@@ -704,6 +704,64 @@ function bindRequestRowActions() {
                             return;
                         }
 
+                        const buttonRect =
+                            button.getBoundingClientRect();
+
+                        const menuWidth =
+                            170;
+
+                        let left =
+                            buttonRect.right -
+                            menuWidth;
+
+                        let top =
+                            buttonRect.bottom +
+                            8;
+
+
+                        // Prevent menu from going outside right side.
+                        if (
+                            left + menuWidth >
+                            window.innerWidth - 12
+                        ) {
+                            left =
+                                window.innerWidth -
+                                menuWidth -
+                                12;
+                        }
+
+
+                        // Prevent menu from going outside left side.
+                        if (left < 12) {
+                            left = 12;
+                        }
+
+
+                        // If there is not enough room below,
+                        // show the dropdown above the Actions button.
+                        const estimatedMenuHeight =
+                            112;
+
+                        if (
+                            top + estimatedMenuHeight >
+                            window.innerHeight - 12
+                        ) {
+                            top =
+                                buttonRect.top -
+                                estimatedMenuHeight -
+                                8;
+                        }
+
+
+                        menu.style.left =
+                            `${left}px`;
+
+                        menu.style.top =
+                            `${top}px`;
+
+                        menu.style.right =
+                            "auto";
+
                         const willOpen =
                             menu.hidden;
 
