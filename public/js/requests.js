@@ -613,39 +613,51 @@ function renderRequests() {
                         </td>
 
                         <td>
-                            <div class="request-actions">
-
-                                <button
-                                    type="button"
-                                    class="request-action-btn view-request"
-                                    data-request-id="${request.request_id}"
-                                >
-                                    View
-                                </button>
-
-                                ${
-                                    isAdmin
-                                        ? `
-                                            <button
-                                                type="button"
-                                                class="request-action-btn edit-request"
-                                                data-request-id="${request.request_id}"
-                                            >
-                                                Edit
-                                            </button>
+                            ${
+                                isAdmin
+                                    ? `
+                                        <div class="request-action-menu-wrapper">
 
                                             <button
                                                 type="button"
-                                                class="request-action-btn delete-request"
+                                                class="request-action-menu-trigger"
                                                 data-request-id="${request.request_id}"
+                                                aria-expanded="false"
                                             >
-                                                Delete
+                                                <span>Actions</span>
+                                                <span class="request-action-menu-arrow">▾</span>
                                             </button>
-                                        `
-                                        : ""
-                                }
 
-                            </div>
+                                            <div
+                                                class="request-action-dropdown"
+                                                data-request-menu="${request.request_id}"
+                                                hidden
+                                            >
+
+                                                <button
+                                                    type="button"
+                                                    class="request-action-dropdown-item edit-request"
+                                                    data-request-id="${request.request_id}"
+                                                >
+                                                    <span class="request-dropdown-icon">✎</span>
+                                                    <span>Edit</span>
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    class="request-action-dropdown-item request-action-delete delete-request"
+                                                    data-request-id="${request.request_id}"
+                                                >
+                                                    <span class="request-dropdown-icon">🗑</span>
+                                                    <span>Delete</span>
+                                                </button>
+
+                                            </div>
+
+                                        </div>
+                                    `
+                                    : `<span>—</span>`
+                            }
                         </td>
                     </tr>
                 `;
@@ -696,63 +708,7 @@ function bindRequestRowActions() {
                 );
             }
         );
-
-
-    document
-        .querySelectorAll(
-            ".view-request"
-        )
-        .forEach(
-            button => {
-
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        const request =
-                            requestsData.find(
-                                item =>
-                                    String(
-                                        item.request_id
-                                    ) ===
-                                    String(
-                                        button.dataset.requestId
-                                    )
-                            );
-
-                        if (!request) {
-                            return;
-                        }
-
-                        const typeText =
-                            request.request_type ===
-                                "Other"
-                                ? request.request_type_other ||
-                                    "Other"
-                                : request.request_type;
-
-                        alert(
-                            [
-                                request.request_reference_no,
-                                "",
-                                `Date Requested: ${formatRequestDate(
-                                    request.date_requested
-                                )}`,
-                                `Requesting Office: ${request.requesting_office}`,
-                                `End User: ${request.end_user}`,
-                                `System/Application: ${request.system_application_name}`,
-                                `Request Type: ${typeText}`,
-                                `Status: ${request.status}`
-                            ].join(
-                                "\n"
-                            )
-                        );
-                    }
-                );
-            }
-        );
-
-
+        
     document
         .querySelectorAll(
             ".edit-request"
@@ -1257,5 +1213,36 @@ document.addEventListener(
     () => {
 
         loadRequests();
+    }
+);
+
+document.addEventListener(
+    "click",
+    () => {
+
+        document
+            .querySelectorAll(
+                ".request-action-dropdown"
+            )
+            .forEach(
+                menu => {
+                    menu.hidden =
+                        true;
+                }
+            );
+
+        document
+            .querySelectorAll(
+                ".request-action-menu-trigger"
+            )
+            .forEach(
+                button => {
+
+                    button.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
+                }
+            );
     }
 );

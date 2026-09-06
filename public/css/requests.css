@@ -262,3 +262,119 @@
                 width: 100%;
             }
         }
+
+        /* ============================================================
+        REQUEST ACTION DROPDOWN
+        ============================================================ */
+
+        .request-action-menu-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .request-action-menu-trigger {
+            min-width: 118px;
+            height: 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+
+            padding: 0 14px;
+
+            border: 1px solid #526832;
+            border-radius: 10px;
+
+            background: #ffffff;
+            color: #2f5f2f;
+
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 800;
+
+            cursor: pointer;
+        }
+
+        .request-action-menu-trigger:hover {
+            background: #f5f7f2;
+        }
+
+        .request-action-menu-arrow {
+            font-size: 11px;
+            transition: transform 0.2s ease;
+        }
+
+        .request-action-menu-trigger[aria-expanded="true"]
+        .request-action-menu-arrow {
+            transform: rotate(180deg);
+        }
+
+        .request-action-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+
+            width: 170px;
+
+            padding: 8px;
+
+            border: 1px solid #e7ebf0;
+            border-radius: 12px;
+
+            background: #ffffff;
+
+            box-shadow:
+                0 12px 30px
+                rgba(23, 43, 77, 0.14);
+
+            z-index: 500;
+        }
+
+        .request-action-dropdown[hidden] {
+            display: none !important;
+        }
+
+        .request-action-dropdown-item {
+            width: 100%;
+            min-height: 42px;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 0 12px;
+
+            border: none;
+            border-radius: 8px;
+
+            background: transparent;
+            color: #334155;
+
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .request-action-dropdown-item:hover {
+            background: #f5f7f2;
+            color: #526832;
+        }
+
+        .request-action-delete {
+            color: #991b1b;
+        }
+
+        .request-action-delete:hover {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .request-dropdown-icon {
+            width: 20px;
+            display: inline-flex;
+            justify-content: center;
+        }
