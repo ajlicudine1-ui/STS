@@ -671,6 +671,87 @@ function renderRequests() {
 
 
 function bindRequestRowActions() {
+  
+    // ============================================================
+    // ACTIONS DROPDOWN
+    // ============================================================
+
+    document
+        .querySelectorAll(
+            ".request-action-menu-trigger"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    event => {
+
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        const requestId =
+                            button.dataset.requestId;
+
+                        const menu =
+                            document.querySelector(
+                                `[data-request-menu="${CSS.escape(
+                                    requestId
+                                )}"]`
+                            );
+
+                        if (!menu) {
+                            return;
+                        }
+
+                        const willOpen =
+                            menu.hidden;
+
+                        document
+                            .querySelectorAll(
+                                ".request-action-dropdown"
+                            )
+                            .forEach(
+                                otherMenu => {
+                                    otherMenu.hidden =
+                                        true;
+                                }
+                            );
+
+                        document
+                            .querySelectorAll(
+                                ".request-action-menu-trigger"
+                            )
+                            .forEach(
+                                otherButton => {
+
+                                    otherButton.setAttribute(
+                                        "aria-expanded",
+                                        "false"
+                                    );
+                                }
+                            );
+
+                        menu.hidden =
+                            !willOpen;
+
+                        button.setAttribute(
+                            "aria-expanded",
+                            willOpen
+                                ? "true"
+                                : "false"
+                        );
+                    }
+                );
+            }
+        );
+
+
+    // KEEP YOUR EXISTING VIEW FORM CODE BELOW
+    document
+        .querySelectorAll(
+            ".view-request-form"
+        )
 
     document
         .querySelectorAll(
@@ -708,7 +789,7 @@ function bindRequestRowActions() {
                 );
             }
         );
-        
+
     document
         .querySelectorAll(
             ".edit-request"
