@@ -685,113 +685,206 @@
    REVIEW / DEPLOYMENT DROPDOWNS
    ============================================================ */
 
-/*
-   These dropdowns are not using .requests-filter in the HTML,
-   so they need their own styling to prevent the browser/global
-   select styles from making them blue.
-*/
-
 #requestReviewStatus,
 #deploymentStatus {
-    width: 100% !important;
-    height: 46px !important;
-    min-height: 46px !important;
-    padding: 0 14px !important;
+    width: 100%;
+    height: 46px;
+    padding: 0 14px;
 
-    border: 1px solid #dce3d6 !important;
-    border-radius: 10px !important;
+    border: 1px solid #dce3d6;
+    border-radius: 10px;
 
-    background-color: #ffffff !important;
-    background-image: none !important;
+    background: #ffffff;
+    color: #394334;
 
-    color: #394334 !important;
+    font-family: inherit;
+    font-size: 14px;
 
-    font-family: inherit !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-
-    outline: none !important;
+    outline: none;
     cursor: pointer;
 
     accent-color: #556b35;
     color-scheme: light;
 }
 
-#requestReviewStatus:hover,
-#deploymentStatus:hover {
-    border-color: #b8c8a8 !important;
-}
-
 #requestReviewStatus:focus,
 #deploymentStatus:focus {
-    border-color: #556b35 !important;
-    box-shadow: 0 0 0 3px rgba(85, 107, 53, 0.12) !important;
-    outline: none !important;
+    border-color: #556b35;
+    box-shadow: 0 0 0 3px rgba(85, 107, 53, 0.12);
 }
 
 #requestReviewStatus option,
 #deploymentStatus option {
-    background-color: #ffffff !important;
-    color: #394334 !important;
+    background: #ffffff;
+    color: #394334;
 }
 
 #requestReviewStatus option:checked,
 #deploymentStatus option:checked {
-    background-color: #556b35 !important;
-    color: #ffffff !important;
+    background: #556b35;
+    color: #ffffff;
 }
 
-/* Keep the dropdown styling consistent on WebKit browsers */
-#requestReviewStatus::-webkit-inner-spin-button,
-#deploymentStatus::-webkit-inner-spin-button {
-    display: none;
-}
 
 /* ============================================================
-   REVIEW / DEPLOYMENT DROPDOWN - GLOBAL SELECT OVERRIDE
+   CUSTOM SELECTS
+   Completely removes the native blue Chrome/Windows hover.
    ============================================================ */
 
-#requestReviewModal select,
-#deploymentModal select,
-#requestReviewForm select {
-    width: 100% !important;
-    height: 46px !important;
-    padding: 0 14px !important;
-
-    border: 1px solid #dce3d6 !important;
-    border-radius: 10px !important;
-
-    background-color: #ffffff !important;
-    background-image: none !important;
-
-    color: #394334 !important;
-
-    font-family: inherit !important;
-    font-size: 14px !important;
-
-    outline: none !important;
-    accent-color: #556b35 !important;
-    color-scheme: light;
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
-#requestReviewModal select:focus,
-#deploymentModal select:focus,
-#requestReviewForm select:focus {
-    border-color: #556b35 !important;
-    box-shadow: 0 0 0 3px rgba(85, 107, 53, 0.12) !important;
-    outline: none !important;
+.custom-select-wrapper.request-status-custom {
+    grid-column: 3;
+    width: 180px;
 }
 
-#requestReviewModal select option,
-#deploymentModal select option,
-#requestReviewForm select option {
-    background-color: #ffffff !important;
-    color: #394334 !important;
+.custom-select-wrapper.request-type-custom {
+    grid-column: 4;
+    width: 230px;
 }
 
-#requestReviewModal select option:checked,
-#deploymentModal select option:checked,
-#requestReviewForm select option:checked {
-    background-color: #556b35 !important;
+.custom-select-native {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    min-width: 1px !important;
+    min-height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.custom-select-button {
+    width: 100%;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 14px;
+    border: 1px solid #b8c8a8;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #394334;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.custom-select-button:hover {
+    border-color: #556b35;
+    background: #fbfcfa;
+}
+
+.custom-select-wrapper.open .custom-select-button {
+    border-color: #556b35;
+    box-shadow: 0 0 0 3px rgba(85, 107, 53, .12);
+}
+
+.custom-select-arrow {
+    color: #394334;
+    font-size: 20px;
+    line-height: 1;
+    transform: translateY(-2px);
+    transition: transform .2s ease;
+}
+
+.custom-select-wrapper.open .custom-select-arrow {
+    transform: rotate(180deg) translateY(2px);
+}
+
+.custom-select-options {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    display: none;
+    padding: 5px;
+    border: 1px solid #b8c8a8;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 12px 28px rgba(47, 73, 42, .16);
+    z-index: 30000;
+    box-sizing: border-box;
+}
+
+.custom-select-wrapper.open .custom-select-options {
+    display: block;
+}
+
+.custom-select-option {
+    width: 100%;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border: none;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #394334;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background .15s ease, color .15s ease;
+}
+
+/* GREEN HOVER — NO NATIVE BLUE */
+.custom-select-option:hover {
+    background: #556b35 !important;
     color: #ffffff !important;
 }
+
+.custom-select-option.selected {
+    background: #556b35 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.custom-select-option.selected:hover {
+    background: #465b2d !important;
+    color: #ffffff !important;
+}
+
+.custom-select-wrapper.request-review-custom,
+.custom-select-wrapper.deployment-status-custom {
+    width: 100%;
+}
+
+@media (max-width: 1100px) {
+    .custom-select-wrapper.request-status-custom {
+        grid-column: 2;
+        width: 170px;
+    }
+
+    .custom-select-wrapper.request-type-custom {
+        grid-column: 3;
+        width: 210px;
+    }
+}
+
+@media (max-width: 800px) {
+    .custom-select-wrapper.request-status-custom,
+    .custom-select-wrapper.request-type-custom {
+        grid-column: auto;
+        width: 100%;
+    }
+}
+

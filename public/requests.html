@@ -563,5 +563,178 @@
 
     <script src="/js/requests.js"></script>
 
+<script>
+/* ============================================================
+   CUSTOM GREEN SELECT DROPDOWNS
+   Replaces the native blue Chrome/Windows option hover.
+   The original <select> remains in the DOM so existing JS
+   continues to work normally.
+   ============================================================ */
+(function () {
+    "use strict";
+
+    const TARGET_SELECTORS = [
+        ".requests-filter",
+        "#requestReviewStatus",
+        "#deploymentStatus"
+    ];
+
+    function getTargets() {
+        return TARGET_SELECTORS.flatMap(selector =>
+            Array.from(document.querySelectorAll(selector))
+        );
+    }
+
+    function syncCustomSelect(select, wrapper) {
+        const text = wrapper.querySelector(".custom-select-text");
+        if (!text) return;
+
+        const selectedOption = select.options[select.selectedIndex];
+        text.textContent = selectedOption ? selectedOption.textContent.trim() : "";
+
+        wrapper.querySelectorAll(".custom-select-option").forEach(optionButton => {
+            const selected = optionButton.dataset.value === String(select.value);
+            optionButton.classList.toggle("selected", selected);
+            optionButton.setAttribute("aria-selected", selected ? "true" : "false");
+        });
+    }
+
+    function closeAll(except = null) {
+        document.querySelectorAll(".custom-select-wrapper.open").forEach(wrapper => {
+            if (wrapper !== except) {
+                wrapper.classList.remove("open");
+                const button = wrapper.querySelector(".custom-select-button");
+                if (button) button.setAttribute("aria-expanded", "false");
+            }
+        });
+    }
+
+    function buildCustomSelect(select) {
+        if (!select || select.dataset.customSelectReady === "true") return;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "custom-select-wrapper";
+
+        if (select.id === "requestStatusFilter") {
+            wrapper.classList.add("request-status-custom");
+        } else if (select.id === "requestTypeFilter") {
+            wrapper.classList.add("request-type-custom");
+        } else if (select.id === "requestReviewStatus") {
+            wrapper.classList.add("request-review-custom");
+        } else if (select.id === "deploymentStatus") {
+            wrapper.classList.add("deployment-status-custom");
+        }
+
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.appendChild(select);
+
+        select.dataset.customSelectReady = "true";
+        select.classList.add("custom-select-native");
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "custom-select-button";
+        button.setAttribute("aria-haspopup", "listbox");
+        button.setAttribute("aria-expanded", "false");
+
+        const text = document.createElement("span");
+        text.className = "custom-select-text";
+
+        const arrow = document.createElement("span");
+        arrow.className = "custom-select-arrow";
+        arrow.textContent = "⌄";
+        arrow.setAttribute("aria-hidden", "true");
+
+        button.append(text, arrow);
+
+        const optionsBox = document.createElement("div");
+        optionsBox.className = "custom-select-options";
+        optionsBox.setAttribute("role", "listbox");
+
+        Array.from(select.options).forEach(option => {
+            const optionButton = document.createElement("button");
+            optionButton.type = "button";
+            optionButton.className = "custom-select-option";
+            optionButton.dataset.value = option.value;
+            optionButton.textContent = option.textContent.trim();
+            optionButton.setAttribute("role", "option");
+            optionButton.setAttribute("aria-selected", "false");
+
+            optionButton.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                select.value = option.value;
+                select.dispatchEvent(new Event("change", { bubbles: true }));
+
+                syncCustomSelect(select, wrapper);
+                wrapper.classList.remove("open");
+                button.setAttribute("aria-expanded", "false");
+            });
+
+            optionsBox.appendChild(optionButton);
+        });
+
+        wrapper.append(button, optionsBox);
+
+        button.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const opening = !wrapper.classList.contains("open");
+            closeAll(wrapper);
+            wrapper.classList.toggle("open", opening);
+            button.setAttribute("aria-expanded", opening ? "true" : "false");
+
+            if (opening) syncCustomSelect(select, wrapper);
+        });
+
+        select.addEventListener("change", () => syncCustomSelect(select, wrapper));
+
+        /* Sync direct .value changes made by existing JS. */
+        let lastValue = select.value;
+        const timer = setInterval(() => {
+            if (!document.documentElement.contains(select)) {
+                clearInterval(timer);
+                return;
+            }
+
+            if (select.value !== lastValue) {
+                lastValue = select.value;
+                syncCustomSelect(select, wrapper);
+            }
+        }, 100);
+
+        syncCustomSelect(select, wrapper);
+    }
+
+    function initialize() {
+        getTargets().forEach(buildCustomSelect);
+    }
+
+    document.addEventListener("click", () => closeAll());
+
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") closeAll();
+    });
+
+    function start() {
+        initialize();
+
+        new MutationObserver(initialize).observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", start);
+    } else {
+        start();
+    }
+})();
+</script>
+
+
 </body>
 </html>
