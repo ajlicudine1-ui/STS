@@ -167,7 +167,7 @@
                                 <th>Request Type</th>
                                 <th>Uploaded Form</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th id="requestActionsHeader">Actions</th>
                             </tr>
                         </thead>
 
@@ -735,6 +735,7 @@
     document.addEventListener("keydown", event => {
         if (event.key === "Escape") closeAll();
     });
+    
 
     function start() {
         initialize();

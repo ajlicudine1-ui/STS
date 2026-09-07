@@ -881,13 +881,27 @@ function renderRequests() {
     const rows =
         getFilteredRequests();
 
+    const isAdmin =
+        String(requestsViewer?.role || "")
+            .trim()
+            .toLowerCase() === "admin";
+
+    const requestActionsHeader =
+        document.querySelector(
+            ".requests-table thead th:last-child"
+        );
+
+    if (requestActionsHeader) {
+        requestActionsHeader.hidden = !isAdmin;
+    }
+
     if (rows.length === 0) {
 
         requestsTableBody.innerHTML = `
             <tr>
                 <td
                     class="request-empty-state"
-                    colspan="9"
+                    colspan="${isAdmin ? 9 : 8}"
                 >
                     No requests found.
                 </td>
@@ -896,10 +910,6 @@ function renderRequests() {
 
         return;
     }
-
-    const isAdmin =
-        requestsViewer?.role ===
-        "admin";
 
     requestsTableBody.innerHTML =
         rows.map(
@@ -985,10 +995,10 @@ function renderRequests() {
                             </span>
                         </td>
 
-                        <td>
-                            ${
-                                isAdmin
-                                    ? `
+                        ${
+                            isAdmin
+                                ? `
+                                    <td>
                                         <div class="request-action-menu-wrapper">
 
                                             <button
@@ -1037,10 +1047,10 @@ function renderRequests() {
                                             </div>
 
                                         </div>
-                                    `
-                                    : `<span>—</span>`
-                            }
-                        </td>
+                                    </td>
+                                `
+                                : ""
+                        }
                     </tr>
                 `;
             }
