@@ -1985,14 +1985,14 @@ app.post("/api/projects", async (req, res) => {
 // ============================================================
 
 const REQUIRED_DEPLOYMENT_DOCUMENTS = [
-    "Deployment Record / Turnover Document",
-    "INFORMATION REQUISITION FORM",
+    "Information System Requisition Form",
+    "Requirements and Design Input Checklist and Evaluation Report",
+    "System Design Document Form",
+    "System Revision Request & Verification Form ",
+    "User Acceptance Testing (UAT) Form",
+    "System Release & Deployment Form",
     "Maintenance Log",
-    "REQUIREMENTS AND DESIGN INPUT CHECKLIST AND EVALUATION REPORT",
-    "SYSTEM CHANGE FORM",
-    "SYSTEM COMPLIANCE MATRIX",
-    "SYSTEM DESIGN DOCUMENT",
-    "System Test Report"
+    "DevTrack"
 ];
 
 
