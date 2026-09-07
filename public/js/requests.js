@@ -4,6 +4,7 @@
 
 let requestsData = [];
 let editingRequestId = null;
+let reviewingRequestId = null;
 let requestsViewer = null;
 
 
@@ -104,6 +105,51 @@ const requestStatusFilter =
 const requestTypeFilter =
     document.getElementById(
         "requestTypeFilter"
+    );
+
+const requestReviewModal =
+    document.getElementById(
+        "requestReviewModal"
+    );
+
+const closeRequestReviewModalBtn =
+    document.getElementById(
+        "closeRequestReviewModal"
+    );
+
+const cancelRequestReviewBtn =
+    document.getElementById(
+        "cancelRequestReviewBtn"
+    );
+
+const requestReviewForm =
+    document.getElementById(
+        "requestReviewForm"
+    );
+
+const requestReviewReference =
+    document.getElementById(
+        "requestReviewReference"
+    );
+
+const requestReviewSystem =
+    document.getElementById(
+        "requestReviewSystem"
+    );
+
+const requestReviewOffice =
+    document.getElementById(
+        "requestReviewOffice"
+    );
+
+const requestReviewStatus =
+    document.getElementById(
+        "requestReviewStatus"
+    );
+
+const saveRequestReviewBtn =
+    document.getElementById(
+        "saveRequestReviewBtn"
     );
 
 
@@ -216,6 +262,56 @@ function closeRequestModalWindow() {
             "show"
         );
     }
+}
+
+
+function closeRequestReviewModalWindow() {
+
+    if (requestReviewModal) {
+        requestReviewModal.classList.remove(
+            "show"
+        );
+    }
+
+    reviewingRequestId = null;
+}
+
+
+function openRequestReviewModal(request) {
+
+    if (
+        !requestReviewModal ||
+        !request
+    ) {
+        return;
+    }
+
+    reviewingRequestId =
+        request.request_id;
+
+    if (requestReviewReference) {
+        requestReviewReference.value =
+            request.request_reference_no || "";
+    }
+
+    if (requestReviewSystem) {
+        requestReviewSystem.value =
+            request.system_application_name || "";
+    }
+
+    if (requestReviewOffice) {
+        requestReviewOffice.value =
+            request.requesting_office || "";
+    }
+
+    if (requestReviewStatus) {
+        requestReviewStatus.value =
+            request.status || "Pending";
+    }
+
+    requestReviewModal.classList.add(
+        "show"
+    );
 }
 
 
@@ -863,6 +959,15 @@ function renderRequests() {
 
                                                 <button
                                                     type="button"
+                                                    class="request-action-dropdown-item review-request"
+                                                    data-request-id="${request.request_id}"
+                                                >
+                                                    <span class="request-dropdown-icon">✓</span>
+                                                    <span>Review Request</span>
+                                                </button>
+
+                                                <button
+                                                    type="button"
                                                     class="request-action-dropdown-item edit-request"
                                                     data-request-id="${request.request_id}"
                                                 >
@@ -967,7 +1072,7 @@ function bindRequestRowActions() {
                         // If there is not enough room below,
                         // show the dropdown above the Actions button.
                         const estimatedMenuHeight =
-                            112;
+                            160;
 
                         if (
                             top + estimatedMenuHeight >
@@ -1069,6 +1174,39 @@ function bindRequestRowActions() {
                 );
             }
         );
+
+    document
+        .querySelectorAll(
+            ".review-request"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const request =
+                            requestsData.find(
+                                item =>
+                                    String(
+                                        item.request_id
+                                    ) ===
+                                    String(
+                                        button.dataset.requestId
+                                    )
+                            );
+
+                        if (request) {
+                            openRequestReviewModal(
+                                request
+                            );
+                        }
+                    }
+                );
+            }
+        );
+
 
     document
         .querySelectorAll(
@@ -1279,6 +1417,83 @@ async function loadRequests(
                     </td>
                 </tr>
             `;
+        }
+    }
+}
+
+
+// ============================================================
+// REVIEW REQUEST STATUS - ADMIN ONLY
+// ============================================================
+
+async function saveRequestReview(event) {
+
+    event.preventDefault();
+
+    if (
+        !reviewingRequestId ||
+        !requestReviewStatus?.value
+    ) {
+        return;
+    }
+
+    const originalButtonText =
+        saveRequestReviewBtn?.textContent ||
+        "Update Status";
+
+    if (saveRequestReviewBtn) {
+        saveRequestReviewBtn.disabled = true;
+        saveRequestReviewBtn.textContent =
+            "Updating...";
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/requests/${encodeURIComponent(
+                    reviewingRequestId
+                )}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        status:
+                            requestReviewStatus.value
+                    })
+                }
+            );
+
+        const result =
+            await response.json();
+
+        if (
+            !response.ok ||
+            !result.success
+        ) {
+            throw new Error(
+                result.error ||
+                result.details ||
+                "Unable to update request status."
+            );
+        }
+
+        closeRequestReviewModalWindow();
+        await loadRequests(false);
+
+    } catch (error) {
+
+        alert(error.message);
+
+    } finally {
+
+        if (saveRequestReviewBtn) {
+            saveRequestReviewBtn.disabled = false;
+            saveRequestReviewBtn.textContent =
+                originalButtonText;
         }
     }
 }
@@ -1534,6 +1749,46 @@ if (cancelRequestBtn) {
     cancelRequestBtn.addEventListener(
         "click",
         closeRequestModalWindow
+    );
+}
+
+
+if (closeRequestReviewModalBtn) {
+    closeRequestReviewModalBtn.addEventListener(
+        "click",
+        closeRequestReviewModalWindow
+    );
+}
+
+
+if (cancelRequestReviewBtn) {
+    cancelRequestReviewBtn.addEventListener(
+        "click",
+        closeRequestReviewModalWindow
+    );
+}
+
+
+if (requestReviewForm) {
+    requestReviewForm.addEventListener(
+        "submit",
+        saveRequestReview
+    );
+}
+
+
+if (requestReviewModal) {
+    requestReviewModal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                requestReviewModal
+            ) {
+                closeRequestReviewModalWindow();
+            }
+        }
     );
 }
 

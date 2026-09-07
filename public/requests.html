@@ -414,6 +414,118 @@
 
 
     <!-- ============================================================
+         REVIEW REQUEST STATUS MODAL - ADMIN ONLY
+         ============================================================ -->
+    <div
+        class="modal"
+        id="requestReviewModal"
+    >
+
+        <div class="modal-content requests-modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>Review Request</h2>
+                    <p>
+                        Check the request and update its current status.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeRequestReviewModal"
+                    aria-label="Close"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+            <form id="requestReviewForm">
+
+                <div class="request-reference-box">
+
+                    <div class="form-group">
+                        <label for="requestReviewReference">
+                            Request Reference No.
+                        </label>
+                        <input
+                            type="text"
+                            id="requestReviewReference"
+                            readonly
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="requestReviewOffice">
+                            Requesting Office
+                        </label>
+                        <input
+                            type="text"
+                            id="requestReviewOffice"
+                            readonly
+                        >
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="requestReviewSystem">
+                        System / Application Name
+                    </label>
+                    <input
+                        type="text"
+                        id="requestReviewSystem"
+                        readonly
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="requestReviewStatus">
+                        Request Status *
+                    </label>
+                    <select
+                        id="requestReviewStatus"
+                        required
+                    >
+                        <option value="Pending">Pending</option>
+                        <option value="For Review">For Review</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="cancelRequestReviewBtn"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="saveRequestReviewBtn"
+                    >
+                        Update Status
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
          SHARED COMPONENT / AUTH SCRIPT
          ============================================================ -->
     <script src="/js/components.js"></script>
