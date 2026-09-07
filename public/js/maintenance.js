@@ -26,6 +26,7 @@ const maintenanceModalProjectName = document.getElementById("maintenanceModalPro
 const maintenanceForm = document.getElementById("maintenanceForm");
 const maintenanceDate = document.getElementById("maintenanceDate");
 const maintenancePersonnelList = document.getElementById("maintenancePersonnelList");
+const addMaintenancePersonBtn = document.getElementById("addMaintenancePersonBtn");
 const maintenanceFile = document.getElementById("maintenanceFile");
 const maintenanceFileHelp = document.getElementById("maintenanceFileHelp");
 const currentMaintenanceFile = document.getElementById("currentMaintenanceFile");
@@ -33,6 +34,20 @@ const maintenanceFormError = document.getElementById("maintenanceFormError");
 const saveMaintenanceBtn = document.getElementById("saveMaintenanceBtn");
 const closeMaintenanceModalBtn = document.getElementById("closeMaintenanceModal");
 const cancelMaintenanceBtn = document.getElementById("cancelMaintenanceBtn");
+
+if (addMaintenancePersonBtn) {
+    addMaintenancePersonBtn.addEventListener("click", () => {
+        if (!maintenancePersonnelList) return;
+
+        maintenancePersonnelList.appendChild(createMaintenancePersonRow());
+        refreshMaintenancePersonRows();
+
+        const latestSelect = maintenancePersonnelList.querySelector(
+            ".maintenance-person-row:last-child .maintenance-person-select"
+        );
+        latestSelect?.focus();
+    });
+}
 
 
 function escapeHtml(value) {
@@ -103,63 +118,139 @@ function clearMaintenanceError() {
 }
 
 
+function createMaintenancePersonRow(selectedUserId = "") {
+    const row = document.createElement("div");
+    row.className = "maintenance-person-row";
+
+    const select = document.createElement("select");
+    select.className = "maintenance-person-select";
+    select.name = "responsible_person";
+    select.required = true;
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = maintenancePersonnel.length
+        ? "Select project personnel"
+        : "No connected project personnel";
+    select.appendChild(placeholder);
+
+    maintenancePersonnel.forEach(member => {
+        const option = document.createElement("option");
+        option.value = String(member.user_id);
+        option.textContent = member.full_name;
+        option.selected = option.value === String(selectedUserId || "");
+        select.appendChild(option);
+    });
+
+    select.disabled = maintenancePersonnel.length === 0;
+    select.addEventListener("change", refreshMaintenancePersonRows);
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "maintenance-remove-person-btn";
+    removeButton.setAttribute("aria-label", "Remove person responsible");
+    removeButton.textContent = "×";
+    removeButton.addEventListener("click", () => {
+        const rows = maintenancePersonnelList.querySelectorAll(
+            ".maintenance-person-row"
+        );
+
+        if (rows.length === 1) {
+            select.value = "";
+        } else {
+            row.remove();
+        }
+
+        refreshMaintenancePersonRows();
+    });
+
+    row.append(select, removeButton);
+    return row;
+}
+
+
+function refreshMaintenancePersonRows() {
+    if (!maintenancePersonnelList) return;
+
+    const selects = Array.from(
+        maintenancePersonnelList.querySelectorAll(".maintenance-person-select")
+    );
+    const selectedValues = new Set(
+        selects.map(select => select.value).filter(Boolean)
+    );
+
+    selects.forEach(select => {
+        Array.from(select.options).forEach(option => {
+            if (!option.value) return;
+            option.disabled = option.value !== select.value &&
+                selectedValues.has(option.value);
+        });
+    });
+
+    if (addMaintenancePersonBtn) {
+        addMaintenancePersonBtn.disabled =
+            maintenancePersonnel.length === 0 ||
+            selects.length >= maintenancePersonnel.length;
+    }
+}
+
+
 function renderPersonnelOptions(selectedUserIds = []) {
     if (!maintenancePersonnelList) return;
 
-    const selected = new Set(
-        selectedUserIds.map(value => String(value))
-    );
+    maintenancePersonnelList.innerHTML = "";
+    const selected = selectedUserIds
+        .map(value => String(value || ""))
+        .filter(userId => maintenancePersonnel.some(
+            member => String(member.user_id) === userId
+        ));
 
-    if (maintenancePersonnel.length === 0) {
-        maintenancePersonnelList.innerHTML =
-            '<span class="maintenance-personnel-empty">No active IMS personnel found.</span>';
-        return;
-    }
+    (selected.length ? selected : [""]).forEach(userId => {
+        maintenancePersonnelList.appendChild(
+            createMaintenancePersonRow(userId)
+        );
+    });
 
-    maintenancePersonnelList.innerHTML =
-        maintenancePersonnel.map(member => {
-            const userId = String(member.user_id || "");
-            const name = member.full_name || member.email || "Unnamed personnel";
-
-            return `
-                <label class="maintenance-personnel-option">
-                    <input
-                        type="checkbox"
-                        name="responsible_person"
-                        value="${escapeHtml(userId)}"
-                        ${selected.has(userId) ? "checked" : ""}
-                    >
-                    <span>${escapeHtml(name)}</span>
-                </label>
-            `;
-        }).join("");
+    refreshMaintenancePersonRows();
 }
 
 
 function getSelectedPersonnelIds() {
     return Array.from(
-        document.querySelectorAll(
-            'input[name="responsible_person"]:checked'
-        )
-    ).map(input => input.value);
+        document.querySelectorAll(".maintenance-person-select")
+    ).map(select => select.value).filter(Boolean);
 }
 
 
 async function loadMaintenancePersonnel() {
-    const response = await fetch("/api/ims-personnel");
+    const response = await fetch(
+        `/api/projects/${encodeURIComponent(maintenanceProjectId)}/members`
+    );
     const result = await readJsonResponse(response);
 
     if (!response.ok) {
         throw new Error(
             result.error ||
             result.details ||
-            "Unable to load IMS personnel."
+            "Unable to load project personnel."
         );
     }
 
-    maintenancePersonnel = Array.isArray(result.members)
-        ? result.members
-        : [];
+    const uniqueMembers = new Map();
+
+    (Array.isArray(result.members) ? result.members : []).forEach(member => {
+        const userId = String(member.user_id || "").trim();
+        const name = String(member.member_name || "").trim();
+
+        if (userId && name && !uniqueMembers.has(userId)) {
+            uniqueMembers.set(userId, {
+                user_id: userId,
+                full_name: name
+            });
+        }
+    });
+
+    maintenancePersonnel = Array.from(uniqueMembers.values());
 }
 
 
@@ -503,6 +594,15 @@ if (maintenanceForm) {
             return;
         }
 
+        const payload = buildMaintenancePayload();
+
+        if (!Object.values(payload.checklist).some(Boolean)) {
+            showMaintenanceError(
+                "Select at least one Maintenance Checklist item."
+            );
+            return;
+        }
+
         const selectedFile = maintenanceFile?.files?.[0] || null;
 
         if (!editingMaintenanceId && !selectedFile) {
@@ -534,7 +634,7 @@ if (maintenanceForm) {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(buildMaintenancePayload())
+                body: JSON.stringify(payload)
             });
 
             const result = await readJsonResponse(response);

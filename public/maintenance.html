@@ -154,12 +154,24 @@
                         >
                     </div>
 
-                    <fieldset class="maintenance-personnel-fieldset">
+                    <fieldset class="maintenance-personnel-fieldset maintenance-full-width">
                         <legend>Persons Responsible</legend>
-                        <p>Select one or more IMS personnel.</p>
-                        <div class="maintenance-personnel-list" id="maintenancePersonnelList">
-                            Loading IMS personnel...
+                        <p>Select one or more personnel connected to this project.</p>
+
+                        <div
+                            class="maintenance-personnel-list"
+                            id="maintenancePersonnelList"
+                        >
+                            Loading project personnel...
                         </div>
+
+                        <button
+                            type="button"
+                            class="maintenance-add-person-btn"
+                            id="addMaintenancePersonBtn"
+                        >
+                            + Add Person Responsible
+                        </button>
                     </fieldset>
 
                     <div class="form-group maintenance-full-width">
@@ -185,11 +197,13 @@
                     <fieldset class="maintenance-checklist maintenance-full-width">
                         <legend>Maintenance Checklist</legend>
 
-                        <label><input type="checkbox" name="activities_reviewed" required> Maintenance activities have been reviewed</label>
-                        <label><input type="checkbox" name="testing_completed" required> Required testing / verification was completed, where applicable</label>
-                        <label><input type="checkbox" name="backups_completed" required> Required backups were completed, where applicable</label>
-                        <label><input type="checkbox" name="owner_informed" required> System owner / end-user was informed, where applicable</label>
-                        <label><input type="checkbox" name="documentation_updated" required> Related documentation was updated, where applicable</label>
+                        <p class="maintenance-checklist-help">Select at least one applicable item.</p>
+
+                        <label><input type="checkbox" name="activities_reviewed"> Maintenance activities have been reviewed</label>
+                        <label><input type="checkbox" name="testing_completed"> Required testing / verification was completed, where applicable</label>
+                        <label><input type="checkbox" name="backups_completed"> Required backups were completed, where applicable</label>
+                        <label><input type="checkbox" name="owner_informed"> System owner / end-user was informed, where applicable</label>
+                        <label><input type="checkbox" name="documentation_updated"> Related documentation was updated, where applicable</label>
                     </fieldset>
 
                     <div class="form-group maintenance-full-width">

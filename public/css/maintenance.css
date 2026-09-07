@@ -277,13 +277,10 @@
 }
 
 .maintenance-personnel-list {
-    max-height: 160px;
-    overflow-y: auto;
     display: grid;
-    gap: 7px;
+    gap: 10px;
 }
 
-.maintenance-personnel-option,
 .maintenance-checklist label {
     display: flex;
     align-items: flex-start;
@@ -293,11 +290,72 @@
     line-height: 1.4;
 }
 
-.maintenance-personnel-option input,
 .maintenance-checklist input {
     width: auto;
     margin-top: 3px;
     accent-color: #2d8138;
+}
+
+.maintenance-person-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 52px;
+    gap: 12px;
+}
+
+.maintenance-person-select {
+    height: 52px;
+    padding: 0 16px;
+    border: 1px solid #cdd8c8;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #25351f;
+    font: inherit;
+}
+
+.maintenance-person-select:focus {
+    border-color: #2d8138;
+    outline: 2px solid rgba(45, 129, 56, 0.15);
+}
+
+.maintenance-remove-person-btn {
+    width: 52px;
+    height: 52px;
+    border: 1px solid #cdd8c8;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #66735f;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.maintenance-remove-person-btn:hover {
+    border-color: #2d8138;
+    color: #1f6f2a;
+    background: #f4f9f2;
+}
+
+.maintenance-add-person-btn {
+    min-height: 46px;
+    width: fit-content;
+    margin-top: 14px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 10px;
+    background: #e8f3e6;
+    color: #145c24;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.maintenance-add-person-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.maintenance-checklist-help {
+    margin: 0;
+    color: #6b7666;
+    font-size: 12px;
 }
 
 .maintenance-checklist {
