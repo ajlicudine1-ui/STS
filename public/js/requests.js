@@ -107,6 +107,26 @@ const requestTypeFilter =
         "requestTypeFilter"
     );
 
+const totalRequests =
+    document.getElementById(
+        "totalRequests"
+    );
+
+const pendingRequests =
+    document.getElementById(
+        "pendingRequests"
+    );
+
+const forReviewRequests =
+    document.getElementById(
+        "forReviewRequests"
+    );
+
+const approvedRequests =
+    document.getElementById(
+        "approvedRequests"
+    );
+
 const requestReviewModal =
     document.getElementById(
         "requestReviewModal"
@@ -261,6 +281,37 @@ function closeRequestModalWindow() {
         requestModal.classList.remove(
             "show"
         );
+    }
+}
+
+
+function updateRequestSummaryCards() {
+
+    const countByStatus = status =>
+        requestsData.filter(
+            request =>
+                (request.status || "Pending") ===
+                status
+        ).length;
+
+    if (totalRequests) {
+        totalRequests.textContent =
+            String(requestsData.length);
+    }
+
+    if (pendingRequests) {
+        pendingRequests.textContent =
+            String(countByStatus("Pending"));
+    }
+
+    if (forReviewRequests) {
+        forReviewRequests.textContent =
+            String(countByStatus("For Review"));
+    }
+
+    if (approvedRequests) {
+        approvedRequests.textContent =
+            String(countByStatus("Approved"));
     }
 }
 
@@ -827,6 +878,8 @@ function renderRequests() {
     if (!requestsTableBody) {
         return;
     }
+
+    updateRequestSummaryCards();
 
     const rows =
         getFilteredRequests();

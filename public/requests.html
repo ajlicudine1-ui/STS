@@ -73,6 +73,37 @@
 
 
             <!-- ====================================================
+                 REQUEST SUMMARY CARDS
+                 ==================================================== -->
+            <section
+                class="request-stats"
+                aria-label="Request summary"
+            >
+
+                <article class="request-stat-card">
+                    <div class="request-stat-label">Total Requests</div>
+                    <div class="request-stat-value" id="totalRequests">0</div>
+                </article>
+
+                <article class="request-stat-card">
+                    <div class="request-stat-label">Pending Requests</div>
+                    <div class="request-stat-value" id="pendingRequests">0</div>
+                </article>
+
+                <article class="request-stat-card">
+                    <div class="request-stat-label">For Review</div>
+                    <div class="request-stat-value" id="forReviewRequests">0</div>
+                </article>
+
+                <article class="request-stat-card">
+                    <div class="request-stat-label">Approved Requests</div>
+                    <div class="request-stat-value" id="approvedRequests">0</div>
+                </article>
+
+            </section>
+
+
+            <!-- ====================================================
                  SEARCH / FILTERS
                  ==================================================== -->
             <div class="requests-toolbar">
