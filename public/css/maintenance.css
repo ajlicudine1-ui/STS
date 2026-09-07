@@ -379,6 +379,96 @@
     border-radius: 9px;
 }
 
+/* Keep the Maintenance screen green even when global.css uses blue defaults. */
+.maintenance-body,
+.maintenance-body .main {
+    background: #f3f7f0;
+    color: #243221;
+}
+
+.maintenance-body ::selection {
+    color: #ffffff;
+    background: #2d8138;
+}
+
+.maintenance-body a:not(.maintenance-delete-btn),
+.maintenance-modal-content a {
+    color: #22652c;
+}
+
+.maintenance-body .btn-primary,
+.maintenance-modal-content .btn-primary {
+    color: #ffffff;
+    background: #2d8138;
+    border-color: #2d8138;
+}
+
+.maintenance-body .btn-primary:hover,
+.maintenance-modal-content .btn-primary:hover {
+    background: #235e26;
+    border-color: #235e26;
+}
+
+.maintenance-modal-content .modal-header h2,
+.maintenance-modal-content .modal-header p,
+.maintenance-modal-content .form-group label,
+.maintenance-modal-content small {
+    color: #31502d;
+}
+
+.maintenance-modal-content input,
+.maintenance-modal-content select,
+.maintenance-modal-content textarea {
+    color: #243221;
+    background-color: #ffffff;
+    border-color: #cdd8c8;
+}
+
+.maintenance-modal-content input:focus,
+.maintenance-modal-content select:focus,
+.maintenance-modal-content textarea:focus {
+    border-color: #2d8138;
+    outline-color: #2d8138;
+    box-shadow: 0 0 0 3px rgba(45, 129, 56, 0.14);
+}
+
+.maintenance-body select option,
+.maintenance-modal-content select option {
+    color: #243221;
+    background: #ffffff;
+}
+
+.maintenance-body select option:checked,
+.maintenance-modal-content select option:checked {
+    color: #ffffff;
+    background: #2d8138 linear-gradient(0deg, #2d8138, #2d8138);
+}
+
+.maintenance-modal-content input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 8px 13px;
+    color: #ffffff;
+    background: #2d8138;
+    border: 0;
+    border-radius: 7px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.maintenance-modal-content input[type="file"]::file-selector-button:hover {
+    background: #235e26;
+}
+
+.maintenance-modal-content .modal-close {
+    color: #31502d;
+}
+
+.maintenance-modal-content .btn-secondary {
+    color: #235e26;
+    background: #e8f3e6;
+    border-color: #c6d9c2;
+}
+
 @media (max-width: 1100px) {
     .maintenance-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
