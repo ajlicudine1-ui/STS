@@ -680,5 +680,118 @@
         grid-template-columns: 1fr !important;
     }
 }
-    
 
+/* ============================================================
+   REVIEW / DEPLOYMENT DROPDOWNS
+   ============================================================ */
+
+/*
+   These dropdowns are not using .requests-filter in the HTML,
+   so they need their own styling to prevent the browser/global
+   select styles from making them blue.
+*/
+
+#requestReviewStatus,
+#deploymentStatus {
+    width: 100% !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    padding: 0 14px !important;
+
+    border: 1px solid #dce3d6 !important;
+    border-radius: 10px !important;
+
+    background-color: #ffffff !important;
+    background-image: none !important;
+
+    color: #394334 !important;
+
+    font-family: inherit !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+
+    outline: none !important;
+    cursor: pointer;
+
+    accent-color: #556b35;
+    color-scheme: light;
+}
+
+#requestReviewStatus:hover,
+#deploymentStatus:hover {
+    border-color: #b8c8a8 !important;
+}
+
+#requestReviewStatus:focus,
+#deploymentStatus:focus {
+    border-color: #556b35 !important;
+    box-shadow: 0 0 0 3px rgba(85, 107, 53, 0.12) !important;
+    outline: none !important;
+}
+
+#requestReviewStatus option,
+#deploymentStatus option {
+    background-color: #ffffff !important;
+    color: #394334 !important;
+}
+
+#requestReviewStatus option:checked,
+#deploymentStatus option:checked {
+    background-color: #556b35 !important;
+    color: #ffffff !important;
+}
+
+/* Keep the dropdown styling consistent on WebKit browsers */
+#requestReviewStatus::-webkit-inner-spin-button,
+#deploymentStatus::-webkit-inner-spin-button {
+    display: none;
+}
+
+/* ============================================================
+   REVIEW / DEPLOYMENT DROPDOWN - GLOBAL SELECT OVERRIDE
+   ============================================================ */
+
+#requestReviewModal select,
+#deploymentModal select,
+#requestReviewForm select {
+    width: 100% !important;
+    height: 46px !important;
+    padding: 0 14px !important;
+
+    border: 1px solid #dce3d6 !important;
+    border-radius: 10px !important;
+
+    background-color: #ffffff !important;
+    background-image: none !important;
+
+    color: #394334 !important;
+
+    font-family: inherit !important;
+    font-size: 14px !important;
+
+    outline: none !important;
+    accent-color: #556b35 !important;
+    color-scheme: light;
+}
+
+#requestReviewModal select:focus,
+#deploymentModal select:focus,
+#requestReviewForm select:focus {
+    border-color: #556b35 !important;
+    box-shadow: 0 0 0 3px rgba(85, 107, 53, 0.12) !important;
+    outline: none !important;
+}
+
+#requestReviewModal select option,
+#deploymentModal select option,
+#requestReviewForm select option {
+    background-color: #ffffff !important;
+    color: #394334 !important;
+}
+
+#requestReviewModal select option:checked,
+#deploymentModal select option:checked,
+#requestReviewForm select option:checked {
+    background-color: #556b35 !important;
+    color: #ffffff !important;
+}
