@@ -265,9 +265,6 @@ function getStatusClass(status) {
         case "Rejected":
             return "request-status-rejected";
 
-        case "Completed":
-            return "request-status-completed";
-
         case "Pending":
         default:
             return "request-status-pending";
