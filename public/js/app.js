@@ -280,6 +280,10 @@ let currentDeploymentChecklistProject =
 
 let pendingDeploymentDocumentType =
     null;
+
+
+let pendingDeploymentUploadButton =
+    null;
 // ============================================================
 // HELPERS
 // ============================================================
@@ -3040,6 +3044,9 @@ function renderDeploymentChecklist(data) {
                         pendingDeploymentDocumentType =
                             deploymentDocument.document_type;
 
+                        pendingDeploymentUploadButton =
+                            uploadAction;
+
                         if (deploymentDocumentFileInput) {
 
                             deploymentDocumentFileInput.value =
@@ -3516,10 +3523,29 @@ if (deploymentDocumentFileInput) {
                 pendingDeploymentDocumentType;
 
 
+            const uploadButton =
+                pendingDeploymentUploadButton;
+
+
+            const originalUploadButtonText =
+                uploadButton?.textContent ||
+                "Upload";
+
+
             try {
 
                 deploymentDocumentFileInput.disabled =
                     true;
+
+
+                if (uploadButton) {
+
+                    uploadButton.disabled =
+                        true;
+
+                    uploadButton.textContent =
+                        "Uploading...";
+                }
 
 
                 if (deploymentChecklistLoading) {
@@ -3547,6 +3573,10 @@ if (deploymentDocumentFileInput) {
                     null;
 
 
+                pendingDeploymentUploadButton =
+                    null;
+
+
                 deploymentDocumentFileInput.value =
                     "";
 
@@ -3571,6 +3601,19 @@ if (deploymentDocumentFileInput) {
 
 
             } finally {
+
+                if (uploadButton) {
+
+                    uploadButton.disabled =
+                        false;
+
+                    uploadButton.textContent =
+                        originalUploadButtonText;
+                }
+
+
+                pendingDeploymentUploadButton =
+                    null;
 
                 deploymentDocumentFileInput.disabled =
                     false;
