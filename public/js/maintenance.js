@@ -180,10 +180,32 @@ function refreshMaintenancePersonRows() {
     );
 
     selects.forEach(select => {
-        Array.from(select.options).forEach(option => {
-            if (!option.value) return;
-            option.disabled = option.value !== select.value &&
-                selectedValues.has(option.value);
+        const currentValue = select.value;
+        const placeholderText = maintenancePersonnel.length
+            ? "Select project personnel"
+            : "No connected project personnel";
+
+        select.innerHTML = "";
+
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = placeholderText;
+        select.appendChild(placeholder);
+
+        maintenancePersonnel.forEach(member => {
+            const userId = String(member.user_id);
+
+            // Keep this row's current person, but completely hide people
+            // already selected in the other responsible-person rows.
+            if (userId !== currentValue && selectedValues.has(userId)) {
+                return;
+            }
+
+            const option = document.createElement("option");
+            option.value = userId;
+            option.textContent = member.full_name;
+            option.selected = userId === currentValue;
+            select.appendChild(option);
         });
     });
 
