@@ -924,6 +924,191 @@
 </div>
 
     <!-- =====================================================
+         MAINTENANCE FORM MODAL
+         ===================================================== -->
+
+    <div class="modal" id="maintenanceModal">
+        <div class="modal-content maintenance-modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2>Maintenance Record</h2>
+                    <p id="maintenanceProjectName">Project</p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeMaintenanceModal"
+                    aria-label="Close"
+                >&times;</button>
+            </div>
+
+            <form id="maintenanceForm" enctype="multipart/form-data">
+                <div class="maintenance-form-grid">
+                    <div class="form-group">
+                        <label for="maintenanceDate">Date</label>
+                        <input type="date" id="maintenanceDate" name="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maintenanceStatus">Status</label>
+                        <select id="maintenanceStatus" name="status" required>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group maintenance-full-width">
+                        <label for="maintenanceIssue">Issue</label>
+                        <textarea id="maintenanceIssue" name="issue" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group maintenance-full-width">
+                        <label for="maintenanceActionTaken">Action Taken</label>
+                        <textarea id="maintenanceActionTaken" name="action_taken" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maintenanceDownTime">Down Time</label>
+                        <input
+                            type="text"
+                            id="maintenanceDownTime"
+                            name="down_time"
+                            placeholder="Example: 2 hours"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maintenancePersonResponsible">Person Responsible</label>
+                        <select
+                            id="maintenancePersonResponsible"
+                            name="person_responsible_user_id"
+                            required
+                        >
+                            <option value="">Select IMS personnel</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group maintenance-full-width">
+                        <label for="maintenanceObservation">Observation / Monitoring Result</label>
+                        <textarea
+                            id="maintenanceObservation"
+                            name="observation_monitoring_result"
+                            rows="3"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group maintenance-full-width">
+                        <label for="maintenanceActionNeeded">Action Needed</label>
+                        <textarea
+                            id="maintenanceActionNeeded"
+                            name="action_needed"
+                            rows="3"
+                        ></textarea>
+                    </div>
+
+                    <fieldset class="maintenance-checklist maintenance-full-width">
+                        <legend>Maintenance Checklist</legend>
+
+                        <label><input type="checkbox" name="activities_reviewed"> Maintenance activities have been reviewed</label>
+                        <label><input type="checkbox" name="testing_completed"> Required testing / verification was completed, where applicable</label>
+                        <label><input type="checkbox" name="backups_completed"> Required backups were completed, where applicable</label>
+                        <label><input type="checkbox" name="owner_informed"> System owner / end-user was informed, where applicable</label>
+                        <label><input type="checkbox" name="documentation_updated"> Related documentation was updated, where applicable</label>
+                    </fieldset>
+
+                    <div class="form-group maintenance-full-width">
+                        <label for="maintenanceFile">Upload File</label>
+                        <input type="file" id="maintenanceFile" name="file">
+                        <small>Upload a supporting document, screenshot, report, or maintenance record.</small>
+                    </div>
+                </div>
+
+                <div class="maintenance-form-error" id="maintenanceFormError" hidden></div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelMaintenanceBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveMaintenanceBtn">Save Maintenance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .maintenance-modal-content {
+            width: min(820px, calc(100vw - 32px));
+            max-width: 820px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .maintenance-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            padding: 22px 24px;
+        }
+
+        .maintenance-full-width {
+            grid-column: 1 / -1;
+        }
+
+        .maintenance-form-grid input,
+        .maintenance-form-grid select,
+        .maintenance-form-grid textarea {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .maintenance-checklist {
+            margin: 0;
+            padding: 16px;
+            border: 1px solid #d8e4d4;
+            border-radius: 12px;
+            background: #f7faf5;
+        }
+
+        .maintenance-checklist legend {
+            padding: 0 8px;
+            color: #235e26;
+            font-weight: 800;
+        }
+
+        .maintenance-checklist label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 10px 0;
+            color: #33452f;
+            line-height: 1.45;
+        }
+
+        .maintenance-checklist input {
+            width: auto;
+            margin-top: 3px;
+            accent-color: #2f7d32;
+        }
+
+        .maintenance-form-error {
+            margin: 0 24px 16px;
+            padding: 12px 14px;
+            border-radius: 9px;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 680px) {
+            .maintenance-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .maintenance-full-width {
+                grid-column: auto;
+            }
+        }
+    </style>
+
+    <!-- =====================================================
          JAVASCRIPT
          ===================================================== -->
 

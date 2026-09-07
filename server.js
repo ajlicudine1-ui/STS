@@ -1159,6 +1159,35 @@ app.get("/api/development-team", async (req, res) => {
     }
 });
 
+
+// Read-only personnel list used by the deployed-project Maintenance form.
+// Both administrators and assigned development-team users may read it.
+app.get("/api/ims-personnel", async (req, res) => {
+    try {
+        const db = getDatabaseClient();
+        const { data, error } = await db
+            .from("profiles")
+            .select("user_id, full_name, email, role, is_active")
+            .in("role", ["admin", "development_team"])
+            .eq("is_active", true)
+            .order("full_name", { ascending: true });
+
+        if (error) throw error;
+
+        res.json({
+            success: true,
+            members: data || []
+        });
+    } catch (error) {
+        console.error("GET IMS PERSONNEL ERROR:", error);
+        res.status(500).json({
+            success: false,
+            error: "Unable to load IMS personnel.",
+            details: error.message
+        });
+    }
+});
+
 app.post("/api/development-team", async (req, res) => {
     if (req.profile.role !== "admin") {
         return res.status(403).json({ success: false, error: "Administrator access required." });
@@ -3963,6 +3992,345 @@ app.post(
                     "Could not deploy the project.",
                 details:
                     error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// PROJECT MAINTENANCE
+// Available only after the project has been deployed.
+// ============================================================
+
+app.post(
+    "/api/projects/:projectId/maintenance",
+    async (req, res) => {
+        try {
+            const { projectId } = req.params;
+            const db = getDatabaseClient();
+
+            const maintenanceDate =
+                String(req.body.date || "").trim();
+            const issue =
+                String(req.body.issue || "").trim();
+            const actionTaken =
+                String(req.body.action_taken || "").trim();
+            const downTime =
+                String(req.body.down_time || "").trim();
+            const personResponsibleUserId =
+                String(req.body.person_responsible_user_id || "").trim();
+            const status =
+                String(req.body.status || "").trim();
+            const observationMonitoringResult =
+                String(req.body.observation_monitoring_result || "").trim();
+            const actionNeeded =
+                String(req.body.action_needed || "").trim();
+            const checklist =
+                req.body.checklist && typeof req.body.checklist === "object"
+                    ? req.body.checklist
+                    : {};
+
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(maintenanceDate)) {
+                return res.status(400).json({
+                    success: false,
+                    error: "A valid maintenance date is required."
+                });
+            }
+
+            if (!issue) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Issue is required."
+                });
+            }
+
+            if (!actionTaken) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Action Taken is required."
+                });
+            }
+
+            if (!personResponsibleUserId) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Person Responsible is required."
+                });
+            }
+
+            if (!["Active", "Inactive"].includes(status)) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Status must be Active or Inactive."
+                });
+            }
+
+            const {
+                data: project,
+                error: projectError
+            } = await db
+                .from("projects")
+                .select("project_id, project_name, project_status")
+                .eq("project_id", projectId)
+                .maybeSingle();
+
+            if (projectError) throw projectError;
+
+            if (!project) {
+                return res.status(404).json({
+                    success: false,
+                    error: "Project not found."
+                });
+            }
+
+            if (project.project_status !== "Deployed") {
+                return res.status(400).json({
+                    success: false,
+                    error: "Maintenance can only be added to a deployed project."
+                });
+            }
+
+            const {
+                data: responsiblePerson,
+                error: personError
+            } = await db
+                .from("profiles")
+                .select("user_id, full_name, email, role, is_active")
+                .eq("user_id", personResponsibleUserId)
+                .in("role", ["admin", "development_team"])
+                .eq("is_active", true)
+                .maybeSingle();
+
+            if (personError) throw personError;
+
+            if (!responsiblePerson) {
+                return res.status(400).json({
+                    success: false,
+                    error: "The selected Person Responsible is not an active IMS personnel account."
+                });
+            }
+
+            const now = new Date().toISOString();
+
+            const {
+                data: maintenance,
+                error: insertError
+            } = await db
+                .from("maintenance_logs")
+                .insert([{
+                    project_id: projectId,
+                    maintenance_date: maintenanceDate,
+                    issue,
+                    action_taken: actionTaken,
+                    down_time: downTime || null,
+                    person_responsible_user_id: personResponsibleUserId,
+                    person_responsible_name:
+                        responsiblePerson.full_name ||
+                        responsiblePerson.email ||
+                        "IMS Personnel",
+                    status,
+                    observation_monitoring_result:
+                        observationMonitoringResult || null,
+                    action_needed:
+                        actionNeeded || null,
+                    activities_reviewed:
+                        checklist.activities_reviewed === true,
+                    testing_completed:
+                        checklist.testing_completed === true,
+                    backups_completed:
+                        checklist.backups_completed === true,
+                    owner_informed:
+                        checklist.owner_informed === true,
+                    documentation_updated:
+                        checklist.documentation_updated === true,
+                    created_by: req.profile.user_id,
+                    created_at: now,
+                    updated_at: now
+                }])
+                .select()
+                .single();
+
+            if (insertError) throw insertError;
+
+            return res.status(201).json({
+                success: true,
+                message: "Maintenance record saved successfully.",
+                maintenance
+            });
+        } catch (error) {
+            console.error("CREATE MAINTENANCE ERROR:", error);
+            return res.status(500).json({
+                success: false,
+                error: "Could not save the maintenance record.",
+                details: error.message
+            });
+        }
+    }
+);
+
+
+app.post(
+    "/api/projects/:projectId/maintenance/:maintenanceId/upload",
+    express.raw({
+        type: "application/octet-stream",
+        limit: "25mb"
+    }),
+    async (req, res) => {
+        try {
+            const { projectId, maintenanceId } = req.params;
+
+            const fileName = path.basename(
+                decodeURIComponent(
+                    req.get("X-File-Name") || ""
+                ).trim()
+            );
+
+            const mimeType = decodeURIComponent(
+                req.get("X-File-Mime-Type") ||
+                "application/octet-stream"
+            ).trim();
+
+            if (!fileName) {
+                return res.status(400).json({
+                    success: false,
+                    error: "File name is required."
+                });
+            }
+
+            if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Uploaded file is empty."
+                });
+            }
+
+            const db = getDatabaseClient();
+
+            const {
+                data: project,
+                error: projectError
+            } = await db
+                .from("projects")
+                .select("project_id, project_name, project_status, drive_folder_id")
+                .eq("project_id", projectId)
+                .maybeSingle();
+
+            if (projectError) throw projectError;
+
+            if (!project) {
+                return res.status(404).json({
+                    success: false,
+                    error: "Project not found."
+                });
+            }
+
+            if (project.project_status !== "Deployed") {
+                return res.status(400).json({
+                    success: false,
+                    error: "Maintenance files can only be uploaded for deployed projects."
+                });
+            }
+
+            if (!project.drive_folder_id) {
+                return res.status(400).json({
+                    success: false,
+                    error: "The project Google Drive folder is missing."
+                });
+            }
+
+            const {
+                data: maintenance,
+                error: maintenanceError
+            } = await db
+                .from("maintenance_logs")
+                .select("maintenance_id, project_id, maintenance_date, drive_file_id")
+                .eq("maintenance_id", maintenanceId)
+                .eq("project_id", projectId)
+                .maybeSingle();
+
+            if (maintenanceError) throw maintenanceError;
+
+            if (!maintenance) {
+                return res.status(404).json({
+                    success: false,
+                    error: "Maintenance record not found."
+                });
+            }
+
+            const maintenanceFolderId =
+                await ensureDriveFolderPath(
+                    project.drive_folder_id,
+                    `Maintenance/${maintenance.maintenance_date} - ${maintenance.maintenance_id}`
+                );
+
+            const uploaded = await uploadBufferToDrive({
+                fileName,
+                mimeType,
+                buffer: req.body,
+                parentFolderId: maintenanceFolderId
+            });
+
+            if (!uploaded?.id) {
+                throw new Error(
+                    "Google Drive did not return an uploaded file ID."
+                );
+            }
+
+            const fileUrl =
+                uploaded.webViewLink ||
+                `https://drive.google.com/file/d/${uploaded.id}/view`;
+
+            const {
+                data: updatedMaintenance,
+                error: updateError
+            } = await db
+                .from("maintenance_logs")
+                .update({
+                    drive_file_id: uploaded.id,
+                    drive_file_name: uploaded.name || fileName,
+                    drive_file_url: fileUrl,
+                    drive_file_mime_type:
+                        uploaded.mimeType || mimeType,
+                    updated_at: new Date().toISOString()
+                })
+                .eq("maintenance_id", maintenanceId)
+                .eq("project_id", projectId)
+                .select()
+                .single();
+
+            if (updateError) {
+                try {
+                    await googleDrive.files.delete({
+                        fileId: uploaded.id
+                    });
+                } catch (_) {}
+
+                throw updateError;
+            }
+
+            if (
+                maintenance.drive_file_id &&
+                maintenance.drive_file_id !== uploaded.id
+            ) {
+                try {
+                    await googleDrive.files.delete({
+                        fileId: maintenance.drive_file_id
+                    });
+                } catch (_) {}
+            }
+
+            return res.status(201).json({
+                success: true,
+                message: "Maintenance file uploaded successfully.",
+                maintenance: updatedMaintenance
+            });
+        } catch (error) {
+            console.error("MAINTENANCE FILE UPLOAD ERROR:", error);
+            return res.status(500).json({
+                success: false,
+                error: "Could not upload the maintenance file.",
+                details: error.message
             });
         }
     }

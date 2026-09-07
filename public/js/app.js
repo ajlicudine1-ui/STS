@@ -8,6 +8,8 @@
 // ============================================================
 
 let editingProjectId = null;
+let currentMaintenanceProject = null;
+let maintenancePersonnelAccounts = [];
 
 
 // ============================================================
@@ -16,6 +18,27 @@ let editingProjectId = null;
 
 const projectModal = document.getElementById("projectModal");
 const newProjectBtn = document.getElementById("newProjectBtn");
+
+const maintenanceModal =
+    document.getElementById("maintenanceModal");
+const maintenanceForm =
+    document.getElementById("maintenanceForm");
+const maintenanceProjectName =
+    document.getElementById("maintenanceProjectName");
+const maintenanceDate =
+    document.getElementById("maintenanceDate");
+const maintenancePersonResponsible =
+    document.getElementById("maintenancePersonResponsible");
+const maintenanceFile =
+    document.getElementById("maintenanceFile");
+const maintenanceFormError =
+    document.getElementById("maintenanceFormError");
+const saveMaintenanceBtn =
+    document.getElementById("saveMaintenanceBtn");
+const closeMaintenanceModalBtn =
+    document.getElementById("closeMaintenanceModal");
+const cancelMaintenanceBtn =
+    document.getElementById("cancelMaintenanceBtn");
 
 // Admin-only control: keep hidden until /api/dashboard confirms the viewer is admin.
 if (newProjectBtn) {
@@ -459,6 +482,304 @@ function refreshTeamAccountSelects() {
                 }
             });
     });
+}
+
+
+// ============================================================
+// MAINTENANCE FORM
+// ============================================================
+
+function populateMaintenancePersonnel() {
+    if (!maintenancePersonResponsible) {
+        return;
+    }
+
+    maintenancePersonResponsible.innerHTML = [
+        '<option value="">Select IMS personnel</option>',
+        ...maintenancePersonnelAccounts.map(member => `
+            <option value="${escapeHtml(member.user_id || "")}">
+                ${escapeHtml(member.full_name || member.email || "Unnamed personnel")}
+            </option>
+        `)
+    ].join("");
+}
+
+
+async function loadMaintenancePersonnelAccounts() {
+    try {
+        const response = await fetch("/api/ims-personnel");
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.error ||
+                "Unable to load IMS personnel."
+            );
+        }
+
+        maintenancePersonnelAccounts =
+            Array.isArray(result.members)
+                ? result.members.filter(
+                    member => member.is_active !== false
+                )
+                : [];
+    } catch (error) {
+        console.error(
+            "LOAD MAINTENANCE PERSONNEL ERROR:",
+            error
+        );
+        maintenancePersonnelAccounts = [];
+    }
+}
+
+
+async function openMaintenanceModal(project) {
+    if (!project || project.project_status !== "Deployed") {
+        alert("Maintenance is available only for deployed projects.");
+        return;
+    }
+
+    currentMaintenanceProject = project;
+
+    if (maintenanceForm) {
+        maintenanceForm.reset();
+    }
+
+    if (maintenanceFormError) {
+        maintenanceFormError.hidden = true;
+        maintenanceFormError.textContent = "";
+    }
+
+    if (maintenanceProjectName) {
+        maintenanceProjectName.textContent =
+            `${project.project_id || "Project"} - ${project.project_name || "Unnamed Project"}`;
+    }
+
+    if (maintenanceDate) {
+        const now = new Date();
+        const localDate = new Date(
+            now.getTime() - now.getTimezoneOffset() * 60000
+        );
+        maintenanceDate.value = localDate.toISOString().slice(0, 10);
+    }
+
+    if (maintenancePersonnelAccounts.length === 0) {
+        await loadMaintenancePersonnelAccounts();
+    }
+
+    populateMaintenancePersonnel();
+
+    if (maintenanceModal) {
+        maintenanceModal.classList.add("show");
+    }
+}
+
+
+function closeMaintenanceModal() {
+    if (maintenanceModal) {
+        maintenanceModal.classList.remove("show");
+    }
+
+    if (maintenanceForm) {
+        maintenanceForm.reset();
+    }
+
+    if (maintenanceFormError) {
+        maintenanceFormError.hidden = true;
+        maintenanceFormError.textContent = "";
+    }
+
+    currentMaintenanceProject = null;
+}
+
+
+if (closeMaintenanceModalBtn) {
+    closeMaintenanceModalBtn.addEventListener(
+        "click",
+        closeMaintenanceModal
+    );
+}
+
+
+if (cancelMaintenanceBtn) {
+    cancelMaintenanceBtn.addEventListener(
+        "click",
+        closeMaintenanceModal
+    );
+}
+
+
+if (maintenanceModal) {
+    maintenanceModal.addEventListener(
+        "click",
+        event => {
+            if (event.target === maintenanceModal) {
+                closeMaintenanceModal();
+            }
+        }
+    );
+}
+
+
+if (maintenanceForm) {
+    maintenanceForm.addEventListener(
+        "submit",
+        async event => {
+            event.preventDefault();
+
+            if (
+                !currentMaintenanceProject ||
+                currentMaintenanceProject.project_status !== "Deployed"
+            ) {
+                return;
+            }
+
+            if (maintenanceFormError) {
+                maintenanceFormError.hidden = true;
+                maintenanceFormError.textContent = "";
+            }
+
+            const selectedFile =
+                maintenanceFile?.files?.[0] || null;
+
+            const payload = {
+                date:
+                    maintenanceForm.elements.date.value,
+                issue:
+                    maintenanceForm.elements.issue.value.trim(),
+                action_taken:
+                    maintenanceForm.elements.action_taken.value.trim(),
+                down_time:
+                    maintenanceForm.elements.down_time.value.trim(),
+                person_responsible_user_id:
+                    maintenanceForm.elements.person_responsible_user_id.value,
+                status:
+                    maintenanceForm.elements.status.value,
+                observation_monitoring_result:
+                    maintenanceForm.elements.observation_monitoring_result.value.trim(),
+                action_needed:
+                    maintenanceForm.elements.action_needed.value.trim(),
+                checklist: {
+                    activities_reviewed:
+                        maintenanceForm.elements.activities_reviewed.checked,
+                    testing_completed:
+                        maintenanceForm.elements.testing_completed.checked,
+                    backups_completed:
+                        maintenanceForm.elements.backups_completed.checked,
+                    owner_informed:
+                        maintenanceForm.elements.owner_informed.checked,
+                    documentation_updated:
+                        maintenanceForm.elements.documentation_updated.checked
+                }
+            };
+
+            if (saveMaintenanceBtn) {
+                saveMaintenanceBtn.disabled = true;
+                saveMaintenanceBtn.textContent =
+                    selectedFile
+                        ? "Uploading..."
+                        : "Saving...";
+            }
+
+            try {
+                const response = await fetch(
+                    `/api/projects/${encodeURIComponent(
+                        currentMaintenanceProject.project_id
+                    )}/maintenance`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    }
+                );
+
+                const responseText = await response.text();
+                let result = {};
+
+                if (responseText) {
+                    try {
+                        result = JSON.parse(responseText);
+                    } catch (_) {
+                        result = { error: responseText };
+                    }
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.error ||
+                        result.details ||
+                        "Unable to save the maintenance record."
+                    );
+                }
+
+                const maintenanceId =
+                    result.maintenance?.maintenance_id;
+
+                if (selectedFile) {
+                    if (!maintenanceId) {
+                        throw new Error(
+                            "Maintenance was saved, but no maintenance ID was returned for the file upload."
+                        );
+                    }
+
+                    const uploadResponse = await fetch(
+                        `/api/projects/${encodeURIComponent(
+                            currentMaintenanceProject.project_id
+                        )}/maintenance/${encodeURIComponent(
+                            maintenanceId
+                        )}/upload`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/octet-stream",
+                                "X-File-Name": encodeURIComponent(selectedFile.name),
+                                "X-File-Mime-Type": encodeURIComponent(
+                                    selectedFile.type || "application/octet-stream"
+                                )
+                            },
+                            body: selectedFile
+                        }
+                    );
+
+                    const uploadText = await uploadResponse.text();
+                    let uploadResult = {};
+
+                    if (uploadText) {
+                        try {
+                            uploadResult = JSON.parse(uploadText);
+                        } catch (_) {
+                            uploadResult = { error: uploadText };
+                        }
+                    }
+
+                    if (!uploadResponse.ok) {
+                        throw new Error(
+                            uploadResult.error ||
+                            uploadResult.details ||
+                            "Maintenance details were saved, but the file could not be uploaded."
+                        );
+                    }
+                }
+
+                closeMaintenanceModal();
+                alert(result.message || "Maintenance record saved successfully.");
+            } catch (error) {
+                console.error("SAVE MAINTENANCE ERROR:", error);
+
+                if (maintenanceFormError) {
+                    maintenanceFormError.textContent = error.message;
+                    maintenanceFormError.hidden = false;
+                }
+            } finally {
+                if (saveMaintenanceBtn) {
+                    saveMaintenanceBtn.disabled = false;
+                    saveMaintenanceBtn.textContent = "Save Maintenance";
+                }
+            }
+        }
+    );
 }
 
 function createTeamMemberRow(member = null) {
@@ -4755,6 +5076,35 @@ function bindProjectActionMenuItems(
 
 
     // ============================================================
+    // MAINTENANCE ACTION
+    // ============================================================
+
+    const maintenanceAction =
+        menu.querySelector(
+            ".maintenance-action"
+        );
+
+    if (maintenanceAction) {
+        maintenanceAction.addEventListener(
+            "click",
+            async event => {
+                event.stopPropagation();
+
+                if (
+                    maintenanceAction.disabled ||
+                    project.project_status !== "Deployed"
+                ) {
+                    return;
+                }
+
+                closeAllProjectActionMenus();
+                await openMaintenanceModal(project);
+            }
+        );
+    }
+
+
+    // ============================================================
     // DEPLOY PROJECT
     // ============================================================
 
@@ -5289,9 +5639,11 @@ function createProjectActionMenu(
 
             <button
                 type="button"
-                class="project-action-section-toggle ${maintenanceEnabled ? "" : "project-action-section-disabled"}"
-                data-action-section="maintenance"
+                class="project-action-section-toggle maintenance-action ${maintenanceEnabled ? "" : "project-action-section-disabled"}"
                 ${maintenanceEnabled ? "" : "disabled"}
+                title="${maintenanceEnabled
+                    ? "Open the maintenance form."
+                    : "Maintenance is available only when the project is Deployed."}"
             >
                 <span class="project-action-section-icon">
                     ⚒
@@ -5305,28 +5657,6 @@ function createProjectActionMenu(
                     ${maintenanceEnabled ? "›" : "🔒"}
                 </span>
             </button>
-
-
-            <div
-                class="project-action-section-content"
-                data-action-section-content="maintenance"
-                hidden
-            >
-
-                <button
-                    type="button"
-                    class="project-action-item maintenance-action"
-                >
-                    <span class="project-action-icon">
-                        ⚒
-                    </span>
-
-                    <span>
-                        Maintenance
-                    </span>
-                </button>
-
-            </div>
 
 
 
