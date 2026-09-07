@@ -4072,15 +4072,37 @@ function getMaintenanceValidationError(payload) {
         return "Action Needed is required.";
     }
 
-    if (!Object.values(payload.checklist).every(Boolean)) {
-        return "All five maintenance checklist items are required.";
+    if (!Object.values(payload.checklist).some(Boolean)) {
+        return "Select at least one Maintenance Checklist item.";
     }
 
     return "";
 }
 
 
-async function getActiveMaintenancePersonnel(db, userIds) {
+async function getActiveMaintenancePersonnel(db, projectId, userIds) {
+    const { data: assignedRows, error: assignedError } = await db
+        .from("project_members")
+        .select("user_id")
+        .eq("project_id", projectId)
+        .in("user_id", userIds);
+
+    if (assignedError) throw assignedError;
+
+    const assignedIds = new Set(
+        (assignedRows || [])
+            .map(row => String(row.user_id || ""))
+            .filter(Boolean)
+    );
+
+    if (assignedIds.size !== userIds.length) {
+        const invalidError = new Error(
+            "One or more selected Persons Responsible are not connected to this project."
+        );
+        invalidError.statusCode = 400;
+        throw invalidError;
+    }
+
     const { data, error } = await db
         .from("profiles")
         .select("user_id, full_name, email, role, is_active")
@@ -4297,6 +4319,7 @@ app.post(
 
             const personnel = await getActiveMaintenancePersonnel(
                 db,
+                projectId,
                 payload.responsibleUserIds
             );
 
@@ -4423,6 +4446,7 @@ app.put(
 
             const personnel = await getActiveMaintenancePersonnel(
                 db,
+                projectId,
                 payload.responsibleUserIds
             );
             const primaryPerson = personnel[0];
