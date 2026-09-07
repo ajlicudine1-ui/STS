@@ -163,9 +163,13 @@
 }
 
 .maintenance-green-trigger:hover:not(:disabled) {
-    color: #145c24 !important;
-    background: #eef7eb !important;
-    border-color: #2d8138 !important;
+    color: #ffffff !important;
+    background: #235e26 !important;
+    border-color: #235e26 !important;
+}
+
+.maintenance-green-trigger:hover:not(:disabled) .maintenance-green-trigger-arrow {
+    color: #ffffff !important;
 }
 
 .maintenance-green-trigger-arrow {
@@ -212,19 +216,19 @@
 
 .maintenance-green-option:hover,
 .maintenance-green-option:focus {
-    color: #145c24 !important;
-    background: #e8f3e6 !important;
+    color: #ffffff !important;
+    background: #235e26 !important;
 }
 
 .maintenance-green-option.is-selected {
     color: #ffffff !important;
-    background: #2d8138 !important;
+    background: #235e26 !important;
 }
 
 .maintenance-green-option.is-selected:hover,
 .maintenance-green-option.is-selected:focus {
     color: #ffffff !important;
-    background: #235e26 !important;
+    background: #19491d !important;
 }
 
 .maintenance-filters input:focus,
@@ -457,9 +461,13 @@
 }
 
 .maintenance-person-trigger:hover:not(:disabled) {
-    color: #145c24 !important;
-    background: #eef7eb !important;
-    border-color: #2d8138 !important;
+    color: #ffffff !important;
+    background: #235e26 !important;
+    border-color: #235e26 !important;
+}
+
+.maintenance-person-trigger:hover:not(:disabled) .maintenance-person-trigger-arrow {
+    color: #ffffff !important;
 }
 
 .maintenance-person-trigger:disabled {
@@ -515,19 +523,19 @@
 
 .maintenance-person-option:hover,
 .maintenance-person-option:focus {
-    color: #145c24 !important;
-    background: #e8f3e6 !important;
+    color: #ffffff !important;
+    background: #235e26 !important;
 }
 
 .maintenance-person-option.is-selected {
     color: #ffffff !important;
-    background: #2d8138 !important;
+    background: #235e26 !important;
 }
 
 .maintenance-person-option.is-selected:hover,
 .maintenance-person-option.is-selected:focus {
     color: #ffffff !important;
-    background: #235e26 !important;
+    background: #19491d !important;
 }
 
 .maintenance-remove-person-btn {
