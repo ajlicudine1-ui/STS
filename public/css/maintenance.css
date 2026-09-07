@@ -1,0 +1,356 @@
+.maintenance-page {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.maintenance-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.maintenance-header h1 {
+    margin: 0;
+    color: #145c24;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.7px;
+}
+
+.maintenance-header p {
+    margin: 6px 0 0;
+    color: #65705f;
+    font-size: 16px;
+}
+
+.maintenance-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.maintenance-stat-card {
+    box-sizing: border-box;
+    min-height: 114px;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    background: #ffffff;
+    border: 1px solid #e1e8dd;
+    border-top: 3px solid #2d8138;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(35, 94, 38, 0.07);
+}
+
+.maintenance-stat-card span {
+    color: #43503f;
+    font-size: 16px;
+}
+
+.maintenance-stat-card strong {
+    color: #17802d;
+    font-size: 30px;
+    line-height: 1;
+}
+
+.maintenance-list-card {
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e4e9e1;
+    border-radius: 15px;
+    box-shadow: 0 9px 24px rgba(35, 94, 38, 0.06);
+}
+
+.maintenance-list-header {
+    min-height: 84px;
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom: 1px solid #e5eae2;
+}
+
+.maintenance-list-header h2 {
+    margin: 0;
+    color: #1e3321;
+    font-size: 24px;
+}
+
+.maintenance-filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.maintenance-filters input,
+.maintenance-filters select {
+    box-sizing: border-box;
+    height: 44px;
+    padding: 0 14px;
+    color: #354331;
+    background: #ffffff;
+    border: 1px solid #cdd8c8;
+    border-radius: 10px;
+    font: inherit;
+    outline: none;
+}
+
+.maintenance-filters input {
+    width: 300px;
+}
+
+.maintenance-filters select {
+    width: 160px;
+}
+
+.maintenance-filters input:focus,
+.maintenance-filters select:focus {
+    border-color: #2d8138;
+    box-shadow: 0 0 0 3px rgba(45, 129, 56, 0.12);
+}
+
+.maintenance-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.maintenance-table {
+    width: 100%;
+    min-width: 1850px;
+    border-collapse: collapse;
+}
+
+.maintenance-table th {
+    padding: 16px;
+    color: #40533c;
+    background: #f6f9f4;
+    border-bottom: 1px solid #dfe7dc;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.35px;
+    white-space: nowrap;
+}
+
+.maintenance-table td {
+    max-width: 230px;
+    padding: 16px;
+    color: #243221;
+    border-bottom: 1px solid #edf1ea;
+    font-size: 13px;
+    line-height: 1.45;
+    vertical-align: top;
+}
+
+.maintenance-table tbody tr:hover {
+    background: #fbfcfa;
+}
+
+.maintenance-empty-state {
+    padding: 55px 20px !important;
+    color: #778272 !important;
+    text-align: center;
+}
+
+.maintenance-status {
+    display: inline-flex;
+    min-width: 82px;
+    min-height: 30px;
+    padding: 5px 12px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.maintenance-status-active {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.maintenance-status-inactive {
+    color: #5c4222;
+    background: #f3ead8;
+}
+
+.maintenance-checklist-result {
+    color: #1d6b2d;
+    font-weight: 700;
+}
+
+.maintenance-row-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.maintenance-edit-btn,
+.maintenance-delete-btn,
+.maintenance-file-btn {
+    min-height: 36px;
+    padding: 0 13px;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.maintenance-edit-btn,
+.maintenance-file-btn {
+    color: #22652c;
+    background: #ffffff;
+    border: 1px solid #8eb38b;
+}
+
+.maintenance-edit-btn:hover,
+.maintenance-file-btn:hover {
+    background: #edf7ec;
+}
+
+.maintenance-delete-btn {
+    color: #991b1b;
+    background: #ffffff;
+    border: 1px solid #efb4b4;
+}
+
+.maintenance-delete-btn:hover {
+    background: #fef2f2;
+}
+
+.maintenance-modal-content {
+    width: min(850px, calc(100vw - 34px));
+    max-width: 850px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.maintenance-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding: 22px 24px;
+}
+
+.maintenance-full-width {
+    grid-column: 1 / -1;
+}
+
+.maintenance-form-grid input,
+.maintenance-form-grid select,
+.maintenance-form-grid textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.maintenance-personnel-fieldset,
+.maintenance-checklist {
+    margin: 0;
+    padding: 14px 16px;
+    border: 1px solid #d5dfd0;
+    border-radius: 11px;
+    background: #f8faf7;
+}
+
+.maintenance-personnel-fieldset legend,
+.maintenance-checklist legend {
+    padding: 0 7px;
+    color: #235e26;
+    font-weight: 800;
+}
+
+.maintenance-personnel-fieldset p {
+    margin: 0 0 10px;
+    color: #6b7666;
+    font-size: 12px;
+}
+
+.maintenance-personnel-list {
+    max-height: 160px;
+    overflow-y: auto;
+    display: grid;
+    gap: 7px;
+}
+
+.maintenance-personnel-option,
+.maintenance-checklist label {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    color: #33452f;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.maintenance-personnel-option input,
+.maintenance-checklist input {
+    width: auto;
+    margin-top: 3px;
+    accent-color: #2d8138;
+}
+
+.maintenance-checklist {
+    display: grid;
+    gap: 10px;
+}
+
+.current-maintenance-file {
+    width: fit-content;
+    margin-top: 8px;
+    color: #22652c;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.maintenance-form-error {
+    margin: 0 24px 16px;
+    padding: 12px 14px;
+    color: #991b1b;
+    background: #fee2e2;
+    border-radius: 9px;
+}
+
+@media (max-width: 1100px) {
+    .maintenance-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .maintenance-list-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 700px) {
+    .maintenance-header,
+    .maintenance-filters {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .maintenance-header .btn,
+    .maintenance-filters input,
+    .maintenance-filters select {
+        width: 100%;
+    }
+
+    .maintenance-stats,
+    .maintenance-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .maintenance-full-width {
+        grid-column: auto;
+    }
+}

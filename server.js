@@ -4003,6 +4003,255 @@ app.post(
 // Available only after the project has been deployed.
 // ============================================================
 
+function readMaintenancePayload(body = {}) {
+    const responsibleUserIds = Array.from(
+        new Set(
+            (
+                Array.isArray(body.responsible_person_user_ids)
+                    ? body.responsible_person_user_ids
+                    : []
+            )
+                .map(value => String(value || "").trim())
+                .filter(Boolean)
+        )
+    );
+
+    const checklist =
+        body.checklist && typeof body.checklist === "object"
+            ? body.checklist
+            : {};
+
+    return {
+        maintenanceDate: String(body.date || "").trim(),
+        issue: String(body.issue || "").trim(),
+        actionTaken: String(body.action_taken || "").trim(),
+        downTime: String(body.down_time || "").trim(),
+        responsibleUserIds,
+        status: String(body.status || "").trim(),
+        observationMonitoringResult:
+            String(body.observation_monitoring_result || "").trim(),
+        actionNeeded: String(body.action_needed || "").trim(),
+        checklist: {
+            activities_reviewed:
+                checklist.activities_reviewed === true,
+            testing_completed:
+                checklist.testing_completed === true,
+            backups_completed:
+                checklist.backups_completed === true,
+            owner_informed:
+                checklist.owner_informed === true,
+            documentation_updated:
+                checklist.documentation_updated === true
+        }
+    };
+}
+
+
+function getMaintenanceValidationError(payload) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.maintenanceDate)) {
+        return "A valid maintenance date is required.";
+    }
+
+    if (!payload.issue) return "Issue is required.";
+    if (!payload.actionTaken) return "Action Taken is required.";
+    if (!payload.downTime) return "Down Time is required.";
+
+    if (payload.responsibleUserIds.length === 0) {
+        return "Select at least one Person Responsible.";
+    }
+
+    if (!["Active", "Inactive"].includes(payload.status)) {
+        return "Status must be Active or Inactive.";
+    }
+
+    if (!payload.observationMonitoringResult) {
+        return "Observation / Monitoring Result is required.";
+    }
+
+    if (!payload.actionNeeded) {
+        return "Action Needed is required.";
+    }
+
+    if (!Object.values(payload.checklist).every(Boolean)) {
+        return "All five maintenance checklist items are required.";
+    }
+
+    return "";
+}
+
+
+async function getActiveMaintenancePersonnel(db, userIds) {
+    const { data, error } = await db
+        .from("profiles")
+        .select("user_id, full_name, email, role, is_active")
+        .in("user_id", userIds)
+        .in("role", ["admin", "development_team"])
+        .eq("is_active", true);
+
+    if (error) throw error;
+
+    const personnel = data || [];
+
+    if (personnel.length !== userIds.length) {
+        const invalidError = new Error(
+            "One or more selected Persons Responsible are not active IMS personnel accounts."
+        );
+        invalidError.statusCode = 400;
+        throw invalidError;
+    }
+
+    const personnelById = new Map(
+        personnel.map(person => [String(person.user_id), person])
+    );
+
+    return userIds.map(userId => personnelById.get(userId));
+}
+
+
+async function attachMaintenanceResponsiblePersons(db, records) {
+    const maintenanceIds = (records || [])
+        .map(record => record.maintenance_id)
+        .filter(value => value !== null && value !== undefined);
+
+    if (maintenanceIds.length === 0) {
+        return records || [];
+    }
+
+    const { data, error } = await db
+        .from("maintenance_responsible_persons")
+        .select("maintenance_id, user_id, person_name")
+        .in("maintenance_id", maintenanceIds)
+        .order("maintenance_responsible_person_id", { ascending: true });
+
+    if (error) throw error;
+
+    const peopleByMaintenanceId = new Map();
+
+    for (const person of data || []) {
+        const key = String(person.maintenance_id);
+
+        if (!peopleByMaintenanceId.has(key)) {
+            peopleByMaintenanceId.set(key, []);
+        }
+
+        peopleByMaintenanceId.get(key).push({
+            user_id: person.user_id,
+            person_name: person.person_name
+        });
+    }
+
+    return (records || []).map(record => {
+        let responsiblePersons =
+            peopleByMaintenanceId.get(String(record.maintenance_id)) || [];
+
+        if (
+            responsiblePersons.length === 0 &&
+            record.person_responsible_user_id
+        ) {
+            responsiblePersons = [{
+                user_id: record.person_responsible_user_id,
+                person_name: record.person_responsible_name
+            }];
+        }
+
+        return {
+            ...record,
+            responsible_persons: responsiblePersons
+        };
+    });
+}
+
+
+async function replaceMaintenanceResponsiblePersons(
+    db,
+    maintenanceId,
+    personnel
+) {
+    const { error: deleteError } = await db
+        .from("maintenance_responsible_persons")
+        .delete()
+        .eq("maintenance_id", maintenanceId);
+
+    if (deleteError) throw deleteError;
+
+    const rows = personnel.map(person => ({
+        maintenance_id: maintenanceId,
+        user_id: person.user_id,
+        person_name:
+            person.full_name ||
+            person.email ||
+            "IMS Personnel"
+    }));
+
+    const { error: insertError } = await db
+        .from("maintenance_responsible_persons")
+        .insert(rows);
+
+    if (insertError) throw insertError;
+}
+
+
+app.get(
+    "/api/projects/:projectId/maintenance",
+    async (req, res) => {
+        try {
+            const { projectId } = req.params;
+            const db = getDatabaseClient();
+
+            const { data: project, error: projectError } = await db
+                .from("projects")
+                .select("project_id, project_name, project_status")
+                .eq("project_id", projectId)
+                .maybeSingle();
+
+            if (projectError) throw projectError;
+
+            if (!project) {
+                return res.status(404).json({
+                    success: false,
+                    error: "Project not found."
+                });
+            }
+
+            if (project.project_status !== "Deployed") {
+                return res.status(400).json({
+                    success: false,
+                    error: "Maintenance is available only for deployed projects."
+                });
+            }
+
+            const { data, error } = await db
+                .from("maintenance_logs")
+                .select("*")
+                .eq("project_id", projectId)
+                .order("maintenance_date", { ascending: false })
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+
+            const maintenance =
+                await attachMaintenanceResponsiblePersons(
+                    db,
+                    data || []
+                );
+
+            return res.json({
+                success: true,
+                project,
+                maintenance
+            });
+        } catch (error) {
+            console.error("GET MAINTENANCE ERROR:", error);
+            return res.status(500).json({
+                success: false,
+                error: "Could not load maintenance records.",
+                details: error.message
+            });
+        }
+    }
+);
+
+
 app.post(
     "/api/projects/:projectId/maintenance",
     async (req, res) => {
@@ -4010,59 +4259,14 @@ app.post(
             const { projectId } = req.params;
             const db = getDatabaseClient();
 
-            const maintenanceDate =
-                String(req.body.date || "").trim();
-            const issue =
-                String(req.body.issue || "").trim();
-            const actionTaken =
-                String(req.body.action_taken || "").trim();
-            const downTime =
-                String(req.body.down_time || "").trim();
-            const personResponsibleUserId =
-                String(req.body.person_responsible_user_id || "").trim();
-            const status =
-                String(req.body.status || "").trim();
-            const observationMonitoringResult =
-                String(req.body.observation_monitoring_result || "").trim();
-            const actionNeeded =
-                String(req.body.action_needed || "").trim();
-            const checklist =
-                req.body.checklist && typeof req.body.checklist === "object"
-                    ? req.body.checklist
-                    : {};
+            const payload = readMaintenancePayload(req.body);
+            const validationError =
+                getMaintenanceValidationError(payload);
 
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(maintenanceDate)) {
+            if (validationError) {
                 return res.status(400).json({
                     success: false,
-                    error: "A valid maintenance date is required."
-                });
-            }
-
-            if (!issue) {
-                return res.status(400).json({
-                    success: false,
-                    error: "Issue is required."
-                });
-            }
-
-            if (!actionTaken) {
-                return res.status(400).json({
-                    success: false,
-                    error: "Action Taken is required."
-                });
-            }
-
-            if (!personResponsibleUserId) {
-                return res.status(400).json({
-                    success: false,
-                    error: "Person Responsible is required."
-                });
-            }
-
-            if (!["Active", "Inactive"].includes(status)) {
-                return res.status(400).json({
-                    success: false,
-                    error: "Status must be Active or Inactive."
+                    error: validationError
                 });
             }
 
@@ -4091,25 +4295,12 @@ app.post(
                 });
             }
 
-            const {
-                data: responsiblePerson,
-                error: personError
-            } = await db
-                .from("profiles")
-                .select("user_id, full_name, email, role, is_active")
-                .eq("user_id", personResponsibleUserId)
-                .in("role", ["admin", "development_team"])
-                .eq("is_active", true)
-                .maybeSingle();
+            const personnel = await getActiveMaintenancePersonnel(
+                db,
+                payload.responsibleUserIds
+            );
 
-            if (personError) throw personError;
-
-            if (!responsiblePerson) {
-                return res.status(400).json({
-                    success: false,
-                    error: "The selected Person Responsible is not an active IMS personnel account."
-                });
-            }
+            const primaryPerson = personnel[0];
 
             const now = new Date().toISOString();
 
@@ -4120,30 +4311,30 @@ app.post(
                 .from("maintenance_logs")
                 .insert([{
                     project_id: projectId,
-                    maintenance_date: maintenanceDate,
-                    issue,
-                    action_taken: actionTaken,
-                    down_time: downTime || null,
-                    person_responsible_user_id: personResponsibleUserId,
+                    maintenance_date: payload.maintenanceDate,
+                    issue: payload.issue,
+                    action_taken: payload.actionTaken,
+                    down_time: payload.downTime,
+                    person_responsible_user_id: primaryPerson.user_id,
                     person_responsible_name:
-                        responsiblePerson.full_name ||
-                        responsiblePerson.email ||
+                        primaryPerson.full_name ||
+                        primaryPerson.email ||
                         "IMS Personnel",
-                    status,
+                    status: payload.status,
                     observation_monitoring_result:
-                        observationMonitoringResult || null,
+                        payload.observationMonitoringResult,
                     action_needed:
-                        actionNeeded || null,
+                        payload.actionNeeded,
                     activities_reviewed:
-                        checklist.activities_reviewed === true,
+                        payload.checklist.activities_reviewed,
                     testing_completed:
-                        checklist.testing_completed === true,
+                        payload.checklist.testing_completed,
                     backups_completed:
-                        checklist.backups_completed === true,
+                        payload.checklist.backups_completed,
                     owner_informed:
-                        checklist.owner_informed === true,
+                        payload.checklist.owner_informed,
                     documentation_updated:
-                        checklist.documentation_updated === true,
+                        payload.checklist.documentation_updated,
                     created_by: req.profile.user_id,
                     created_at: now,
                     updated_at: now
@@ -4153,16 +4344,213 @@ app.post(
 
             if (insertError) throw insertError;
 
+            try {
+                await replaceMaintenanceResponsiblePersons(
+                    db,
+                    maintenance.maintenance_id,
+                    personnel
+                );
+            } catch (personSaveError) {
+                await db
+                    .from("maintenance_logs")
+                    .delete()
+                    .eq("maintenance_id", maintenance.maintenance_id);
+
+                throw personSaveError;
+            }
+
+            const [maintenanceWithPersons] =
+                await attachMaintenanceResponsiblePersons(
+                    db,
+                    [maintenance]
+                );
+
             return res.status(201).json({
                 success: true,
                 message: "Maintenance record saved successfully.",
-                maintenance
+                maintenance: maintenanceWithPersons
             });
         } catch (error) {
             console.error("CREATE MAINTENANCE ERROR:", error);
-            return res.status(500).json({
+            return res.status(error.statusCode || 500).json({
                 success: false,
                 error: "Could not save the maintenance record.",
+                details: error.message
+            });
+        }
+    }
+);
+
+
+app.put(
+    "/api/projects/:projectId/maintenance/:maintenanceId",
+    async (req, res) => {
+        try {
+            const { projectId, maintenanceId } = req.params;
+            const db = getDatabaseClient();
+            const payload = readMaintenancePayload(req.body);
+            const validationError =
+                getMaintenanceValidationError(payload);
+
+            if (validationError) {
+                return res.status(400).json({
+                    success: false,
+                    error: validationError
+                });
+            }
+
+            const { data: project, error: projectError } = await db
+                .from("projects")
+                .select("project_id, project_status")
+                .eq("project_id", projectId)
+                .maybeSingle();
+
+            if (projectError) throw projectError;
+
+            if (!project) {
+                return res.status(404).json({
+                    success: false,
+                    error: "Project not found."
+                });
+            }
+
+            if (project.project_status !== "Deployed") {
+                return res.status(400).json({
+                    success: false,
+                    error: "Maintenance can only be edited for a deployed project."
+                });
+            }
+
+            const personnel = await getActiveMaintenancePersonnel(
+                db,
+                payload.responsibleUserIds
+            );
+            const primaryPerson = personnel[0];
+
+            const { data: maintenance, error: updateError } = await db
+                .from("maintenance_logs")
+                .update({
+                    maintenance_date: payload.maintenanceDate,
+                    issue: payload.issue,
+                    action_taken: payload.actionTaken,
+                    down_time: payload.downTime,
+                    person_responsible_user_id: primaryPerson.user_id,
+                    person_responsible_name:
+                        primaryPerson.full_name ||
+                        primaryPerson.email ||
+                        "IMS Personnel",
+                    status: payload.status,
+                    observation_monitoring_result:
+                        payload.observationMonitoringResult,
+                    action_needed: payload.actionNeeded,
+                    activities_reviewed:
+                        payload.checklist.activities_reviewed,
+                    testing_completed:
+                        payload.checklist.testing_completed,
+                    backups_completed:
+                        payload.checklist.backups_completed,
+                    owner_informed:
+                        payload.checklist.owner_informed,
+                    documentation_updated:
+                        payload.checklist.documentation_updated,
+                    updated_at: new Date().toISOString()
+                })
+                .eq("maintenance_id", maintenanceId)
+                .eq("project_id", projectId)
+                .select()
+                .maybeSingle();
+
+            if (updateError) throw updateError;
+
+            if (!maintenance) {
+                return res.status(404).json({
+                    success: false,
+                    error: "Maintenance record not found."
+                });
+            }
+
+            await replaceMaintenanceResponsiblePersons(
+                db,
+                maintenanceId,
+                personnel
+            );
+
+            const [maintenanceWithPersons] =
+                await attachMaintenanceResponsiblePersons(
+                    db,
+                    [maintenance]
+                );
+
+            return res.json({
+                success: true,
+                message: "Maintenance record updated successfully.",
+                maintenance: maintenanceWithPersons
+            });
+        } catch (error) {
+            console.error("UPDATE MAINTENANCE ERROR:", error);
+            return res.status(error.statusCode || 500).json({
+                success: false,
+                error: "Could not update the maintenance record.",
+                details: error.message
+            });
+        }
+    }
+);
+
+
+app.delete(
+    "/api/projects/:projectId/maintenance/:maintenanceId",
+    async (req, res) => {
+        try {
+            const { projectId, maintenanceId } = req.params;
+            const db = getDatabaseClient();
+
+            const { data: maintenance, error: lookupError } = await db
+                .from("maintenance_logs")
+                .select("maintenance_id, drive_file_id")
+                .eq("maintenance_id", maintenanceId)
+                .eq("project_id", projectId)
+                .maybeSingle();
+
+            if (lookupError) throw lookupError;
+
+            if (!maintenance) {
+                return res.status(404).json({
+                    success: false,
+                    error: "Maintenance record not found."
+                });
+            }
+
+            const { error: deleteError } = await db
+                .from("maintenance_logs")
+                .delete()
+                .eq("maintenance_id", maintenanceId)
+                .eq("project_id", projectId);
+
+            if (deleteError) throw deleteError;
+
+            if (maintenance.drive_file_id) {
+                try {
+                    await googleDrive.files.delete({
+                        fileId: maintenance.drive_file_id
+                    });
+                } catch (driveError) {
+                    console.error(
+                        "DELETE MAINTENANCE DRIVE FILE ERROR:",
+                        driveError.message
+                    );
+                }
+            }
+
+            return res.json({
+                success: true,
+                message: "Maintenance record deleted successfully."
+            });
+        } catch (error) {
+            console.error("DELETE MAINTENANCE ERROR:", error);
+            return res.status(500).json({
+                success: false,
+                error: "Could not delete the maintenance record.",
                 details: error.message
             });
         }
