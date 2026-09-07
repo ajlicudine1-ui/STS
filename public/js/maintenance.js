@@ -9,6 +9,7 @@ let maintenanceRecords = [];
 let maintenancePersonnel = [];
 let currentMaintenanceProject = null;
 let editingMaintenanceId = null;
+const maintenanceGreenSelects = new Map();
 
 const maintenancePageSubtitle = document.getElementById("maintenancePageSubtitle");
 const addMaintenanceBtn = document.getElementById("addMaintenanceBtn");
@@ -115,6 +116,113 @@ function clearMaintenanceError() {
 
     maintenanceFormError.textContent = "";
     maintenanceFormError.hidden = true;
+}
+
+
+function closeAllMaintenanceGreenSelects(except = null) {
+    maintenanceGreenSelects.forEach(control => {
+        if (control.wrapper === except) return;
+
+        control.wrapper.classList.remove("is-open");
+        control.menu.hidden = true;
+        control.trigger.setAttribute("aria-expanded", "false");
+    });
+}
+
+
+function syncMaintenanceGreenSelect(select) {
+    const control = maintenanceGreenSelects.get(select);
+    if (!control) return;
+
+    const selectedOption = select.options[select.selectedIndex];
+    control.label.textContent = selectedOption?.textContent || "Select option";
+    control.trigger.classList.toggle("has-value", Boolean(select.value));
+    control.trigger.disabled = select.disabled;
+
+    control.menu.querySelectorAll(".maintenance-green-option").forEach(option => {
+        const isSelected = option.dataset.value === select.value;
+        option.classList.toggle("is-selected", isSelected);
+        option.setAttribute("aria-selected", String(isSelected));
+    });
+}
+
+
+function upgradeMaintenanceGreenSelect(select) {
+    if (!select || maintenanceGreenSelects.has(select)) return;
+
+    select.classList.add("maintenance-native-select-hidden");
+    select.tabIndex = -1;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "maintenance-green-select";
+
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "maintenance-green-trigger";
+    trigger.setAttribute("aria-haspopup", "listbox");
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.setAttribute(
+        "aria-label",
+        select.id === "maintenanceStatusFilter"
+            ? "Filter maintenance status"
+            : "Maintenance status"
+    );
+
+    const label = document.createElement("span");
+    label.className = "maintenance-green-trigger-label";
+
+    const arrow = document.createElement("span");
+    arrow.className = "maintenance-green-trigger-arrow";
+    arrow.textContent = "⌄";
+    arrow.setAttribute("aria-hidden", "true");
+    trigger.append(label, arrow);
+
+    const menu = document.createElement("div");
+    menu.className = "maintenance-green-menu";
+    menu.setAttribute("role", "listbox");
+    menu.hidden = true;
+
+    Array.from(select.options).forEach(nativeOption => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "maintenance-green-option";
+        option.dataset.value = nativeOption.value;
+        option.textContent = nativeOption.textContent;
+        option.disabled = nativeOption.disabled;
+        option.setAttribute("role", "option");
+        option.addEventListener("click", event => {
+            event.stopPropagation();
+            select.value = option.dataset.value;
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+            wrapper.classList.remove("is-open");
+            menu.hidden = true;
+            trigger.setAttribute("aria-expanded", "false");
+            syncMaintenanceGreenSelect(select);
+        });
+        menu.appendChild(option);
+    });
+
+    trigger.addEventListener("click", event => {
+        event.stopPropagation();
+        const shouldOpen = menu.hidden;
+        closeAllMaintenanceGreenSelects(wrapper);
+        closeAllMaintenancePersonDropdowns();
+        wrapper.classList.toggle("is-open", shouldOpen);
+        menu.hidden = !shouldOpen;
+        trigger.setAttribute("aria-expanded", String(shouldOpen));
+    });
+
+    select.addEventListener("change", () => syncMaintenanceGreenSelect(select));
+    wrapper.append(trigger, menu);
+    select.insertAdjacentElement("afterend", wrapper);
+
+    maintenanceGreenSelects.set(select, {
+        wrapper,
+        trigger,
+        label,
+        menu
+    });
+    syncMaintenanceGreenSelect(select);
 }
 
 
@@ -530,6 +638,7 @@ function openMaintenanceModal(record = null) {
         record?.maintenance_date || getLocalDateValue();
     maintenanceForm.elements.status.value =
         record?.status || "Active";
+    syncMaintenanceGreenSelect(maintenanceForm.elements.status);
     maintenanceForm.elements.issue.value =
         record?.issue || "";
     maintenanceForm.elements.action_taken.value =
@@ -905,16 +1014,23 @@ async function initializeMaintenancePage() {
 }
 
 
+upgradeMaintenanceGreenSelect(maintenanceStatusFilter);
+upgradeMaintenanceGreenSelect(document.getElementById("maintenanceStatus"));
 initializeMaintenancePage();
 
 document.addEventListener("click", event => {
     if (!event.target.closest(".maintenance-person-dropdown")) {
         closeAllMaintenancePersonDropdowns();
     }
+
+    if (!event.target.closest(".maintenance-green-select")) {
+        closeAllMaintenanceGreenSelects();
+    }
 });
 
 document.addEventListener("keydown", event => {
     if (event.key === "Escape") {
         closeAllMaintenancePersonDropdowns();
+        closeAllMaintenanceGreenSelects();
     }
 });

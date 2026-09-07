@@ -108,6 +108,113 @@
     width: 160px;
 }
 
+.maintenance-native-select-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.maintenance-green-select {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    font-family: inherit;
+}
+
+.maintenance-filters .maintenance-green-select {
+    width: 160px;
+    flex: 0 0 160px;
+}
+
+.maintenance-green-trigger {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #354331;
+    background: #ffffff;
+    border: 1px solid #b9ccb4;
+    border-radius: 10px;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.maintenance-form-grid .maintenance-green-trigger {
+    height: 48px;
+}
+
+.maintenance-green-trigger:focus,
+.maintenance-green-select.is-open .maintenance-green-trigger {
+    border-color: #2d8138;
+    box-shadow: 0 0 0 3px rgba(45, 129, 56, 0.16);
+}
+
+.maintenance-green-trigger-arrow {
+    color: #2d8138;
+    font-size: 19px;
+    line-height: 1;
+    transition: transform 0.18s ease;
+}
+
+.maintenance-green-select.is-open .maintenance-green-trigger-arrow {
+    transform: rotate(180deg);
+}
+
+.maintenance-green-menu {
+    position: absolute;
+    z-index: 1300;
+    top: calc(100% + 6px);
+    right: 0;
+    left: 0;
+    padding: 6px;
+    background: #ffffff;
+    border: 1px solid #b9ccb4;
+    border-radius: 10px;
+    box-shadow: 0 14px 30px rgba(35, 94, 38, 0.18);
+}
+
+.maintenance-green-menu[hidden] {
+    display: none;
+}
+
+.maintenance-green-option {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 40px;
+    padding: 9px 12px;
+    display: block;
+    color: #243221;
+    background: #ffffff;
+    border-radius: 7px;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.maintenance-green-option:hover,
+.maintenance-green-option:focus {
+    color: #145c24;
+    background: #e8f3e6;
+}
+
+.maintenance-green-option.is-selected {
+    color: #ffffff;
+    background: #2d8138;
+}
+
 .maintenance-filters input:focus,
 .maintenance-filters select:focus {
     border-color: #2d8138;
@@ -571,8 +678,10 @@
 
     .maintenance-header .btn,
     .maintenance-filters input,
-    .maintenance-filters select {
+    .maintenance-filters select,
+    .maintenance-filters .maintenance-green-select {
         width: 100%;
+        flex-basis: auto;
     }
 
     .maintenance-stats,
