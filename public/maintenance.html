@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DevTrack - Maintenance</title>
+    <link rel="icon" type="image/png" href="/images/DT%20LOGO.png">
+
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/sidebar-account.css">
+    <link rel="stylesheet" href="/css/maintenance.css">
+</head>
+
+<body>
+    <div id="sidebar-container"></div>
+
+    <main class="main">
+        <div class="maintenance-page">
+            <header class="maintenance-header">
+                <div>
+                    <h1>Maintenance</h1>
+                    <p id="maintenancePageSubtitle">View and manage project maintenance records.</p>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="addMaintenanceBtn">
+                    + Add Maintenance
+                </button>
+            </header>
+
+            <section class="maintenance-stats" aria-label="Maintenance summary">
+                <article class="maintenance-stat-card">
+                    <span>Total Maintenance</span>
+                    <strong id="totalMaintenance">0</strong>
+                </article>
+
+                <article class="maintenance-stat-card">
+                    <span>Active</span>
+                    <strong id="activeMaintenance">0</strong>
+                </article>
+
+                <article class="maintenance-stat-card">
+                    <span>Inactive</span>
+                    <strong id="inactiveMaintenance">0</strong>
+                </article>
+
+                <article class="maintenance-stat-card">
+                    <span>Files Uploaded</span>
+                    <strong id="maintenanceFiles">0</strong>
+                </article>
+            </section>
+
+            <section class="maintenance-list-card">
+                <div class="maintenance-list-header">
+                    <h2>Maintenance Records</h2>
+
+                    <div class="maintenance-filters">
+                        <input
+                            type="search"
+                            id="maintenanceSearch"
+                            placeholder="Search issue, action, or person..."
+                        >
+
+                        <select id="maintenanceStatusFilter">
+                            <option value="">All Statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="maintenance-table-wrap">
+                    <table class="maintenance-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Issue</th>
+                                <th>Action Taken</th>
+                                <th>Down Time</th>
+                                <th>Persons Responsible</th>
+                                <th>Status</th>
+                                <th>Observation / Monitoring Result</th>
+                                <th>Action Needed</th>
+                                <th>Checklist</th>
+                                <th>File</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="maintenanceTableBody">
+                            <tr>
+                                <td colspan="11" class="maintenance-empty-state">
+                                    Loading maintenance records...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div class="modal" id="maintenanceModal">
+        <div class="modal-content maintenance-modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 id="maintenanceModalTitle">Add Maintenance</h2>
+                    <p id="maintenanceModalProjectName">Project</p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeMaintenanceModal"
+                    aria-label="Close"
+                >&times;</button>
+            </div>
+
+            <form id="maintenanceForm">
+                <div class="maintenance-form-grid">
+                    <div class="form-group">
+                        <label for="maintenanceDate">Date</label>
+                        <input type="date" id="maintenanceDate" name="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maintenanceStatus">Status</label>
+                        <select id="maintenanceStatus" name="status" required>
+                            <option value="">Select status</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group maintenance-full-width">
+                        <label for="maintenanceIssue">Issue</label>
+                        <textarea id="maintenanceIssue" name="issue" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group maintenance-full-width">
+                        <label for="maintenanceActionTaken">Action Taken</label>
+                        <textarea id="maintenanceActionTaken" name="action_taken" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maintenanceDownTime">Down Time</label>
+                        <input
+                            type="text"
+                            id="maintenanceDownTime"
+                            name="down_time"
+                            placeholder="Example: 2 hours"
+                            required
+                        >
+                    </div>
+
+                    <fieldset class="maintenance-personnel-fieldset">
+                        <legend>Persons Responsible</legend>
+                        <p>Select one or more IMS personnel.</p>
+                        <div class="maintenance-personnel-list" id="maintenancePersonnelList">
+                            Loading IMS personnel...
+                        </div>
+                    </fieldset>
+
+                    <div class="form-group maintenance-full-width">
+                        <label for="maintenanceObservation">Observation / Monitoring Result</label>
+                        <textarea
+                            id="maintenanceObservation"
+                            name="observation_monitoring_result"
+                            rows="3"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group maintenance-full-width">
+                        <label for="maintenanceActionNeeded">Action Needed</label>
+                        <textarea
+                            id="maintenanceActionNeeded"
+                            name="action_needed"
+                            rows="3"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <fieldset class="maintenance-checklist maintenance-full-width">
+                        <legend>Maintenance Checklist</legend>
+
+                        <label><input type="checkbox" name="activities_reviewed" required> Maintenance activities have been reviewed</label>
+                        <label><input type="checkbox" name="testing_completed" required> Required testing / verification was completed, where applicable</label>
+                        <label><input type="checkbox" name="backups_completed" required> Required backups were completed, where applicable</label>
+                        <label><input type="checkbox" name="owner_informed" required> System owner / end-user was informed, where applicable</label>
+                        <label><input type="checkbox" name="documentation_updated" required> Related documentation was updated, where applicable</label>
+                    </fieldset>
+
+                    <div class="form-group maintenance-full-width">
+                        <label for="maintenanceFile">Upload File</label>
+                        <input type="file" id="maintenanceFile" name="file" required>
+                        <small id="maintenanceFileHelp">
+                            A supporting file is required for every new maintenance record.
+                        </small>
+                        <a
+                            href="#"
+                            id="currentMaintenanceFile"
+                            class="current-maintenance-file"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            hidden
+                        >View current file</a>
+                    </div>
+                </div>
+
+                <div class="maintenance-form-error" id="maintenanceFormError" hidden></div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelMaintenanceBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveMaintenanceBtn">Save Maintenance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/components.js"></script>
+    <script src="/js/maintenance.js"></script>
+</body>
+
+</html>
