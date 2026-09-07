@@ -22,17 +22,20 @@
 
 .requests-header-copy h1 {
     margin: 0;
-    color: #263521;
-    font-size: 30px;
-    font-weight: 800;
-    letter-spacing: -0.6px;
+    color: #1B5E20;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: normal;
 }
 
 .requests-header-copy p {
-    margin: 8px 0 0;
+    margin: 4px 0 0;
     color: #66735b;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
-    line-height: 1.55;
+    line-height: 1.5;
 }
 
 
