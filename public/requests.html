@@ -603,8 +603,17 @@
         document.querySelectorAll(".custom-select-wrapper.open").forEach(wrapper => {
             if (wrapper !== except) {
                 wrapper.classList.remove("open");
+
                 const button = wrapper.querySelector(".custom-select-button");
-                if (button) button.setAttribute("aria-expanded", "false");
+                const arrow = wrapper.querySelector(".custom-select-arrow");
+
+                if (button) {
+                    button.setAttribute("aria-expanded", "false");
+                }
+
+                if (arrow) {
+                    arrow.textContent = "▼";
+                }
             }
         });
     }
@@ -642,8 +651,9 @@
 
         const arrow = document.createElement("span");
         arrow.className = "custom-select-arrow";
-        arrow.textContent = "⌄";
+        arrow.textContent = "▼";
         arrow.setAttribute("aria-hidden", "true");
+
 
         button.append(text, arrow);
 
@@ -670,6 +680,7 @@
                 syncCustomSelect(select, wrapper);
                 wrapper.classList.remove("open");
                 button.setAttribute("aria-expanded", "false");
+                arrow.textContent = "▼";
             });
 
             optionsBox.appendChild(optionButton);
@@ -677,16 +688,23 @@
 
         wrapper.append(button, optionsBox);
 
-        button.addEventListener("click", event => {
+            button.addEventListener("click", event => {
             event.preventDefault();
             event.stopPropagation();
 
             const opening = !wrapper.classList.contains("open");
+
             closeAll(wrapper);
+
             wrapper.classList.toggle("open", opening);
             button.setAttribute("aria-expanded", opening ? "true" : "false");
 
-            if (opening) syncCustomSelect(select, wrapper);
+            // Change arrow instantly
+            arrow.textContent = opening ? "▲" : "▼";
+
+            if (opening) {
+                syncCustomSelect(select, wrapper);
+            }
         });
 
         select.addEventListener("change", () => syncCustomSelect(select, wrapper));

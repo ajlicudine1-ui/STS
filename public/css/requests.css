@@ -804,12 +804,9 @@
     font-size: 20px;
     line-height: 1;
     transform: translateY(-2px);
-    transition: transform .2s ease;
+    transition: none;
 }
 
-.custom-select-wrapper.open .custom-select-arrow {
-    transform: rotate(180deg) translateY(2px);
-}
 
 .custom-select-options {
     position: absolute;
