@@ -26,10 +26,59 @@
         href="/css/sidebar-account.css"
     >
 
-    <link rel="stylesheet" 
-    href="/css/requests.css?v=2"
+    <link
+        rel="stylesheet"
+        href="/css/requests.css"
     >
-    </head>
+
+
+    <style>
+.request-stats {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 22px !important;
+    width: 100% !important;
+}
+
+.request-stat-card {
+    min-height: 142px !important;
+    padding: 30px 32px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 14px !important;
+    background: white !important;
+    border: 1px solid #e7ebf0 !important;
+    border-top: 3px solid #2f7d32 !important;
+    border-radius: 15px !important;
+    box-shadow: 0 8px 20px rgba(23, 43, 77, 0.08) !important;
+}
+
+.request-stat-label {
+    color: #64748b !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+}
+
+.request-stat-value {
+    color: #23742a !important;
+    font-size: 36px !important;
+    font-weight: 800 !important;
+}
+
+@media (max-width: 1100px) {
+    .request-stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 800px) {
+    .request-stats {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+</head>
 
 
 <body>
