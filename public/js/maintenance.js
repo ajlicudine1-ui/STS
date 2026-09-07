@@ -42,10 +42,10 @@ if (addMaintenancePersonBtn) {
         maintenancePersonnelList.appendChild(createMaintenancePersonRow());
         refreshMaintenancePersonRows();
 
-        const latestSelect = maintenancePersonnelList.querySelector(
-            ".maintenance-person-row:last-child .maintenance-person-select"
+        const latestTrigger = maintenancePersonnelList.querySelector(
+            ".maintenance-person-row:last-child .maintenance-person-trigger"
         );
-        latestSelect?.focus();
+        latestTrigger?.focus();
     });
 }
 
@@ -122,28 +122,40 @@ function createMaintenancePersonRow(selectedUserId = "") {
     const row = document.createElement("div");
     row.className = "maintenance-person-row";
 
-    const select = document.createElement("select");
-    select.className = "maintenance-person-select";
-    select.name = "responsible_person";
-    select.required = true;
+    const dropdown = document.createElement("div");
+    dropdown.className = "maintenance-person-dropdown";
+    dropdown.dataset.value = String(selectedUserId || "");
 
-    const placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.textContent = maintenancePersonnel.length
-        ? "Select project personnel"
-        : "No connected project personnel";
-    select.appendChild(placeholder);
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "maintenance-person-trigger";
+    trigger.setAttribute("aria-haspopup", "listbox");
+    trigger.setAttribute("aria-expanded", "false");
 
-    maintenancePersonnel.forEach(member => {
-        const option = document.createElement("option");
-        option.value = String(member.user_id);
-        option.textContent = member.full_name;
-        option.selected = option.value === String(selectedUserId || "");
-        select.appendChild(option);
+    const triggerLabel = document.createElement("span");
+    triggerLabel.className = "maintenance-person-trigger-label";
+
+    const triggerArrow = document.createElement("span");
+    triggerArrow.className = "maintenance-person-trigger-arrow";
+    triggerArrow.textContent = "⌄";
+    triggerArrow.setAttribute("aria-hidden", "true");
+    trigger.append(triggerLabel, triggerArrow);
+
+    const menu = document.createElement("div");
+    menu.className = "maintenance-person-menu";
+    menu.setAttribute("role", "listbox");
+    menu.hidden = true;
+
+    trigger.addEventListener("click", event => {
+        event.stopPropagation();
+        const shouldOpen = menu.hidden;
+        closeAllMaintenancePersonDropdowns(dropdown);
+        menu.hidden = !shouldOpen;
+        dropdown.classList.toggle("is-open", shouldOpen);
+        trigger.setAttribute("aria-expanded", String(shouldOpen));
     });
 
-    select.disabled = maintenancePersonnel.length === 0;
-    select.addEventListener("change", refreshMaintenancePersonRows);
+    dropdown.append(trigger, menu);
 
     const removeButton = document.createElement("button");
     removeButton.type = "button";
@@ -156,7 +168,7 @@ function createMaintenancePersonRow(selectedUserId = "") {
         );
 
         if (rows.length === 1) {
-            select.value = "";
+            dropdown.dataset.value = "";
         } else {
             row.remove();
         }
@@ -164,33 +176,62 @@ function createMaintenancePersonRow(selectedUserId = "") {
         refreshMaintenancePersonRows();
     });
 
-    row.append(select, removeButton);
+    row.append(dropdown, removeButton);
     return row;
+}
+
+
+function closeAllMaintenancePersonDropdowns(except = null) {
+    document.querySelectorAll(".maintenance-person-dropdown").forEach(dropdown => {
+        if (dropdown === except) return;
+
+        dropdown.classList.remove("is-open");
+        const menu = dropdown.querySelector(".maintenance-person-menu");
+        const trigger = dropdown.querySelector(".maintenance-person-trigger");
+        if (menu) menu.hidden = true;
+        trigger?.setAttribute("aria-expanded", "false");
+    });
 }
 
 
 function refreshMaintenancePersonRows() {
     if (!maintenancePersonnelList) return;
 
-    const selects = Array.from(
-        maintenancePersonnelList.querySelectorAll(".maintenance-person-select")
+    const dropdowns = Array.from(
+        maintenancePersonnelList.querySelectorAll(".maintenance-person-dropdown")
     );
     const selectedValues = new Set(
-        selects.map(select => select.value).filter(Boolean)
+        dropdowns.map(dropdown => dropdown.dataset.value).filter(Boolean)
     );
 
-    selects.forEach(select => {
-        const currentValue = select.value;
+    dropdowns.forEach(dropdown => {
+        const currentValue = dropdown.dataset.value || "";
         const placeholderText = maintenancePersonnel.length
             ? "Select project personnel"
             : "No connected project personnel";
 
-        select.innerHTML = "";
+        const trigger = dropdown.querySelector(".maintenance-person-trigger");
+        const triggerLabel = dropdown.querySelector(
+            ".maintenance-person-trigger-label"
+        );
+        const menu = dropdown.querySelector(".maintenance-person-menu");
+        const currentMember = maintenancePersonnel.find(
+            member => String(member.user_id) === currentValue
+        );
 
-        const placeholder = document.createElement("option");
-        placeholder.value = "";
-        placeholder.textContent = placeholderText;
-        select.appendChild(placeholder);
+        if (triggerLabel) {
+            triggerLabel.textContent = currentMember
+                ? currentMember.full_name
+                : placeholderText;
+        }
+
+        if (trigger) {
+            trigger.disabled = maintenancePersonnel.length === 0;
+            trigger.classList.toggle("has-value", Boolean(currentMember));
+        }
+
+        if (!menu) return;
+        menu.innerHTML = "";
 
         maintenancePersonnel.forEach(member => {
             const userId = String(member.user_id);
@@ -201,18 +242,29 @@ function refreshMaintenancePersonRows() {
                 return;
             }
 
-            const option = document.createElement("option");
-            option.value = userId;
+            const option = document.createElement("button");
+            option.type = "button";
+            option.className = "maintenance-person-option";
+            option.setAttribute("role", "option");
+            option.setAttribute("aria-selected", String(userId === currentValue));
+            option.classList.toggle("is-selected", userId === currentValue);
             option.textContent = member.full_name;
-            option.selected = userId === currentValue;
-            select.appendChild(option);
+            option.addEventListener("click", event => {
+                event.stopPropagation();
+                dropdown.dataset.value = userId;
+                menu.hidden = true;
+                dropdown.classList.remove("is-open");
+                trigger?.setAttribute("aria-expanded", "false");
+                refreshMaintenancePersonRows();
+            });
+            menu.appendChild(option);
         });
     });
 
     if (addMaintenancePersonBtn) {
         addMaintenancePersonBtn.disabled =
             maintenancePersonnel.length === 0 ||
-            selects.length >= maintenancePersonnel.length;
+            dropdowns.length >= maintenancePersonnel.length;
     }
 }
 
@@ -239,8 +291,8 @@ function renderPersonnelOptions(selectedUserIds = []) {
 
 function getSelectedPersonnelIds() {
     return Array.from(
-        document.querySelectorAll(".maintenance-person-select")
-    ).map(select => select.value).filter(Boolean);
+        document.querySelectorAll(".maintenance-person-dropdown")
+    ).map(dropdown => dropdown.dataset.value).filter(Boolean);
 }
 
 
@@ -609,10 +661,20 @@ if (maintenanceForm) {
             return;
         }
 
+        const responsibleRows = Array.from(
+            document.querySelectorAll(".maintenance-person-dropdown")
+        );
         const selectedPersonnel = getSelectedPersonnelIds();
 
         if (selectedPersonnel.length === 0) {
             showMaintenanceError("Select at least one Person Responsible.");
+            return;
+        }
+
+        if (responsibleRows.some(row => !row.dataset.value)) {
+            showMaintenanceError(
+                "Select a person in every Person Responsible row or remove the empty row."
+            );
             return;
         }
 
@@ -844,3 +906,15 @@ async function initializeMaintenancePage() {
 
 
 initializeMaintenancePage();
+
+document.addEventListener("click", event => {
+    if (!event.target.closest(".maintenance-person-dropdown")) {
+        closeAllMaintenancePersonDropdowns();
+    }
+});
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+        closeAllMaintenancePersonDropdowns();
+    }
+});
