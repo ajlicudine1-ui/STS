@@ -3217,6 +3217,24 @@ window.addEventListener(
 
 async function loadTasks() {
 
+    const table =
+        document.getElementById(
+            "tasksTable"
+        );
+
+
+    if (table) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="9">
+                    Loading tasks...
+                </td>
+            </tr>
+        `;
+
+    }
+
     try {
 
         console.log(
@@ -3422,12 +3440,6 @@ async function loadTasks() {
         // ----------------------------------------------------
         // TASK TABLE
         // ----------------------------------------------------
-
-        const table =
-            document.getElementById(
-                "tasksTable"
-            );
-
 
         if (!table) {
 
@@ -3642,6 +3654,19 @@ async function loadTasks() {
             "Error loading tasks: " +
             error.message
         );
+
+
+        if (table) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="9">
+                        Unable to load tasks. Please refresh the page.
+                    </td>
+                </tr>
+            `;
+
+        }
 
     }
 
