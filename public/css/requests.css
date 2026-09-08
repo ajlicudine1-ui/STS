@@ -194,29 +194,31 @@
 }
 
 .requests-table th {
-    padding: 15px 16px;
+    padding: 14px 12px;
 
-    border-bottom: 1px solid #e2e8dd;
+    border-bottom: 1px solid #e5e7eb;
 
-    background: #f7f9f4;
-    color: #55634d;
+    background: #f9fafb;
+    color: #6b7280;
 
-    font-size: 12px;
-    font-weight: 800;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
 
     text-align: left;
-    text-transform: uppercase;
+    text-transform: none;
 
-    letter-spacing: 0.45px;
+    letter-spacing: normal;
     white-space: nowrap;
 }
 
 .requests-table td {
-    padding: 16px;
+    padding: 14px 12px;
 
-    border-bottom: 1px solid #edf1ea;
+    border-bottom: 1px solid #e5e7eb;
 
-    color: #2f3a2b;
+    color: #1f2937;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
     vertical-align: middle;
 }
