@@ -12,6 +12,15 @@
     <link rel="stylesheet" href="/css/sidebar-account.css">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/repository-close-fix.css">
+
+    <style>
+        .projects-loading-state {
+            padding: 46px 20px !important;
+            text-align: center;
+            color: #235e26;
+        }
+
+    </style>
 </head>
 
 <body>
@@ -149,8 +158,8 @@
                     <tbody id="projectsTable">
 
                         <tr>
-                            <td colspan="7">
-                                No projects found.
+                            <td colspan="7" class="projects-loading-state">
+                                Loading projects...
                             </td>
                         </tr>
 
@@ -931,7 +940,7 @@
     <script src="/js/components.js"></script>
 
     <!-- Dashboard / Project Actions -->
-    <script src="/js/dashboard.js"></script>
+    <script src="/js/dashboard.js?v=loading-2"></script>
 
     <!-- Global Application JS -->
     <script src="/js/app.js"></script>

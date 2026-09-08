@@ -5504,6 +5504,18 @@ window.addEventListener(
 // ============================================================
 
 async function loadDashboard() {
+    const table = document.getElementById("projectsTable");
+
+    if (table) {
+        table.innerHTML = `
+            <tr>
+                <td colspan="7" class="projects-loading-state">
+                    Loading projects...
+                </td>
+            </tr>
+        `;
+    }
+
     try {
         const response = await fetch("/api/dashboard");
         const data = await response.json();
@@ -5534,7 +5546,6 @@ async function loadDashboard() {
         if (completedProjects) completedProjects.textContent = data.completedProjects ?? 0;
         if (totalTasks) totalTasks.textContent = data.totalTasks ?? 0;
 
-        const table = document.getElementById("projectsTable");
         if (!table) return;
 
         table.innerHTML = "";
@@ -5590,6 +5601,16 @@ async function loadDashboard() {
 
     } catch (error) {
         console.error("Dashboard error:", error);
+
+        if (table) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        Unable to load projects. Please refresh the page.
+                    </td>
+                </tr>
+            `;
+        }
     }
 }
 
