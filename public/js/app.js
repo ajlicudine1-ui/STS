@@ -17,6 +17,19 @@ let editingProjectId = null;
 const projectModal = document.getElementById("projectModal");
 const newProjectBtn = document.getElementById("newProjectBtn");
 
+const projectStatusDropdown =
+    document.getElementById("projectStatusDropdown");
+const projectStatusTrigger =
+    document.getElementById("projectStatusTrigger");
+const projectStatusOptions =
+    document.getElementById("projectStatusOptions");
+const projectStatusLabel =
+    document.getElementById("projectStatusLabel");
+const projectStatusReadyOption =
+    document.getElementById("projectStatusReadyOption");
+const projectStatusReadinessNote =
+    document.getElementById("projectStatusReadinessNote");
+
 // Admin-only control: keep hidden until /api/dashboard confirms the viewer is admin.
 if (newProjectBtn) {
     newProjectBtn.hidden = true;
@@ -305,7 +318,192 @@ function setProjectValue(id, value) {
     if (element) {
         element.value = value ?? "";
     }
+
+    if (id === "projectStatus") {
+        syncProjectStatusDropdown(value ?? "Not Started");
+    }
 }
+
+
+// ============================================================
+// PROJECT STATUS - GREEN CUSTOM DROPDOWN
+// ============================================================
+
+function closeProjectStatusDropdown() {
+    if (!projectStatusDropdown || !projectStatusOptions || !projectStatusTrigger) {
+        return;
+    }
+
+    projectStatusDropdown.classList.remove("is-open");
+    projectStatusOptions.hidden = true;
+    projectStatusTrigger.setAttribute("aria-expanded", "false");
+}
+
+
+function openProjectStatusDropdown() {
+    if (!projectStatusDropdown || !projectStatusOptions || !projectStatusTrigger) {
+        return;
+    }
+
+    projectStatusDropdown.classList.add("is-open");
+    projectStatusOptions.hidden = false;
+    projectStatusTrigger.setAttribute("aria-expanded", "true");
+}
+
+
+function syncProjectStatusDropdown(value) {
+    const normalizedValue = String(value || "Not Started");
+
+    if (projectStatusLabel) {
+        projectStatusLabel.textContent = normalizedValue;
+    }
+
+    if (!projectStatusOptions) {
+        return;
+    }
+
+    projectStatusOptions
+        .querySelectorAll(".project-status-option")
+        .forEach(option => {
+            const selected = option.dataset.value === normalizedValue;
+            option.classList.toggle("is-selected", selected);
+            option.setAttribute("aria-selected", selected ? "true" : "false");
+        });
+}
+
+
+function setReadyForDeploymentOptionAvailable(isAvailable) {
+    if (projectStatusReadyOption) {
+        projectStatusReadyOption.hidden = !isAvailable;
+    }
+
+    if (projectStatusReadinessNote) {
+        projectStatusReadinessNote.hidden = !isAvailable;
+    }
+}
+
+
+async function getProjectDeploymentReadiness(projectId) {
+    if (!projectId) {
+        return false;
+    }
+
+    const response = await fetch(
+        `/api/projects/${encodeURIComponent(projectId)}/deployment-checklist-items`
+    );
+    const responseText = await response.text();
+
+    let result = {};
+    if (responseText) {
+        try {
+            result = JSON.parse(responseText);
+        } catch (_) {
+            result = { error: responseText };
+        }
+    }
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.error ||
+            result.details ||
+            "Unable to verify deployment readiness."
+        );
+    }
+
+    return result.summary?.ready_for_deployment === true;
+}
+
+
+async function refreshProjectStatusReadiness(project) {
+    const alreadyReady =
+        project?.project_status === "Ready for Deployment";
+
+    // Preserve an already-saved Ready status while verification is loading.
+    setReadyForDeploymentOptionAvailable(alreadyReady);
+
+    try {
+        const isReady = await getProjectDeploymentReadiness(project?.project_id);
+        setReadyForDeploymentOptionAvailable(isReady);
+        return isReady;
+    } catch (error) {
+        console.error("PROJECT STATUS READINESS ERROR:", error);
+        setReadyForDeploymentOptionAvailable(alreadyReady);
+        return alreadyReady;
+    }
+}
+
+
+if (projectStatusTrigger) {
+    projectStatusTrigger.addEventListener("click", event => {
+        event.stopPropagation();
+
+        if (projectStatusDropdown?.classList.contains("is-open")) {
+            closeProjectStatusDropdown();
+        } else {
+            openProjectStatusDropdown();
+        }
+    });
+
+    projectStatusTrigger.addEventListener("keydown", event => {
+        if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openProjectStatusDropdown();
+
+            const selectedOption = projectStatusOptions?.querySelector(
+                ".project-status-option.is-selected:not([hidden])"
+            );
+            const firstOption = projectStatusOptions?.querySelector(
+                ".project-status-option:not([hidden])"
+            );
+            (selectedOption || firstOption)?.focus();
+        }
+    });
+}
+
+
+if (projectStatusOptions) {
+    projectStatusOptions
+        .querySelectorAll(".project-status-option")
+        .forEach(option => {
+            option.addEventListener("click", event => {
+                event.stopPropagation();
+                setProjectValue("projectStatus", option.dataset.value || "Not Started");
+                closeProjectStatusDropdown();
+                projectStatusTrigger?.focus();
+            });
+
+            option.addEventListener("keydown", event => {
+                const visibleOptions = Array.from(
+                    projectStatusOptions.querySelectorAll(
+                        ".project-status-option:not([hidden])"
+                    )
+                );
+                const currentIndex = visibleOptions.indexOf(option);
+
+                if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    const direction = event.key === "ArrowDown" ? 1 : -1;
+                    const nextIndex =
+                        (currentIndex + direction + visibleOptions.length) %
+                        visibleOptions.length;
+                    visibleOptions[nextIndex]?.focus();
+                }
+
+                if (event.key === "Escape") {
+                    event.preventDefault();
+                    closeProjectStatusDropdown();
+                    projectStatusTrigger?.focus();
+                }
+            });
+        });
+}
+
+
+document.addEventListener("click", event => {
+    if (!projectStatusDropdown?.contains(event.target)) {
+        closeProjectStatusDropdown();
+    }
+});
 
 
 function getLocalDateInputValue(date = new Date()) {
@@ -1872,6 +2070,9 @@ function resetProjectModal() {
         "Not Started"
     );
 
+    setReadyForDeploymentOptionAvailable(false);
+    closeProjectStatusDropdown();
+
     clearDevelopmentTeamRows();
     addTeamMemberRow();
 
@@ -2005,9 +2206,16 @@ async function openEditProjectModal(
         "projectVersion",
         project.version
     );
-setProjectValue(
+    // "Ready for Deployment" is offered only when all real checklist
+    // criteria are currently marked Pass by the server.
+    const checklistIsReady =
+        await refreshProjectStatusReadiness(project);
+
+    setProjectValue(
         "projectStatus",
-        project.project_status
+        project.project_status === "Ready for Deployment" && !checklistIsReady
+            ? "Active"
+            : project.project_status
     );
 
 
@@ -5680,6 +5888,22 @@ console.log(
             throw new Error(
                 "System/Application Name is required."
             );
+        }
+
+
+        if (
+            editingProjectId &&
+            projectData.project_status === "Ready for Deployment"
+        ) {
+            const isReady =
+                await getProjectDeploymentReadiness(editingProjectId);
+
+            if (!isReady) {
+                setReadyForDeploymentOptionAvailable(false);
+                throw new Error(
+                    "Ready for Deployment is available only after all deployment checklist items are Pass."
+                );
+            }
         }
 
 

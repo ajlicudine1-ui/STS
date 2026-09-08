@@ -20,6 +20,97 @@
             color: #235e26;
         }
 
+        /* Project status custom dropdown (avoids the browser's blue option highlight). */
+        .project-status-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .project-status-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            min-height: 48px;
+            padding: 0 16px;
+            color: #1f2937;
+            background: #ffffff;
+            border: 1px solid #b8cbaa;
+            border-radius: 10px;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .project-status-trigger:hover,
+        .project-status-trigger:focus,
+        .project-status-dropdown.is-open .project-status-trigger {
+            border-color: #2f8a3e;
+            box-shadow: 0 0 0 4px rgba(47, 138, 62, 0.12);
+            outline: none;
+        }
+
+        .project-status-arrow {
+            color: #2f8a3e;
+            font-size: 14px;
+            transition: transform 0.18s ease;
+        }
+
+        .project-status-dropdown.is-open .project-status-arrow {
+            transform: rotate(180deg);
+        }
+
+        .project-status-options {
+            position: absolute;
+            z-index: 10020;
+            top: calc(100% + 7px);
+            left: 0;
+            right: 0;
+            display: grid;
+            gap: 3px;
+            padding: 7px;
+            background: #ffffff;
+            border: 1px solid #b8cbaa;
+            border-radius: 11px;
+            box-shadow: 0 14px 28px rgba(27, 94, 32, 0.14);
+        }
+
+        .project-status-options[hidden] {
+            display: none;
+        }
+
+        .project-status-option {
+            width: 100%;
+            padding: 11px 14px;
+            color: #1b5e20;
+            background: transparent;
+            border: 0;
+            border-radius: 8px;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .project-status-option:hover,
+        .project-status-option:focus {
+            color: #1b5e20;
+            background: #e7f2e5;
+            outline: none;
+        }
+
+        .project-status-option.is-selected {
+            color: #ffffff;
+            background: #2f8a3e;
+        }
+
+        .project-status-readiness-note {
+            display: block;
+            margin-top: 7px;
+            color: #667085;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
     </style>
 </head>
 
@@ -372,25 +463,57 @@
                             Status
                         </label>
 
-                        <select id="projectStatus">
+                        <div
+                            class="project-status-dropdown"
+                            id="projectStatusDropdown"
+                        >
+                            <input
+                                type="hidden"
+                                id="projectStatus"
+                                value="Not Started"
+                            >
 
-                            <option value="Not Started">
-                                Not Started
-                            </option>
+                            <button
+                                type="button"
+                                class="project-status-trigger"
+                                id="projectStatusTrigger"
+                                aria-haspopup="listbox"
+                                aria-expanded="false"
+                            >
+                                <span id="projectStatusLabel">Not Started</span>
+                                <span class="project-status-arrow" aria-hidden="true">▼</span>
+                            </button>
 
-                            <option value="Active">
-                                Active
-                            </option>
+                            <div
+                                class="project-status-options"
+                                id="projectStatusOptions"
+                                role="listbox"
+                                hidden
+                            >
+                                <button type="button" class="project-status-option is-selected" role="option" data-value="Not Started">Not Started</button>
+                                <button type="button" class="project-status-option" role="option" data-value="Active">Active</button>
+                                <button type="button" class="project-status-option" role="option" data-value="On Hold">On Hold</button>
+                                <button type="button" class="project-status-option" role="option" data-value="Completed">Completed</button>
+                                <button
+                                    type="button"
+                                    class="project-status-option"
+                                    id="projectStatusReadyOption"
+                                    role="option"
+                                    data-value="Ready for Deployment"
+                                    hidden
+                                >
+                                    Ready for Deployment
+                                </button>
+                            </div>
+                        </div>
 
-                            <option value="On Hold">
-                                On Hold
-                            </option>
-
-                            <option value="Completed">
-                                Completed
-                            </option>
-
-                        </select>
+                        <small
+                            class="project-status-readiness-note"
+                            id="projectStatusReadinessNote"
+                            hidden
+                        >
+                            All deployment checklist items passed. Ready for Deployment is now available.
+                        </small>
 
                     </div>
 
