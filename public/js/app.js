@@ -551,6 +551,13 @@ function getProjectStatusClass(status) {
 }
 
 
+function isMaintenanceEligibleProjectStatus(status) {
+    return ["Deployed", "Completed"].includes(
+        String(status || "").trim()
+    );
+}
+
+
 // ============================================================
 // DEVELOPMENT TEAM - ACCOUNT SELECTOR
 // ============================================================
@@ -4673,21 +4680,20 @@ async function refreshDeployActionState(
     }
 
 
-    // A deployed project cannot be deployed again.
-    if (
-        project.project_status ===
-        "Deployed"
-    ) {
+    // Deployed and completed projects cannot be deployed again.
+    if (isMaintenanceEligibleProjectStatus(project.project_status)) {
 
         deployAction.disabled =
             true;
 
         deployAction.title =
-            "This project is already deployed.";
+            project.project_status === "Deployed"
+                ? "This project is already deployed."
+                : "This project is already completed.";
 
         if (deployLabel) {
             deployLabel.textContent =
-                "Deployed";
+                project.project_status;
         }
 
         return;
@@ -4979,7 +4985,9 @@ function bindProjectActionMenuItems(
 
                 if (
                     maintenanceAction.disabled ||
-                    project.project_status !== "Deployed"
+                    !isMaintenanceEligibleProjectStatus(
+                        project.project_status
+                    )
                 ) {
                     return;
                 }
@@ -5339,7 +5347,9 @@ function createProjectActionMenu(
 
 
     const maintenanceEnabled =
-    project.project_status === "Deployed";
+        isMaintenanceEligibleProjectStatus(
+            project.project_status
+        );
 
     const readyForDeployment =
         project.project_status === "Ready for Deployment";
@@ -5505,7 +5515,9 @@ function createProjectActionMenu(
                     }
                     title="${
                         maintenanceEnabled
-                            ? "This project is already deployed."
+                            ? project.project_status === "Deployed"
+                                ? "This project is already deployed."
+                                : "This project is already completed."
                             : readyForDeployment
                                 ? "Ready to deploy this project."
                                 : "All 8 deployment checklist criteria must be Pass before deployment."
@@ -5516,7 +5528,9 @@ function createProjectActionMenu(
                     </span>
 
                     <span class="deploy-project-label">
-                        ${maintenanceEnabled ? "Deployed" : "Deploy"}
+                        ${maintenanceEnabled
+                            ? escapeHtml(project.project_status)
+                            : "Deploy"}
                     </span>
                 </button>
             </div>
@@ -5533,7 +5547,7 @@ function createProjectActionMenu(
                 ${maintenanceEnabled ? "" : "disabled"}
                 title="${maintenanceEnabled
                     ? "Open maintenance records."
-                    : "Maintenance is available only when the project is Deployed."}"
+                    : "Maintenance is available only when the project is Deployed or Completed."}"
             >
                 <span class="project-action-section-icon">
                     ⚒

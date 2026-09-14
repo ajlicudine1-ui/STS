@@ -4213,6 +4213,13 @@ async function replaceMaintenanceResponsiblePersons(
 }
 
 
+function isMaintenanceEligibleProjectStatus(status) {
+    return ["Deployed", "Completed"].includes(
+        String(status || "").trim()
+    );
+}
+
+
 app.get(
     "/api/projects/:projectId/maintenance",
     async (req, res) => {
@@ -4235,10 +4242,10 @@ app.get(
                 });
             }
 
-            if (project.project_status !== "Deployed") {
+            if (!isMaintenanceEligibleProjectStatus(project.project_status)) {
                 return res.status(400).json({
                     success: false,
-                    error: "Maintenance is available only for deployed projects."
+                    error: "Maintenance is available only for deployed or completed projects."
                 });
             }
 
@@ -4310,10 +4317,10 @@ app.post(
                 });
             }
 
-            if (project.project_status !== "Deployed") {
+            if (!isMaintenanceEligibleProjectStatus(project.project_status)) {
                 return res.status(400).json({
                     success: false,
-                    error: "Maintenance can only be added to a deployed project."
+                    error: "Maintenance can only be added to a deployed or completed project."
                 });
             }
 
@@ -4437,10 +4444,10 @@ app.put(
                 });
             }
 
-            if (project.project_status !== "Deployed") {
+            if (!isMaintenanceEligibleProjectStatus(project.project_status)) {
                 return res.status(400).json({
                     success: false,
-                    error: "Maintenance can only be edited for a deployed project."
+                    error: "Maintenance can only be edited for a deployed or completed project."
                 });
             }
 
@@ -4637,10 +4644,10 @@ app.post(
                 });
             }
 
-            if (project.project_status !== "Deployed") {
+            if (!isMaintenanceEligibleProjectStatus(project.project_status)) {
                 return res.status(400).json({
                     success: false,
-                    error: "Maintenance files can only be uploaded for deployed projects."
+                    error: "Maintenance files can only be uploaded for deployed or completed projects."
                 });
             }
 
