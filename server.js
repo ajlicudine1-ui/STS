@@ -66,7 +66,7 @@ if (!process.env.GOOGLE_DRIVE_PARENT_FOLDER_ID) {
         "ERROR: GOOGLE_DRIVE_PARENT_FOLDER_ID is missing from .env"
     );
 }
-    
+
 if (!process.env.GOOGLE_CLIENT_ID) {
     console.error(
         "ERROR: GOOGLE_CLIENT_ID is missing from .env"
@@ -659,302 +659,6 @@ app.use(
 // DEVT AUTHENTICATION / AUTHORIZATION
 // ============================================================
 
-// ============================================================
-// SINGLE ACTIVE SESSION CONTROL
-// ============================================================
-// The feature is enabled by default. Set SINGLE_SESSION_ENABLED=false
-// in Vercel/.env to immediately fall back to the existing authentication
-// behavior without removing any database rows.
-const SINGLE_SESSION_ENABLED =
-    String(process.env.SINGLE_SESSION_ENABLED || "true")
-        .trim()
-        .toLowerCase() !== "false";
-
-const SINGLE_SESSION_TIMEOUT_MINUTES = (() => {
-    const value = Number.parseInt(
-        process.env.SINGLE_SESSION_TIMEOUT_MINUTES || "30",
-        10
-    );
-
-    return Number.isInteger(value) && value >= 5
-        ? value
-        : 30;
-})();
-
-const SINGLE_SESSION_TOUCH_INTERVAL_MS = 60 * 1000;
-
-function getSupabaseSessionId(accessToken) {
-    try {
-        const parts = String(accessToken || "").split(".");
-        if (parts.length < 2) return null;
-
-        let payloadPart = parts[1]
-            .replace(/-/g, "+")
-            .replace(/_/g, "/");
-
-        while (payloadPart.length % 4 !== 0) {
-            payloadPart += "=";
-        }
-
-        const payload = JSON.parse(
-            Buffer.from(payloadPart, "base64").toString("utf8")
-        );
-
-        const sessionId = String(payload?.session_id || "").trim();
-
-        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sessionId)
-            ? sessionId
-            : null;
-
-    } catch (error) {
-        console.warn(
-            "Unable to read Supabase session_id from access token:",
-            error.message
-        );
-        return null;
-    }
-}
-
-function singleSessionCanRun() {
-    return SINGLE_SESSION_ENABLED && !!supabaseAdmin;
-}
-
-function isStoredSessionStale(sessionRow) {
-    const lastActivity =
-        sessionRow?.last_active_at ||
-        sessionRow?.logged_in_at;
-
-    const lastActivityMs =
-        new Date(lastActivity || 0).getTime();
-
-    if (!Number.isFinite(lastActivityMs) || lastActivityMs <= 0) {
-        return true;
-    }
-
-    return (
-        Date.now() - lastActivityMs
-    ) > (
-        SINGLE_SESSION_TIMEOUT_MINUTES * 60 * 1000
-    );
-}
-
-async function readStoredUserSession(userId) {
-    if (!singleSessionCanRun()) return null;
-
-    const { data, error } = await supabaseAdmin
-        .from("user_sessions")
-        .select("user_id, session_token, logged_in_at, last_active_at")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-    if (error) throw error;
-    return data || null;
-}
-
-async function claimLoginSession(userId, accessToken) {
-    if (!singleSessionCanRun()) {
-        if (SINGLE_SESSION_ENABLED && !supabaseAdmin) {
-            console.warn(
-                "Single-session login is enabled, but SUPABASE_SERVICE_ROLE_KEY is not configured. Existing authentication behavior is being preserved."
-            );
-        }
-
-        return {
-            allowed: true,
-            enforced: false
-        };
-    }
-
-    const sessionId = getSupabaseSessionId(accessToken);
-
-    if (!sessionId) {
-        console.warn(
-            "Supabase access token has no usable session_id. Existing authentication behavior is being preserved for this login."
-        );
-
-        return {
-            allowed: true,
-            enforced: false
-        };
-    }
-
-    const now = new Date().toISOString();
-    const existing = await readStoredUserSession(userId);
-
-    if (!existing) {
-        const { error: insertError } = await supabaseAdmin
-            .from("user_sessions")
-            .insert({
-                user_id: userId,
-                session_token: sessionId,
-                logged_in_at: now,
-                last_active_at: now
-            });
-
-        if (!insertError) {
-            return {
-                allowed: true,
-                enforced: true,
-                sessionId
-            };
-        }
-
-        // Two login requests may arrive almost simultaneously. The primary
-        // key on user_id ensures only one wins.
-        if (insertError.code === "23505") {
-            return {
-                allowed: false,
-                enforced: true,
-                reason: "already_active"
-            };
-        }
-
-        throw insertError;
-    }
-
-    if (existing.session_token === sessionId) {
-        await supabaseAdmin
-            .from("user_sessions")
-            .update({ last_active_at: now })
-            .eq("user_id", userId)
-            .eq("session_token", sessionId);
-
-        return {
-            allowed: true,
-            enforced: true,
-            sessionId
-        };
-    }
-
-    if (!isStoredSessionStale(existing)) {
-        return {
-            allowed: false,
-            enforced: true,
-            reason: "already_active"
-        };
-    }
-
-    // Replace only the exact stale session we just read. This conditional
-    // update prevents two simultaneous stale-session logins from both winning.
-    const {
-        data: replaced,
-        error: replaceError
-    } = await supabaseAdmin
-        .from("user_sessions")
-        .update({
-            session_token: sessionId,
-            logged_in_at: now,
-            last_active_at: now
-        })
-        .eq("user_id", userId)
-        .eq("session_token", existing.session_token)
-        .select("user_id, session_token")
-        .maybeSingle();
-
-    if (replaceError) throw replaceError;
-
-    if (!replaced) {
-        return {
-            allowed: false,
-            enforced: true,
-            reason: "already_active"
-        };
-    }
-
-    return {
-        allowed: true,
-        enforced: true,
-        sessionId
-    };
-}
-
-async function verifyOrBootstrapRequestSession(userId, accessToken) {
-    if (!singleSessionCanRun()) {
-        return {
-            allowed: true,
-            enforced: false
-        };
-    }
-
-    const sessionId = getSupabaseSessionId(accessToken);
-
-    if (!sessionId) {
-        console.warn(
-            "Unable to enforce single-session access because the authenticated Supabase token has no usable session_id."
-        );
-
-        return {
-            allowed: true,
-            enforced: false
-        };
-    }
-
-    const now = new Date().toISOString();
-    let existing = await readStoredUserSession(userId);
-
-    // Migration-friendly behavior: users who were already signed in before
-    // this feature was deployed are registered on their first authenticated
-    // API request instead of being forced out immediately.
-    if (!existing) {
-        const { error: insertError } = await supabaseAdmin
-            .from("user_sessions")
-            .insert({
-                user_id: userId,
-                session_token: sessionId,
-                logged_in_at: now,
-                last_active_at: now
-            });
-
-        if (!insertError) {
-            return {
-                allowed: true,
-                enforced: true,
-                sessionId
-            };
-        }
-
-        if (insertError.code !== "23505") {
-            throw insertError;
-        }
-
-        existing = await readStoredUserSession(userId);
-    }
-
-    if (!existing || existing.session_token !== sessionId) {
-        return {
-            allowed: false,
-            enforced: true,
-            reason: "different_session"
-        };
-    }
-
-    const lastActiveMs =
-        new Date(
-            existing.last_active_at ||
-            existing.logged_in_at ||
-            0
-        ).getTime();
-
-    if (
-        !Number.isFinite(lastActiveMs) ||
-        Date.now() - lastActiveMs >= SINGLE_SESSION_TOUCH_INTERVAL_MS
-    ) {
-        const { error: touchError } = await supabaseAdmin
-            .from("user_sessions")
-            .update({ last_active_at: now })
-            .eq("user_id", userId)
-            .eq("session_token", sessionId);
-
-        if (touchError) throw touchError;
-    }
-
-    return {
-        allowed: true,
-        enforced: true,
-        sessionId
-    };
-}
-
 function getBearerToken(req) {
     const header = String(req.get("Authorization") || "");
     const match = header.match(/^Bearer\s+(.+)$/i);
@@ -1014,33 +718,13 @@ async function requireApiAuth(req, res, next) {
             });
         }
 
-        const sessionCheck =
-            await verifyOrBootstrapRequestSession(
-                context.user.id,
-                token
-            );
-
-        if (!sessionCheck.allowed) {
-            return res.status(401).json({
-                success: false,
-                error:
-                    "This account is signed in on another device or browser. Please sign in again."
-            });
-        }
-
         req.authUser = context.user;
         req.profile = context.profile;
         req.accessToken = token;
-        req.devTrackSessionId =
-            sessionCheck.sessionId || null;
-
         next();
     } catch (error) {
         console.error("AUTH MIDDLEWARE ERROR:", error);
-        res.status(401).json({
-            success: false,
-            error: "Invalid session."
-        });
+        res.status(401).json({ success: false, error: "Invalid session." });
     }
 }
 
@@ -1281,20 +965,6 @@ app.post("/api/auth/login", async (req, res) => {
             });
         }
 
-        const loginSessionClaim =
-            await claimLoginSession(
-                data.user.id,
-                data.session.access_token
-            );
-
-        if (!loginSessionClaim.allowed) {
-            return res.status(409).json({
-                success: false,
-                error:
-                    "This account is currently signed in on another device or browser."
-            });
-        }
-
         res.json({
             success: true,
             access_token: data.session.access_token,
@@ -1413,20 +1083,6 @@ app.post("/api/auth/refresh", async (req, res) => {
 
         }
 
-        const refreshSessionCheck =
-            await verifyOrBootstrapRequestSession(
-                data.user.id,
-                data.session.access_token
-            );
-
-        if (!refreshSessionCheck.allowed) {
-            return res.status(401).json({
-                success: false,
-                error:
-                    "This account is signed in on another device or browser. Please sign in again."
-            });
-        }
-
         return res.json({
             success: true,
 
@@ -1471,52 +1127,11 @@ app.get("/api/auth/me", async (req, res) => {
 
 app.post("/api/auth/logout", async (req, res) => {
     try {
-        if (
-            singleSessionCanRun() &&
-            req.authUser?.id
-        ) {
-            const sessionId =
-                req.devTrackSessionId ||
-                getSupabaseSessionId(req.accessToken);
-
-            let deleteQuery = supabaseAdmin
-                .from("user_sessions")
-                .delete()
-                .eq("user_id", req.authUser.id);
-
-            if (sessionId) {
-                deleteQuery = deleteQuery
-                    .eq("session_token", sessionId);
-            }
-
-            const { error: sessionDeleteError } =
-                await deleteQuery;
-
-            if (sessionDeleteError) {
-                console.error(
-                    "LOGOUT SESSION DELETE ERROR:",
-                    sessionDeleteError
-                );
-            }
-        }
-
-        try {
-            await supabase.auth.admin?.signOut?.(
-                req.accessToken
-            );
-        } catch (_) {
-            // Client-side token removal is enough if server sign-out is unavailable.
-        }
-
-        return res.json({ success: true });
-
-    } catch (error) {
-        console.error("LOGOUT ERROR:", error);
-
-        // Preserve the existing logout behavior: the frontend can still
-        // remove its local tokens even if server-side cleanup fails.
-        return res.json({ success: true });
+        await supabase.auth.admin?.signOut?.(req.accessToken);
+    } catch (_) {
+        // Client-side token removal is enough if server sign-out is unavailable.
     }
+    res.json({ success: true });
 });
 
 // ============================================================
