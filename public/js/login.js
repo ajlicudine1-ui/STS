@@ -1,284 +1,152 @@
-const form =
-    document.getElementById(
-        "loginForm"
-    );
+const form = document.getElementById("loginForm");
+const errorBox = document.getElementById("loginError");
+const loginBtn = document.getElementById("loginBtn");
+const password = document.getElementById("password");
+const fullName = document.getElementById("fullName");
 
-const errorBox =
-    document.getElementById(
-        "loginError"
-    );
-
-const loginBtn =
-    document.getElementById(
-        "loginBtn"
-    );
-
-const password =
-    document.getElementById(
-        "password"
-    );
-
-const fullName =
-    document.getElementById(
-        "fullName"
-    );
-
-const TOKEN_KEY =
-    "devt_access_token";
-
-const REFRESH_TOKEN_KEY =
-    "devt_refresh_token";
-
-const PROFILE_KEY =
-    "devt_profile";
-
+const TOKEN_KEY = "devt_access_token";
+const REFRESH_TOKEN_KEY = "devt_refresh_token";
+const PROFILE_KEY = "devt_profile";
 
 
 // Remove auth values from the old shared localStorage implementation.
-
 // Component HTML caches use different keys and are not affected.
-
-localStorage.removeItem(
-    TOKEN_KEY
-);
-
-localStorage.removeItem(
-    REFRESH_TOKEN_KEY
-);
-
-localStorage.removeItem(
-    PROFILE_KEY
-);
-
+localStorage.removeItem(TOKEN_KEY);
+localStorage.removeItem(REFRESH_TOKEN_KEY);
+localStorage.removeItem(PROFILE_KEY);
 
 
 document
-    .getElementById(
-        "togglePassword"
-    )
-    ?.addEventListener(
-        "click",
+    .getElementById("togglePassword")
+    ?.addEventListener("click", event => {
+        const showing = password.type === "text";
 
-        event => {
+        password.type = showing
+            ? "password"
+            : "text";
 
-            const showing =
-                password.type ===
-                "text";
+        event.currentTarget.textContent = showing
+            ? "Show"
+            : "Hide";
 
-            password.type =
-                showing
-                    ? "password"
-                    : "text";
-
-            event.currentTarget.textContent =
-                showing
-                    ? "Show"
-                    : "Hide";
-
-            event.currentTarget.setAttribute(
-                "aria-label",
-
-                showing
-                    ? "Show password"
-                    : "Hide password"
-            );
-
-        }
-    );
+        event.currentTarget.setAttribute(
+            "aria-label",
+            showing
+                ? "Show password"
+                : "Hide password"
+        );
+    });
 
 
-
-// A session belongs only to this browser tab.
-
-if (
-    sessionStorage.getItem(
-        TOKEN_KEY
-    )
-) {
-
-    window.location.replace(
-        "/"
-    );
-
+// If this browser tab already has a session,
+// redirect both roles to the Requests page.
+if (sessionStorage.getItem(TOKEN_KEY)) {
+    window.location.replace("/requests.html");
 }
 
 
+form.addEventListener("submit", async event => {
+    event.preventDefault();
 
-form.addEventListener(
-    "submit",
+    errorBox.textContent = "";
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Signing in...";
 
-    async event => {
+    try {
+        // Clear any previous account in this tab before starting
+        // a new login, so role-specific UI cannot carry over.
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+        sessionStorage.removeItem(PROFILE_KEY);
 
-        event.preventDefault();
+        const enteredUsername = fullName.value.trim();
 
-        errorBox.textContent =
-            "";
-
-        loginBtn.disabled =
-            true;
-
-        loginBtn.textContent =
-            "Signing in...";
-
-        try {
-
-            // Clear any previous account in THIS TAB before starting
-
-            // a new login, so role-specific UI cannot carry over.
-
-            sessionStorage.removeItem(
-                TOKEN_KEY
+        if (!enteredUsername) {
+            throw new Error(
+                "Please enter your DevT username."
             );
-
-            sessionStorage.removeItem(
-                REFRESH_TOKEN_KEY
-            );
-
-            sessionStorage.removeItem(
-                PROFILE_KEY
-            );
-
-            const enteredUsername =
-                fullName.value.trim();
-
-            if (!enteredUsername) {
-
-                throw new Error(
-                    "Please enter your DevT username."
-                );
-
-            }
-
-            if (!password.value) {
-
-                throw new Error(
-                    "Please enter your DevT password."
-                );
-
-            }
-
-            const response =
-                await fetch(
-                    "/api/auth/login",
-
-                    {
-                        method:
-                            "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify({
-
-                                username:
-                                    enteredUsername,
-
-                                password:
-                                    password.value
-
-                            })
-                    }
-                );
-
-            const responseText =
-                await response.text();
-
-            let result = {};
-
-            try {
-
-                result =
-                    responseText
-                        ? JSON.parse(
-                            responseText
-                        )
-                        : {};
-
-            } catch {
-
-                throw new Error(
-                    response.ok
-                        ? "The server returned an invalid response."
-                        : responseText ||
-                            "Sign in failed."
-                );
-
-            }
-
-            if (!response.ok) {
-
-                throw new Error(
-                    result.error ||
-                    "Invalid username or password."
-                );
-
-            }
-
-            if (
-                !result.access_token ||
-                !result.refresh_token ||
-                !result.profile
-            ) {
-
-                throw new Error(
-                    "The server did not return a complete DevT session."
-                );
-
-            }
-
-            sessionStorage.setItem(
-                TOKEN_KEY,
-                result.access_token
-            );
-
-            sessionStorage.setItem(
-                REFRESH_TOKEN_KEY,
-                result.refresh_token
-            );
-
-            sessionStorage.setItem(
-                PROFILE_KEY,
-                JSON.stringify(
-                    result.profile
-                )
-            );
-
-            window.location.replace(
-                "/"
-            );
-
-        } catch (error) {
-
-            // Do not leave a partial/stale role in this tab.
-
-            sessionStorage.removeItem(
-                TOKEN_KEY
-            );
-
-            sessionStorage.removeItem(
-                REFRESH_TOKEN_KEY
-            );
-
-            sessionStorage.removeItem(
-                PROFILE_KEY
-            );
-
-            errorBox.textContent =
-                error.message;
-
-        } finally {
-
-            loginBtn.disabled =
-                false;
-
-            loginBtn.textContent =
-                "Sign In";
-
         }
 
-    }
+        if (!password.value) {
+            throw new Error(
+                "Please enter your DevT password."
+            );
+        }
 
-);
+        const response = await fetch(
+            "/api/auth/login",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    username: enteredUsername,
+                    password: password.value
+                })
+            }
+        );
+
+        const responseText = await response.text();
+        let result = {};
+
+        try {
+            result = responseText
+                ? JSON.parse(responseText)
+                : {};
+        } catch {
+            throw new Error(
+                response.ok
+                    ? "The server returned an invalid response."
+                    : responseText || "Sign in failed."
+            );
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                result.error ||
+                "Invalid username or password."
+            );
+        }
+
+        if (
+            !result.access_token ||
+            !result.refresh_token ||
+            !result.profile
+        ) {
+            throw new Error(
+                "The server did not return a complete DevT session."
+            );
+        }
+
+        sessionStorage.setItem(
+            TOKEN_KEY,
+            result.access_token
+        );
+
+        sessionStorage.setItem(
+            REFRESH_TOKEN_KEY,
+            result.refresh_token
+        );
+
+        sessionStorage.setItem(
+            PROFILE_KEY,
+            JSON.stringify(result.profile)
+        );
+
+        // Administrator and Development Team both start here.
+        window.location.replace("/requests.html");
+    } catch (error) {
+        // Do not leave a partial or stale session in this tab.
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+        sessionStorage.removeItem(PROFILE_KEY);
+
+        errorBox.textContent = error.message;
+    } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Sign In";
+    }
+});
