@@ -1239,6 +1239,21 @@ const taskHistoryTable =
     );
 
 
+// Change the first Activity Log column heading from
+// DATE / TIME to DUE DATE without requiring an HTML edit.
+const historyDueDateHeader =
+    historyModal?.querySelector(
+        "thead th:first-child"
+    );
+
+if (historyDueDateHeader) {
+
+    historyDueDateHeader.textContent =
+        "DUE DATE";
+
+}
+
+
 // ============================================================
 // CLOSE HISTORY MODAL
 // ============================================================
@@ -1572,25 +1587,32 @@ async function loadTaskHistory(task) {
                     .map(item => {
 
                         // ------------------------------------
-                        // DATE / TIME
+                        // DUE DATE
                         // ------------------------------------
 
-                        const changedAt =
-                            item.changed_at ||
-                            item.created_at ||
-                            item.date ||
+                        const dueDateValue =
+                            item.new_due_date ||
+                            item.due_date ||
+                            task.due_date ||
                             null;
 
 
-                        let dateMain = "-";
-                        let dateTime = "";
+                        let dueDateDisplay = "-";
 
 
-                        if (changedAt) {
+                        if (dueDateValue) {
+
+                            const dateOnly =
+                                String(
+                                    dueDateValue
+                                ).substring(
+                                    0,
+                                    10
+                                );
 
                             const dateObject =
                                 new Date(
-                                    changedAt
+                                    `${dateOnly}T00:00:00`
                                 );
 
 
@@ -1600,7 +1622,7 @@ async function loadTaskHistory(task) {
                                 )
                             ) {
 
-                                dateMain =
+                                dueDateDisplay =
                                     dateObject.toLocaleDateString(
                                         undefined,
                                         {
@@ -1611,21 +1633,10 @@ async function loadTaskHistory(task) {
                                     );
 
 
-                                dateTime =
-                                    dateObject.toLocaleTimeString(
-                                        undefined,
-                                        {
-                                            hour: "2-digit",
-                                            minute: "2-digit"
-                                        }
-                                    );
-
                             } else {
 
-                                dateMain =
-                                    String(
-                                        changedAt
-                                    );
+                                dueDateDisplay =
+                                    dateOnly;
 
                             }
 
@@ -1771,28 +1782,16 @@ async function loadTaskHistory(task) {
                         return `
                             <tr>
 
-                                <!-- DATE / TIME -->
+                                <!-- DUE DATE -->
                                 <td>
 
                                     <div class="history-date">
 
                                         <span class="history-date-main">
                                             ${escapeHtml(
-                                                dateMain
+                                                dueDateDisplay
                                             )}
                                         </span>
-
-                                        ${
-                                            dateTime
-                                                ? `
-                                                    <span class="history-date-time">
-                                                        ${escapeHtml(
-                                                            dateTime
-                                                        )}
-                                                    </span>
-                                                `
-                                                : ""
-                                        }
 
                                     </div>
 
