@@ -2017,7 +2017,7 @@ const REQUIRED_DEPLOYMENT_DOCUMENTS = [
     "Information System Requisition Form",
     "Requirements and Design Input Checklist and Evaluation Report",
     "System Design Document Form",
-    "System Revision Request & Verification Form ",
+    "System Revision Request & Verification Form",
     "User Acceptance Testing (UAT) Form",
     "System Release & Deployment Form",
     "Maintenance Log",

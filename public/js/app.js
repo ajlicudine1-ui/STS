@@ -3642,8 +3642,10 @@ async function uploadDeploymentDocument(
                     "Content-Type":
                         "application/octet-stream",
 
-                    "X-Document-Type": 
-                            documentType,
+                    "X-Document-Type":
+                        encodeURIComponent(
+                            documentType
+                        ),
 
                     "X-File-Name":
                         encodeURIComponent(
