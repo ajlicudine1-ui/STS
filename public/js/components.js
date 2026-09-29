@@ -409,7 +409,7 @@
 // ============================================================
 
 const DEVT_SIDEBAR_CACHE_KEY =
-    "devt_sidebar_html_v3";
+    "devt_sidebar_html_v4";
 
 const DEVT_HEADER_CACHE_KEY =
     "devt_header_html_v2";
@@ -507,6 +507,33 @@ function configureSidebar(
                 : "none";
 
         teamLink.setAttribute(
+            "aria-hidden",
+            isAdmin
+                ? "false"
+                : "true"
+        );
+    }
+
+    // The current Help page is the administrator guide.
+    // Hide its link for development team accounts until their guide is added.
+    const helpLink =
+        sidebarContainer.querySelector(
+            "#sidebarHelpLink, #sidebarHelpBtn"
+        );
+
+    if (helpLink) {
+        const isAdmin =
+            profile.role === "admin";
+
+        helpLink.hidden =
+            !isAdmin;
+
+        helpLink.style.display =
+            isAdmin
+                ? ""
+                : "none";
+
+        helpLink.setAttribute(
             "aria-hidden",
             isAdmin
                 ? "false"

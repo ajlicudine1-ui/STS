@@ -14,7 +14,8 @@
     body { margin:0; color:var(--ink); background:var(--bg); font-family:Poppins,Arial,sans-serif; }
     button,input { font:inherit; }
     button { cursor:pointer; }
-    .layout { min-height:100vh; display:grid; grid-template-columns:280px minmax(0,1fr); }
+    .layout { min-height:100vh; display:grid; grid-template-columns:280px minmax(0,1fr); visibility:hidden; }
+    body.admin-ready .layout { visibility:visible; }
     #sidebar-container { min-width:0; }
     .sidebar { position:sticky; top:0; height:100vh; min-height:600px; display:flex; flex-direction:column; padding:28px 20px 24px; background:#fff; border-right:1px solid var(--line); }
     .sidebar-brand { display:flex; align-items:center; gap:12px; padding:0 14px 68px; font-size:25px; font-weight:800; letter-spacing:-.04em; }
@@ -107,6 +108,7 @@
     <symbol id="i-projects" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
     <symbol id="i-tasks" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><path d="m3 6 1.5 1.5L7 4M3 12l1.5 1.5L7 10M3 18l1.5 1.5L7 16"/></symbol>
     <symbol id="i-team" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20v-2a6 6 0 0 1 12 0v2M15 15a5 5 0 0 1 7 5"/></symbol>
+    <symbol id="i-maintenance" viewBox="0 0 24 24"><path d="M14 5a5 5 0 0 0-6 6L3 16a2 2 0 0 0 3 3l5-5a5 5 0 0 0 6-6l-3 3-3-3 3-3Z"/></symbol>
     <symbol id="i-start" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12h8m-3-3 3 3-3 3"/></symbol>
   </svg>
 
@@ -151,19 +153,23 @@
       { id:'projects', title:'How to Manage Projects', description:'Monitor project status, team assignments, and schedules.', icon:'projects', image:'/images/help-projects.png', steps:[
         { title:'Open the Project Dashboard', description:'Select Projects in the sidebar. The cards summarize total projects, active projects, completed projects, and total tasks.' },
         { title:'Create or Find a Project', description:'Use + New Project to begin a project entry, or View All Projects to see the complete project list.' },
-        { title:'View Tasks and Project Files', description:'Open a project’s Actions → Project menu. View Tasks opens that project’s tasks; Project Repository opens its stored files; Upload Files / Folder lets you choose files or a folder to add.' },
-        { title:'Check Deployment Readiness', description:'Actions → Deployment opens Deployment Checklist and Deployment Forms. Deploy becomes available when the project is Ready for Deployment; deploying marks it Deployed and unlocks Maintenance.' },
-        { title:'Open Maintenance', description:'Actions → Maintenance opens the project’s maintenance page when its status is Deployed or Completed. The locked control is disabled for other statuses.' },
-        { title:'Edit or Delete a Project', description:'Administrators can use Actions → Manage → Edit to update the project. Delete asks for confirmation and permanently removes the project and its related records.' }
+        { title:'View Tasks and Project Files', image:'/images/help-project-menu.png', description:'Open a project’s Actions → Project menu. View Tasks opens that project’s tasks; Project Repository opens its stored files; Upload Files / Folder lets you choose files or a folder to add.' },
+        { title:'Check Deployment Readiness', image:'/images/help-deployment-menu.png', description:'Actions → Deployment opens Deployment Checklist and Deployment Forms. Deploy becomes available when the project is Ready for Deployment; deploying marks it Deployed and unlocks Maintenance.' },
+        { title:'Edit or Delete a Project', image:'/images/help-manage-menu.png', description:'Administrators can use Actions → Manage → Edit to update the project. Delete asks for confirmation and permanently removes the project and its related records.' }
       ]},
       { id:'tasks', title:'How to Manage Tasks', description:'Track project activities, assignments, and progress.', icon:'tasks', image:'/images/help-tasks.png', steps:[
         { title:'Open Project Tasks', description:'Select Tasks in the sidebar. Summary cards show total tasks and counts by Not Started, In Progress, and Completed.' },
         { title:'Create a New Task', description:'Select + New Task at the top right to begin a task entry.' },
         { title:'Read Task Progress', description:'In the task table, review procedure stage, task or activity, status, priority, development team, due date, progress, and schedule status.' },
-        { title:'Review a Task', description:'Use Actions → Review to open the task review form. It shows the task, responsible team, status, progress, and expected output, with fields for review result, review date, and remarks.' },
-        { title:'Manage Task Files', description:'Actions → Task Repository opens the task’s stored files. Upload Files / Folder lets you choose files or a folder for that task.' },
+        { title:'Review a Task', image:'/images/help-task-menu.png', description:'Use Actions → Review to open the task review form. It shows the task, responsible team, status, progress, and expected output, with fields for review result, review date, and remarks.' },
+        { title:'Manage Task Files', image:'/images/help-task-menu.png', description:'Actions → Task Repository opens the task’s stored files. Upload Files / Folder lets you choose files or a folder for that task.' },
         { title:'Edit or View History', description:'Actions → Edit opens the task form for changes. Actions → History opens the task’s recorded history.' },
         { title:'Delete a Task', description:'Administrators can use Actions → Delete. The confirmation explains that this permanently removes the task and its Task Repository folder from Google Drive.' }
+      ]},
+      { id:'maintenance', title:'How to Manage Maintenance', description:'Record and monitor maintenance work on deployed or completed projects.', icon:'maintenance', image:'/images/help-maintenance-page.png', steps:[
+        { title:'Open Maintenance Records', image:'/images/help-maintenance-menu.png', description:'On Projects, open the relevant project’s Actions → Maintenance. The option is available when its status is Deployed or Completed; it opens that project’s maintenance records.' },
+        { title:'Review Maintenance Status', description:'The Maintenance page shows total, active, inactive, and uploaded-file counts. Search by issue, action, or person, or filter records by status.' },
+        { title:'Add a Maintenance Record', description:'Select + Add Maintenance. Enter the date, status, issue, action taken, down time, responsible people, observation, and action needed. Complete the checklist, attach the required file, then save.' }
       ]},
       { id:'team', title:'How to Manage the Development Team', description:'Create and manage accounts that can be assigned to projects.', icon:'team', image:'/images/help-team.png', steps:[
         { title:'Open Development Team', description:'Select Development Team in the sidebar. The summary cards show total and active accounts.' },
@@ -172,7 +178,7 @@
         { title:'Delete a Team Account', description:'Use Delete on the member row and confirm the account name. Existing project history remains, but the deleted account can no longer sign in.' }
       ]}
     ];
-    const steps = sections.flatMap(section => section.steps.map(step => ({...step, section:section.title, icon:section.icon, image:section.image})));
+    const steps = sections.flatMap(section => section.steps.map(step => ({...step, section:section.title, icon:section.icon, image:step.image || section.image})));
     const icon = name => `<svg class="ui-icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
     const guideSections = document.getElementById('guideSections');
     const search = document.getElementById('guideSearch');
@@ -199,7 +205,7 @@
           const card = document.createElement('button');
           card.type = 'button'; card.className = 'card';
           card.innerHTML = `<div class="card-art"><img alt="" loading="lazy"><span class="art-icon">${icon(section.icon)}</span></div><div class="card-body"><div class="step-label"></div><h3></h3><p></p></div>`;
-          card.querySelector('.card-art img').src = section.image;
+          card.querySelector('.card-art img').src = step.image || section.image;
           card.querySelector('.step-label').textContent = `Step ${index + 1}  ›  ${section.title}`;
           card.querySelector('h3').textContent = step.title;
           card.querySelector('p').textContent = step.description;
@@ -230,7 +236,16 @@
     document.getElementById('previousStep').addEventListener('click', () => { if (selected > 0) { selected--; updateModal(); } });
     document.getElementById('nextStep').addEventListener('click', () => { if (selected < steps.length - 1) { selected++; updateModal(); } });
     document.addEventListener('keydown', event => { if (modal.hidden) return; if (event.key === 'Escape') closeStep(); if (event.key === 'ArrowLeft' && selected > 0) { selected--; updateModal(); } if (event.key === 'ArrowRight' && selected < steps.length - 1) { selected++; updateModal(); } });
-    render();
+    (async () => {
+      const profile = await window.DevTAuth.ensureAuthenticated();
+      if (!profile) return;
+      if (profile.role !== 'admin') {
+        window.location.replace('/');
+        return;
+      }
+      document.body.classList.add('admin-ready');
+      render();
+    })();
   </script>
 </body>
 </html>
