@@ -6,6 +6,7 @@
 
     .sidebar-bottom {
         margin-top: auto;
+        border: 0 !important;
     }
 
     .sidebar-help {
@@ -14,7 +15,7 @@
         gap: 12px;
         width: 100%;
         padding: 12px 20px;
-        margin: 0 0 24px;
+        margin: 0 0 22px;
         border: 0;
         background: transparent;
         color: inherit;
@@ -28,8 +29,16 @@
         line-height: 1;
     }
 
+    .sidebar-divider {
+        height: 1px;
+        margin: 0 0 20px;
+        background: #e2e8f0;
+    }
+
     .sidebar-bottom .sidebar-account {
-        margin-top: 0;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        border-top: 0 !important;
     }
 </style>
 
@@ -70,6 +79,8 @@
             <span class="nav-icon" aria-hidden="true">ⓘ</span>
             <span class="nav-text">Help</span>
         </button>
+
+        <div class="sidebar-divider"></div>
 
         <div class="sidebar-account">
             <div class="sidebar-account-text">
