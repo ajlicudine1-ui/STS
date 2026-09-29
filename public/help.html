@@ -15,6 +15,7 @@
     button,input { font:inherit; }
     button { cursor:pointer; }
     .layout { min-height:100vh; display:grid; grid-template-columns:280px minmax(0,1fr); }
+    #sidebar-container { min-width:0; }
     .sidebar { position:sticky; top:0; height:100vh; min-height:600px; display:flex; flex-direction:column; padding:28px 20px 24px; background:#fff; border-right:1px solid var(--line); }
     .sidebar-brand { display:flex; align-items:center; gap:12px; padding:0 14px 68px; font-size:25px; font-weight:800; letter-spacing:-.04em; }
     .sidebar-logo-image { width:42px; height:42px; object-fit:contain; }
@@ -59,12 +60,11 @@
     .card-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
     .card { overflow:hidden; display:flex; flex-direction:column; min-width:0; padding:0; border-radius:20px; color:inherit; text-align:left; transition:transform .2s,box-shadow .2s; }
     .card:hover,.card:focus-visible { transform:translateY(-3px); box-shadow:0 16px 32px #1b35501a; outline:2px solid #536b3570; outline-offset:2px; }
-    .card-art { position:relative; display:flex; align-items:center; justify-content:center; height:160px; background:linear-gradient(140deg,#f1f5ee,#e5ede0); overflow:hidden; }
-    .card-art::before,.card-art::after { content:""; position:absolute; border-radius:50%; background:#fff7; }
-    .card-art::before { width:175px; height:175px; right:-38px; top:-93px; }
-    .card-art::after { width:130px; height:130px; left:-58px; bottom:-72px; }
-    .card-art .art-icon { position:relative; z-index:1; display:grid; place-items:center; width:76px; height:76px; border-radius:23px; color:var(--green); background:white; box-shadow:0 10px 25px #536b3523; }
-    .card-art .art-icon .ui-icon { width:36px; height:36px; }
+    .card-art { position:relative; height:160px; background:#eef2f5; overflow:hidden; }
+    .card-art img { display:block; width:100%; height:100%; object-fit:cover; object-position:top left; transition:transform .25s; }
+    .card:hover .card-art img { transform:scale(1.035); }
+    .card-art .art-icon { position:absolute; left:12px; top:12px; display:grid; place-items:center; width:34px; height:34px; border-radius:9px; color:var(--green); background:#fff; box-shadow:0 4px 10px #1b355027; }
+    .card-art .art-icon .ui-icon { width:19px; height:19px; }
     .card-body { padding:20px; }
     .step-label { color:var(--green); font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
     .card h3 { margin:10px 0 7px; font-size:16px; line-height:1.4; letter-spacing:-.02em; }
@@ -84,8 +84,8 @@
     .modal-kicker { color:var(--green); font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
     .modal h2 { margin:8px 0 18px; font-size:25px; line-height:1.25; }
     .icon-btn { display:grid; place-items:center; width:38px; height:38px; border:1px solid var(--line); border-radius:50%; background:#fff; color:var(--muted); font-size:23px; line-height:1; }
-    .modal-art { display:grid; place-items:center; height:165px; border-radius:18px; background:var(--green-soft); color:var(--green); }
-    .modal-art .ui-icon { width:52px; height:52px; }
+    .modal-art { overflow:auto; max-height:360px; border:1px solid var(--line); border-radius:18px; background:#f6f8fa; }
+    .modal-art img { display:block; width:100%; height:auto; }
     .instructions { margin:20px 0; padding:20px; border:1px solid var(--line); border-radius:16px; background:#f9fafb; }
     .instructions h3 { margin:0 0 7px; font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
     .instructions p { margin:0; color:#5e6e87; font-size:14px; line-height:1.8; }
@@ -111,22 +111,7 @@
   </svg>
 
   <div class="layout">
-    <aside class="sidebar">
-      <div class="sidebar-brand"><img src="/images/DT%20LOGO.png" alt="DevT Logo" class="sidebar-logo-image"><span>DevTrack</span></div>
-      <div class="sidebar-section-label">MANAGEMENT</div>
-      <nav class="sidebar-nav" aria-label="Main navigation">
-        <a class="nav-item" id="sidebarRequestsLink" href="/requests.html"><span class="nav-icon"><svg><use href="#i-requests"/></svg></span><span>Requests</span></a>
-        <a class="nav-item" id="sidebarDashboardLink" href="/"><span class="nav-icon"><svg><use href="#i-projects"/></svg></span><span>Projects</span></a>
-        <a class="nav-item" id="sidebarTasksLink" href="/tasks.html"><span class="nav-icon"><svg><use href="#i-tasks"/></svg></span><span>Tasks</span></a>
-        <a class="nav-item" id="sidebarDevelopmentTeamLink" href="/development-team.html"><span class="nav-icon"><svg><use href="#i-team"/></svg></span><span>Development Team</span></a>
-      </nav>
-      <div class="sidebar-spacer"></div>
-      <a class="nav-item active sidebar-help" id="sidebarHelpLink" href="/help.html" aria-current="page"><span class="nav-icon"><svg><use href="#i-help"/></svg></span><span>Help</span></a>
-      <div class="sidebar-account">
-        <div class="sidebar-account-text"><strong id="sidebarUserName">DevT User</strong><span id="sidebarUserRole">Account</span></div>
-        <button type="button" id="sidebarLogoutBtn" class="sidebar-logout-btn">Sign out</button>
-      </div>
-    </aside>
+    <div id="sidebar-container"></div>
 
     <div class="content">
       <header class="topbar"><span class="topbar-title">System Help Guide</span><span class="topbar-meta">DevTrack <span class="avatar">DT</span></span></header>
@@ -146,38 +131,48 @@
   <div class="modal" id="stepModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
     <div class="modal-panel">
       <div class="modal-head"><div><div class="modal-kicker" id="modalKicker"></div><h2 id="modalTitle"></h2></div><button class="icon-btn" id="closeModal" type="button" aria-label="Close guide">×</button></div>
-      <div class="modal-art"><svg class="ui-icon" id="modalIcon"><use href="#i-start"/></svg></div>
+      <div class="modal-art"><img id="modalImage" alt=""></div>
       <div class="instructions"><h3>Instructions</h3><p id="modalDescription"></p></div>
       <div class="modal-actions"><button type="button" id="previousStep">← Previous</button><span class="step-count" id="stepCount"></span><button type="button" class="next" id="nextStep">Next →</button></div>
     </div>
   </div>
 
+  <script src="/js/components.js"></script>
   <script>
     const sections = [
-      { id:'start', title:'Getting Started', description:'Get familiar with the DevTrack management pages.', icon:'start', steps:[
-        { title:'Open DevTrack', description:'Sign in with your authorized account. After signing in, use the sidebar to move between Requests, Projects, Tasks, and Development Team.' }
+      { id:'requests', title:'How to Manage Requests', description:'Create and review Information Systems requests.', icon:'requests', image:'/images/help-requests.png', steps:[
+        { title:'Open Requests', description:'Select Requests in the sidebar. The summary cards show total, pending, for review, and approved requests.' },
+        { title:'Create a New Request', description:'Select + New Request at the top right to start an Information Systems request.' },
+        { title:'Find a Request', description:'Search by request number, office, end user, or system. Use the status and request type filters to narrow the list.' },
+        { title:'View the Uploaded Form', description:'Select View Form in a request row to open its uploaded request document in a new tab.' },
+        { title:'Review a Request', description:'Open Actions → Review Request. Check the reference number, requesting office, and system name, then set the status to Pending, For Review, Approved, or Rejected and select Update Status.' },
+        { title:'Edit or Delete a Request', description:'Actions → Edit opens the request form for changes. Actions → Delete asks for confirmation and also removes the request’s Google Drive folder.' }
       ]},
-      { id:'requests', title:'How to Manage Requests', description:'View incoming requests and follow their progress.', icon:'requests', steps:[
-        { title:'Open Requests', description:'Select Requests in the sidebar to see the requests available to your account.' },
-        { title:'Review a Request', description:'Open a request and review its details before taking action. Check its description, owner, and current status.' },
-        { title:'Track Request Progress', description:'Return to the Requests page to check updates and follow the request through its workflow.' }
+      { id:'projects', title:'How to Manage Projects', description:'Monitor project status, team assignments, and schedules.', icon:'projects', image:'/images/help-projects.png', steps:[
+        { title:'Open the Project Dashboard', description:'Select Projects in the sidebar. The cards summarize total projects, active projects, completed projects, and total tasks.' },
+        { title:'Create or Find a Project', description:'Use + New Project to begin a project entry, or View All Projects to see the complete project list.' },
+        { title:'View Tasks and Project Files', description:'Open a project’s Actions → Project menu. View Tasks opens that project’s tasks; Project Repository opens its stored files; Upload Files / Folder lets you choose files or a folder to add.' },
+        { title:'Check Deployment Readiness', description:'Actions → Deployment opens Deployment Checklist and Deployment Forms. Deploy becomes available when the project is Ready for Deployment; deploying marks it Deployed and unlocks Maintenance.' },
+        { title:'Open Maintenance', description:'Actions → Maintenance opens the project’s maintenance page when its status is Deployed or Completed. The locked control is disabled for other statuses.' },
+        { title:'Edit or Delete a Project', description:'Administrators can use Actions → Manage → Edit to update the project. Delete asks for confirmation and permanently removes the project and its related records.' }
       ]},
-      { id:'projects', title:'How to Manage Projects', description:'Find projects and review their information.', icon:'projects', steps:[
-        { title:'Open Projects', description:'Select Projects in the sidebar to open the main project dashboard.' },
-        { title:'View a Project', description:'Choose a project to read its details, current progress, and related work.' },
-        { title:'Keep Project Details Current', description:'If your account has editing access, open the project controls, make the needed changes, and save them.' }
+      { id:'tasks', title:'How to Manage Tasks', description:'Track project activities, assignments, and progress.', icon:'tasks', image:'/images/help-tasks.png', steps:[
+        { title:'Open Project Tasks', description:'Select Tasks in the sidebar. Summary cards show total tasks and counts by Not Started, In Progress, and Completed.' },
+        { title:'Create a New Task', description:'Select + New Task at the top right to begin a task entry.' },
+        { title:'Read Task Progress', description:'In the task table, review procedure stage, task or activity, status, priority, development team, due date, progress, and schedule status.' },
+        { title:'Review a Task', description:'Use Actions → Review to open the task review form. It shows the task, responsible team, status, progress, and expected output, with fields for review result, review date, and remarks.' },
+        { title:'Manage Task Files', description:'Actions → Task Repository opens the task’s stored files. Upload Files / Folder lets you choose files or a folder for that task.' },
+        { title:'Edit or View History', description:'Actions → Edit opens the task form for changes. Actions → History opens the task’s recorded history.' },
+        { title:'Delete a Task', description:'Administrators can use Actions → Delete. The confirmation explains that this permanently removes the task and its Task Repository folder from Google Drive.' }
       ]},
-      { id:'tasks', title:'How to Manage Tasks', description:'Find assigned tasks and check their status.', icon:'tasks', steps:[
-        { title:'Open Tasks', description:'Select Tasks in the sidebar to see the work tracked in DevTrack.' },
-        { title:'Review Task Details', description:'Open a task to check its description, assignee, dates, and current status.' },
-        { title:'Update Task Progress', description:'If your account has permission, update the task information and save your changes.' }
-      ]},
-      { id:'team', title:'How to View the Development Team', description:'See the people involved in development work.', icon:'team', steps:[
-        { title:'Open Development Team', description:'Select Development Team in the sidebar to view the team page.' },
-        { title:'Find a Team Member', description:'Browse the team list and open the relevant member record for more information.' }
+      { id:'team', title:'How to Manage the Development Team', description:'Create and manage accounts that can be assigned to projects.', icon:'team', image:'/images/help-team.png', steps:[
+        { title:'Open Development Team', description:'Select Development Team in the sidebar. The summary cards show total and active accounts.' },
+        { title:'Find or Add a Member', description:'Search the Team Accounts list by name or email, or select + Add Member to create an account.' },
+        { title:'Edit a Team Account', description:'Use Edit on the member row to change account details. The table also shows email, status, and creation date.' },
+        { title:'Delete a Team Account', description:'Use Delete on the member row and confirm the account name. Existing project history remains, but the deleted account can no longer sign in.' }
       ]}
     ];
-    const steps = sections.flatMap(section => section.steps.map(step => ({...step, section:section.title, icon:section.icon})));
+    const steps = sections.flatMap(section => section.steps.map(step => ({...step, section:section.title, icon:section.icon, image:section.image})));
     const icon = name => `<svg class="ui-icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
     const guideSections = document.getElementById('guideSections');
     const search = document.getElementById('guideSearch');
@@ -203,7 +198,8 @@
           const index = steps.findIndex(item => item.title === step.title);
           const card = document.createElement('button');
           card.type = 'button'; card.className = 'card';
-          card.innerHTML = `<div class="card-art"><span class="art-icon">${icon(section.icon)}</span></div><div class="card-body"><div class="step-label"></div><h3></h3><p></p></div>`;
+          card.innerHTML = `<div class="card-art"><img alt="" loading="lazy"><span class="art-icon">${icon(section.icon)}</span></div><div class="card-body"><div class="step-label"></div><h3></h3><p></p></div>`;
+          card.querySelector('.card-art img').src = section.image;
           card.querySelector('.step-label').textContent = `Step ${index + 1}  ›  ${section.title}`;
           card.querySelector('h3').textContent = step.title;
           card.querySelector('p').textContent = step.description;
@@ -219,7 +215,8 @@
       document.getElementById('modalKicker').textContent = `${step.section} • Step ${selected + 1}`;
       document.getElementById('modalTitle').textContent = step.title;
       document.getElementById('modalDescription').textContent = step.description;
-      document.querySelector('#modalIcon use').setAttribute('href', `#i-${step.icon}`);
+      document.getElementById('modalImage').src = step.image;
+      document.getElementById('modalImage').alt = `${step.section} screen`;
       document.getElementById('stepCount').textContent = `Step ${selected + 1} of ${steps.length}`;
       document.getElementById('previousStep').disabled = selected === 0;
       document.getElementById('nextStep').disabled = selected === steps.length - 1;
