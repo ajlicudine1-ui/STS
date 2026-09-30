@@ -1,250 +1,504 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Help | DevTrack</title>
+
   <link rel="icon" type="image/png" href="/images/DT%20LOGO.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+
+
+
+
+
   <style>
+
     :root { --green:#536b35; --green-dark:#43592b; --green-soft:#f3f6ed; --ink:#172b4c; --muted:#71829e; --line:#e4eaf0; --bg:#f7f9fb; }
+
     * { box-sizing:border-box; }
-    body { margin:0; color:var(--ink); background:var(--bg); font-family:Poppins,Arial,sans-serif; }
+
+    body { margin:0; color:var(--ink); background:var(--bg); font-family:Arial,Helvetica,sans-serif; }
+
     button,input { font:inherit; }
+
     button { cursor:pointer; }
+
     .layout { min-height:100vh; display:grid; grid-template-columns:280px minmax(0,1fr); visibility:hidden; }
+
     body.admin-ready .layout { visibility:visible; }
+
     #sidebar-container { min-width:0; }
+
     .sidebar { position:sticky; top:0; height:100vh; min-height:600px; display:flex; flex-direction:column; padding:28px 20px 24px; background:#fff; border-right:1px solid var(--line); }
+
     .sidebar-brand { display:flex; align-items:center; gap:12px; padding:0 14px 68px; font-size:25px; font-weight:800; letter-spacing:-.04em; }
+
     .sidebar-logo-image { width:42px; height:42px; object-fit:contain; }
+
     .sidebar-section-label { padding:0 14px 16px; color:#92a3bd; font-size:11px; font-weight:800; letter-spacing:.2em; }
+
     .sidebar-nav { display:grid; gap:6px; }
+
     .nav-item { display:flex; align-items:center; gap:14px; width:100%; min-height:51px; padding:10px 15px; border:0; border-radius:16px; color:#657895; background:transparent; text-decoration:none; font-size:14px; font-weight:700; line-height:1.35; text-align:left; }
+
     .nav-item:hover, .nav-item:focus-visible { color:var(--green); background:var(--green-soft); outline:none; }
+
     .nav-item.active { color:#fff; background:var(--green); box-shadow:0 9px 19px #536b3526; }
+
     .nav-icon { flex:none; width:21px; height:21px; display:grid; place-items:center; }
+
     .nav-icon svg,.ui-icon { display:block; width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+
     .sidebar-spacer { flex:1; min-height:36px; }
+
     .sidebar-help { margin-bottom:22px; }
+
     .sidebar-account { border-top:1px solid var(--line); padding:19px 15px 0; }
+
     .sidebar-account-text { display:grid; gap:1px; margin-bottom:13px; }
+
     .sidebar-account-text strong { font-size:14px; }
+
     .sidebar-account-text span { color:#8a9bb6; font-size:12px; }
+
     .sidebar-logout-btn { width:100%; padding:11px; border:1px solid #d4deea; border-radius:11px; background:white; color:#566986; font-weight:700; font-size:13px; }
+
     .sidebar-logout-btn:hover { background:var(--green-soft); }
+
     .content { min-width:0; }
+
     .topbar { height:72px; display:flex; align-items:center; justify-content:space-between; padding:0 clamp(22px,4vw,58px); background:white; border-bottom:1px solid var(--line); }
+
     .topbar-title { font-size:14px; font-weight:700; }
+
     .topbar-meta { display:flex; align-items:center; gap:10px; font-size:12px; font-weight:700; }
+
     .avatar { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:var(--green); color:white; }
+
     main { max-width:1450px; margin:0 auto; padding:30px clamp(22px,4vw,58px) 56px; }
+
     .hero,.section-heading,.card,.empty { background:#fff; border:1px solid var(--line); box-shadow:0 8px 30px #1b35500a; }
+
     .hero { position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; gap:25px; padding:32px; border-radius:24px; }
+
     .hero::after { content:""; position:absolute; width:240px; height:240px; right:-80px; top:-160px; background:var(--green-soft); border-radius:50%; }
+
     .hero-copy,.search-wrap { position:relative; z-index:1; }
+
     h1 { display:flex; align-items:center; gap:12px; margin:0 0 8px; font-size:clamp(23px,2.2vw,32px); letter-spacing:-.04em; }
+
     h1 .ui-icon { width:31px; height:31px; color:var(--green); }
+
     .hero p,.section-heading p { margin:0; color:var(--muted); font-size:13px; line-height:1.7; }
+
     .search-wrap { flex:none; width:min(340px,100%); }
+
     .search-wrap .ui-icon { position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#91a2b9; width:18px; height:18px; }
+
     #guideSearch { width:100%; padding:13px 15px 13px 45px; border:1px solid var(--line); border-radius:14px; background:#f9fafb; color:var(--ink); outline:none; font-size:13px; }
+
     #guideSearch:focus { border-color:var(--green); box-shadow:0 0 0 4px #536b351a; }
+
     .guide-pill { display:inline-flex; align-items:center; gap:8px; margin:23px 0 19px; padding:10px 16px; border:1px solid var(--line); border-radius:999px; background:white; color:var(--green-dark); font-size:12px; font-weight:700; }
+
     .guide-pill .ui-icon { width:16px; height:16px; }
+
     .guide-section { margin-bottom:24px; }
+
     .section-heading { display:flex; align-items:center; gap:16px; padding:21px 24px; border-radius:22px; margin-bottom:14px; }
+
     .section-heading .section-icon { flex:none; display:grid; place-items:center; width:47px; height:47px; border-radius:14px; background:var(--green-soft); color:var(--green); }
+
     .section-heading h2 { margin:0 0 2px; font-size:21px; letter-spacing:-.03em; }
+
     .card-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+
     .card { overflow:hidden; display:flex; flex-direction:column; min-width:0; padding:0; border-radius:20px; color:inherit; text-align:left; transition:transform .2s,box-shadow .2s; }
+
     .card:hover,.card:focus-visible { transform:translateY(-3px); box-shadow:0 16px 32px #1b35501a; outline:2px solid #536b3570; outline-offset:2px; }
+
     .card-art { position:relative; height:160px; background:#eef2f5; overflow:hidden; }
+
     .card-art img { display:block; width:100%; height:100%; object-fit:cover; object-position:top left; transition:transform .25s; }
+
     .card:hover .card-art img { transform:scale(1.035); }
+
     .card-art .art-icon { position:absolute; left:12px; top:12px; display:grid; place-items:center; width:34px; height:34px; border-radius:9px; color:var(--green); background:#fff; box-shadow:0 4px 10px #1b355027; }
+
     .card-art .art-icon .ui-icon { width:19px; height:19px; }
+
     .card-body { padding:20px; }
+
     .step-label { color:var(--green); font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+
     .card h3 { margin:10px 0 7px; font-size:16px; line-height:1.4; letter-spacing:-.02em; }
+
     .card p { margin:0; color:var(--muted); font-size:12px; line-height:1.7; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; }
+
     .empty { display:none; border-style:dashed; border-radius:22px; padding:65px 20px; text-align:center; }
+
     .empty h2 { margin:0 0 5px; }
+
     .empty p { margin:0 0 17px; color:var(--muted); }
+
     .empty button { border:0; background:none; color:var(--green); font-weight:800; }
+
     .support { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-top:28px; padding:29px 34px; border-radius:22px; color:white; background:var(--green); }
+
     .support h2 { margin:0 0 5px; font-size:22px; }
+
     .support p { margin:0; color:#e6eedc; font-size:13px; }
+
     .support a { flex:none; padding:13px 20px; border-radius:12px; background:white; color:var(--green); text-decoration:none; font-size:13px; font-weight:800; }
+
     .modal { position:fixed; z-index:10; inset:0; display:none; align-items:center; justify-content:center; padding:20px; background:#14243cc4; }
+
     .modal.open { display:flex; }
+
     .modal-panel { width:min(720px,100%); max-height:min(700px,calc(100vh - 40px)); overflow:auto; padding:28px; border-radius:24px; background:white; box-shadow:0 25px 70px #101d32a6; }
+
     .modal-head { display:flex; align-items:flex-start; justify-content:space-between; gap:15px; }
+
     .modal-kicker { color:var(--green); font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+
     .modal h2 { margin:8px 0 18px; font-size:25px; line-height:1.25; }
+
     .icon-btn { display:grid; place-items:center; width:38px; height:38px; border:1px solid var(--line); border-radius:50%; background:#fff; color:var(--muted); font-size:23px; line-height:1; }
+
     .modal-art { overflow:auto; max-height:360px; border:1px solid var(--line); border-radius:18px; background:#f6f8fa; }
+
     .modal-art img { display:block; width:100%; height:auto; }
+
     .instructions { margin:20px 0; padding:20px; border:1px solid var(--line); border-radius:16px; background:#f9fafb; }
+
     .instructions h3 { margin:0 0 7px; font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+
     .instructions p { margin:0; color:#5e6e87; font-size:14px; line-height:1.8; }
+
     .modal-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+
     .modal-actions button { padding:10px 15px; border:1px solid var(--line); border-radius:11px; background:white; color:var(--ink); font-weight:700; font-size:13px; }
+
     .modal-actions button.next { background:var(--green); color:white; border-color:var(--green); }
+
     .modal-actions button:disabled { opacity:.4; cursor:not-allowed; }
+
     .step-count { color:var(--muted); font-size:12px; font-weight:700; }
+
     @media(max-width:1050px) { .card-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
     @media(max-width:760px) { .layout { display:block; } .sidebar { position:static; height:auto; min-height:0; padding:14px; } .sidebar-brand { padding:0 5px 12px; font-size:20px; } .sidebar-logo-image { width:34px; height:34px; } .sidebar-section-label,.sidebar-account,.sidebar-spacer { display:none; } .sidebar-nav { display:flex; overflow-x:auto; } .sidebar-nav .nav-item { width:auto; min-width:max-content; padding:8px 10px; min-height:40px; } .sidebar-help { margin:6px 0 0; width:auto; } .topbar { height:55px; } .hero { flex-direction:column; align-items:stretch; padding:24px; } .search-wrap { width:100%; } .card-grid { grid-template-columns:1fr; } .support { align-items:flex-start; flex-direction:column; } }
+
   </style>
+
 </head>
+
 <body>
+
   <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+
     <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.1 1.9c-1.1.9-1.6 1.3-1.6 2.6"/><path d="M12 17h.01"/></symbol>
+
     <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-9-1v14c4-1 7-.5 9 1 2-1.5 5-2 9-1V5c-4-1-7-.5-9 1Z"/><path d="M12 6v14"/></symbol>
+
     <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+
     <symbol id="i-requests" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="m8 11 2 2 5-5M8 17h8"/></symbol>
+
     <symbol id="i-projects" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+
     <symbol id="i-tasks" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><path d="m3 6 1.5 1.5L7 4M3 12l1.5 1.5L7 10M3 18l1.5 1.5L7 16"/></symbol>
+
     <symbol id="i-team" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20v-2a6 6 0 0 1 12 0v2M15 15a5 5 0 0 1 7 5"/></symbol>
+
     <symbol id="i-maintenance" viewBox="0 0 24 24"><path d="M14 5a5 5 0 0 0-6 6L3 16a2 2 0 0 0 3 3l5-5a5 5 0 0 0 6-6l-3 3-3-3 3-3Z"/></symbol>
+
     <symbol id="i-start" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12h8m-3-3 3 3-3 3"/></symbol>
+
   </svg>
 
+
+
   <div class="layout">
+
     <div id="sidebar-container"></div>
 
+
+
     <div class="content">
+
       <main>
+
         <div class="hero">
+
           <div class="hero-copy"><h1><svg class="ui-icon"><use href="#i-book"/></svg>Administrator User Guide</h1><p>Find step-by-step guidance for requests, projects, tasks, and the development team.</p></div>
+
           <label class="search-wrap"><svg class="ui-icon"><use href="#i-search"/></svg><input id="guideSearch" type="search" placeholder="Search tutorials..." aria-label="Search tutorials"></label>
+
         </div>
+
         <div class="guide-pill"><svg class="ui-icon"><use href="#i-start"/></svg>Administrator Guide</div>
+
         <div id="guideSections"></div>
+
         <div class="empty" id="emptyState"><h2>No results found</h2><p>Try another keyword to find a tutorial.</p><button type="button" id="clearSearch">Clear search</button></div>
+
         <div class="support"><div><h2>Still need assistance?</h2><p>Contact your DevTrack administrator for help with your account or workflow.</p></div><a href="mailto:emailsupport@darfoi.gov.ph">Contact Support</a></div>
+
       </main>
+
     </div>
+
   </div>
+
+
 
   <div class="modal" id="stepModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+
     <div class="modal-panel">
+
       <div class="modal-head"><div><div class="modal-kicker" id="modalKicker"></div><h2 id="modalTitle"></h2></div><button class="icon-btn" id="closeModal" type="button" aria-label="Close guide">×</button></div>
+
       <div class="modal-art"><img id="modalImage" alt=""></div>
+
       <div class="instructions"><h3>Instructions</h3><p id="modalDescription"></p></div>
+
       <div class="modal-actions"><button type="button" id="previousStep">← Previous</button><span class="step-count" id="stepCount"></span><button type="button" class="next" id="nextStep">Next →</button></div>
+
     </div>
+
   </div>
 
+
+
   <script src="/js/components.js"></script>
+
   <script>
+
     const sections = [
+
       { id:'requests', title:'How to Manage Requests', description:'Create and review Information Systems requests.', icon:'requests', image:'/images/help-requests.png', steps:[
+
         { title:'Open Requests', description:'Select Requests in the sidebar. The summary cards show total, pending, for review, and approved requests.' },
+
         { title:'Create a New Request', description:'Select + New Request at the top right to start an Information Systems request.' },
+
         { title:'Find a Request', description:'Search by request number, office, end user, or system. Use the status and request type filters to narrow the list.' },
+
         { title:'View the Uploaded Form', description:'Select View Form in a request row to open its uploaded request document in a new tab.' },
+
         { title:'Review a Request', description:'Open Actions → Review Request. Check the reference number, requesting office, and system name, then set the status to Pending, For Review, Approved, or Rejected and select Update Status.' },
+
         { title:'Edit or Delete a Request', description:'Actions → Edit opens the request form for changes. Actions → Delete asks for confirmation and also removes the request’s Google Drive folder.' }
+
       ]},
+
       { id:'projects', title:'How to Manage Projects', description:'Monitor project status, team assignments, and schedules.', icon:'projects', image:'/images/help-projects.png', steps:[
+
         { title:'Open the Project Dashboard', description:'Select Projects in the sidebar. The cards summarize total projects, active projects, completed projects, and total tasks.' },
+
         { title:'Create or Find a Project', description:'Use + New Project to begin a project entry, or View All Projects to see the complete project list.' },
+
         { title:'View Tasks and Project Files', image:'/images/help-project-menu.png', description:'Open a project’s Actions → Project menu. View Tasks opens that project’s tasks; Project Repository opens its stored files; Upload Files / Folder lets you choose files or a folder to add.' },
+
         { title:'Check Deployment Readiness', image:'/images/help-deployment-menu.png', description:'Actions → Deployment opens Deployment Checklist and Deployment Forms. Deploy becomes available when the project is Ready for Deployment; deploying marks it Deployed and unlocks Maintenance.' },
+
         { title:'Edit or Delete a Project', image:'/images/help-manage-menu.png', description:'Administrators can use Actions → Manage → Edit to update the project. Delete asks for confirmation and permanently removes the project and its related records.' }
+
       ]},
+
       { id:'tasks', title:'How to Manage Tasks', description:'Track project activities, assignments, and progress.', icon:'tasks', image:'/images/help-tasks.png', steps:[
+
         { title:'Open Project Tasks', description:'Select Tasks in the sidebar. Summary cards show total tasks and counts by Not Started, In Progress, and Completed.' },
+
         { title:'Create a New Task', description:'Select + New Task at the top right to begin a task entry.' },
+
         { title:'Read Task Progress', description:'In the task table, review procedure stage, task or activity, status, priority, development team, due date, progress, and schedule status.' },
+
         { title:'Review a Task', image:'/images/help-task-menu.png', description:'Use Actions → Review to open the task review form. It shows the task, responsible team, status, progress, and expected output, with fields for review result, review date, and remarks.' },
+
         { title:'Manage Task Files', image:'/images/help-task-menu.png', description:'Actions → Task Repository opens the task’s stored files. Upload Files / Folder lets you choose files or a folder for that task.' },
+
         { title:'Edit or View History', description:'Actions → Edit opens the task form for changes. Actions → History opens the task’s recorded history.' },
+
         { title:'Delete a Task', description:'Administrators can use Actions → Delete. The confirmation explains that this permanently removes the task and its Task Repository folder from Google Drive.' }
+
       ]},
+
       { id:'maintenance', title:'How to Manage Maintenance', description:'Record and monitor maintenance work on deployed or completed projects.', icon:'maintenance', image:'/images/help-maintenance-page.png', steps:[
+
         { title:'Open Maintenance Records', image:'/images/help-maintenance-menu.png', description:'On Projects, open the relevant project’s Actions → Maintenance. The option is available when its status is Deployed or Completed; it opens that project’s maintenance records.' },
+
         { title:'Review Maintenance Status', description:'The Maintenance page shows total, active, inactive, and uploaded-file counts. Search by issue, action, or person, or filter records by status.' },
+
         { title:'Add a Maintenance Record', description:'Select + Add Maintenance. Enter the date, status, issue, action taken, down time, responsible people, observation, and action needed. Complete the checklist, attach the required file, then save.' }
+
       ]},
+
       { id:'team', title:'How to Manage the Development Team', description:'Create and manage accounts that can be assigned to projects.', icon:'team', image:'/images/help-team.png', steps:[
+
         { title:'Open Development Team', description:'Select Development Team in the sidebar. The summary cards show total and active accounts.' },
+
         { title:'Find or Add a Member', description:'Search the Team Accounts list by name or email, or select + Add Member to create an account.' },
+
         { title:'Edit a Team Account', description:'Use Edit on the member row to change account details. The table also shows email, status, and creation date.' },
+
         { title:'Delete a Team Account', description:'Use Delete on the member row and confirm the account name. Existing project history remains, but the deleted account can no longer sign in.' }
+
       ]}
+
     ];
+
     const steps = sections.flatMap(section => section.steps.map(step => ({...step, section:section.title, icon:section.icon, image:step.image || section.image})));
+
     const icon = name => `<svg class="ui-icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+
     const guideSections = document.getElementById('guideSections');
+
     const search = document.getElementById('guideSearch');
+
     const modal = document.getElementById('stepModal');
+
     let selected = 0;
+
     let lastFocus = null;
 
+
+
     function render() {
+
       const query = search.value.trim().toLowerCase();
+
       guideSections.replaceChildren();
+
       let found = 0;
+
       sections.forEach(section => {
+
         const matched = section.steps.filter(step => `${step.title} ${step.description} ${section.title}`.toLowerCase().includes(query));
+
         if (!matched.length) return;
+
         found += matched.length;
+
         const wrapper = document.createElement('section');
+
         wrapper.className = 'guide-section';
+
         wrapper.innerHTML = `<div class="section-heading"><div class="section-icon">${icon(section.icon)}</div><div><h2></h2><p></p></div></div><div class="card-grid"></div>`;
+
         wrapper.querySelector('h2').textContent = section.title;
+
         wrapper.querySelector('.section-heading p').textContent = section.description;
+
         const grid = wrapper.querySelector('.card-grid');
+
         matched.forEach(step => {
+
           const index = steps.findIndex(item => item.title === step.title);
+
           const card = document.createElement('button');
+
           card.type = 'button'; card.className = 'card';
+
           card.innerHTML = `<div class="card-art"><img alt="" loading="lazy"><span class="art-icon">${icon(section.icon)}</span></div><div class="card-body"><div class="step-label"></div><h3></h3><p></p></div>`;
+
           card.querySelector('.card-art img').src = step.image || section.image;
+
           card.querySelector('.step-label').textContent = `Step ${index + 1}  ›  ${section.title}`;
+
           card.querySelector('h3').textContent = step.title;
+
           card.querySelector('p').textContent = step.description;
+
           card.addEventListener('click', () => openStep(index));
+
           grid.append(card);
+
         });
+
         guideSections.append(wrapper);
+
       });
+
       document.getElementById('emptyState').style.display = found ? 'none' : 'block';
+
     }
+
     function updateModal() {
+
       const step = steps[selected];
+
       document.getElementById('modalKicker').textContent = `${step.section} • Step ${selected + 1}`;
+
       document.getElementById('modalTitle').textContent = step.title;
+
       document.getElementById('modalDescription').textContent = step.description;
+
       document.getElementById('modalImage').src = step.image;
+
       document.getElementById('modalImage').alt = `${step.section} screen`;
+
       document.getElementById('stepCount').textContent = `Step ${selected + 1} of ${steps.length}`;
+
       document.getElementById('previousStep').disabled = selected === 0;
+
       document.getElementById('nextStep').disabled = selected === steps.length - 1;
+
     }
+
     function openStep(index) { lastFocus = document.activeElement; selected = index; updateModal(); modal.hidden = false; modal.classList.add('open'); document.body.style.overflow = 'hidden'; document.getElementById('closeModal').focus(); }
+
     function closeStep() { modal.classList.remove('open'); modal.hidden = true; document.body.style.overflow = ''; lastFocus?.focus(); }
+
     search.addEventListener('input', render);
+
     document.getElementById('clearSearch').addEventListener('click', () => { search.value = ''; render(); search.focus(); });
+
     document.getElementById('closeModal').addEventListener('click', closeStep);
+
     modal.addEventListener('click', event => { if (event.target === modal) closeStep(); });
+
     document.getElementById('previousStep').addEventListener('click', () => { if (selected > 0) { selected--; updateModal(); } });
+
     document.getElementById('nextStep').addEventListener('click', () => { if (selected < steps.length - 1) { selected++; updateModal(); } });
+
     document.addEventListener('keydown', event => { if (modal.hidden) return; if (event.key === 'Escape') closeStep(); if (event.key === 'ArrowLeft' && selected > 0) { selected--; updateModal(); } if (event.key === 'ArrowRight' && selected < steps.length - 1) { selected++; updateModal(); } });
-    (async () => {
-      const profile = await window.DevTAuth.ensureAuthenticated();
-      if (!profile) return;
+
+    async function startAdminGuide() {
+      const auth = window.DevTAuth;
+      const cachedProfile = auth.getProfile();
+      render();
+      if (auth.getToken() && cachedProfile?.role === 'admin') {
+        document.body.classList.add('admin-ready');
+      }
+      const profile = await auth.ensureAuthenticated();
+      if (!profile) {
+        document.body.classList.remove('admin-ready');
+        return;
+      }
       if (profile.role !== 'admin') {
+        document.body.classList.remove('admin-ready');
         window.location.replace('/');
         return;
       }
       document.body.classList.add('admin-ready');
-      render();
-    })();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startAdminGuide, { once:true });
+    } else {
+      startAdminGuide();
+    }
+
   </script>
+
 </body>
+
 </html>

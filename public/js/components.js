@@ -92,25 +92,13 @@
                                     })
                             }
                         );
-                    const responseText =
-                        await response.text();
-                    let result = {};
-                    try {
-                        result =
-                            responseText
-                                ? JSON.parse(
-                                    responseText
-                                )
-                                : {};
-                    } catch (_) {
-                        return false;
+                    // Only an explicit token rejection invalidates the session.
+                    if (!response.ok) {
+                        return [400, 401, 403].includes(response.status) ? false : null;
                     }
-                    if (
-                        !response.ok ||
-                        !result.access_token ||
-                        !result.refresh_token
-                    ) {
-                        return false;
+                    const result = await response.json();
+                    if (!result.access_token || !result.refresh_token) {
+                        return null;
                     }
                     setSession(
                         result.access_token,
@@ -120,7 +108,7 @@
                     );
                     return true;
                 } catch (_) {
-                    return false;
+                    return null;
                 }
             })();
         try {
@@ -204,6 +192,10 @@
         ) {
             const refreshed =
                 await refreshSession();
+            if (refreshed === null) {
+                // A failed refresh service must not erase an otherwise recoverable session.
+                throw new Error("Session validation is temporarily unavailable");
+            }
             if (refreshed) {
                 const retryHeaders =
                     new Headers(
@@ -248,33 +240,24 @@
             return null;
         }
         try {
-            const response =
-                await window.fetch(
-                    "/api/auth/me"
-                );
-            const result =
-                await response.json();
-            if (
-                !response.ok ||
-                !result.profile
-            ) {
-                throw new Error(
-                    "Session expired"
-                );
+            const response = await window.fetch("/api/auth/me");
+            if (response.status === 401) {
+                redirectToLogin();
+                return null;
             }
-            sessionStorage.setItem(
-                PROFILE_KEY,
-                JSON.stringify(
-                    result.profile
-                )
-            );
+            if (!response.ok) {
+                return getToken() ? getProfile() : null;
+            }
+            const result = await response.json();
+            if (!result.profile) {
+                return getToken() ? getProfile() : null;
+            }
+            sessionStorage.setItem(PROFILE_KEY, JSON.stringify(result.profile));
             return result.profile;
         } catch (_) {
-            clearSession();
-            window.location.replace(
-                "/login.html"
-            );
-            return null;
+            // Network/server errors are not proof that credentials are invalid.
+            // Keep the tab session so the next request can retry validation.
+            return getToken() ? getProfile() : null;
         }
     }
     // Share validation across the guide and shared page components.
