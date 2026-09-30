@@ -18,6 +18,9 @@
 
 
 
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/sidebar-account.css">
+
   <style>
 
     :root { --green:#536b35; --green-dark:#43592b; --green-soft:#f3f6ed; --ink:#172b4c; --muted:#71829e; --line:#e4eaf0; --bg:#f7f9fb; }
@@ -30,47 +33,13 @@
 
     button { cursor:pointer; }
 
-    .layout { min-height:100vh; display:grid; grid-template-columns:280px minmax(0,1fr); visibility:hidden; }
+    .layout { min-height:100vh; display:grid; grid-template-columns:250px minmax(0,1fr); visibility:hidden; }
 
     body.admin-ready .layout { visibility:visible; }
 
     #sidebar-container { min-width:0; }
 
-    .sidebar { position:sticky; top:0; height:100vh; min-height:600px; display:flex; flex-direction:column; padding:28px 20px 24px; background:#fff; border-right:1px solid var(--line); }
-
-    .sidebar-brand { display:flex; align-items:center; gap:12px; padding:0 14px 68px; font-size:25px; font-weight:800; letter-spacing:-.04em; }
-
-    .sidebar-logo-image { width:42px; height:42px; object-fit:contain; }
-
-    .sidebar-section-label { padding:0 14px 16px; color:#92a3bd; font-size:11px; font-weight:800; letter-spacing:.2em; }
-
-    .sidebar-nav { display:grid; gap:6px; }
-
-    .nav-item { display:flex; align-items:center; gap:14px; width:100%; min-height:51px; padding:10px 15px; border:0; border-radius:16px; color:#657895; background:transparent; text-decoration:none; font-size:14px; font-weight:700; line-height:1.35; text-align:left; }
-
-    .nav-item:hover, .nav-item:focus-visible { color:var(--green); background:var(--green-soft); outline:none; }
-
-    .nav-item.active { color:#fff; background:var(--green); box-shadow:0 9px 19px #536b3526; }
-
-    .nav-icon { flex:none; width:21px; height:21px; display:grid; place-items:center; }
-
-    .nav-icon svg,.ui-icon { display:block; width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
-
-    .sidebar-spacer { flex:1; min-height:36px; }
-
-    .sidebar-help { margin-bottom:22px; }
-
-    .sidebar-account { border-top:1px solid var(--line); padding:19px 15px 0; }
-
-    .sidebar-account-text { display:grid; gap:1px; margin-bottom:13px; }
-
-    .sidebar-account-text strong { font-size:14px; }
-
-    .sidebar-account-text span { color:#8a9bb6; font-size:12px; }
-
-    .sidebar-logout-btn { width:100%; padding:11px; border:1px solid #d4deea; border-radius:11px; background:white; color:#566986; font-weight:700; font-size:13px; }
-
-    .sidebar-logout-btn:hover { background:var(--green-soft); }
+    .ui-icon { display:block; width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
 
     .content { min-width:0; }
 
@@ -194,7 +163,9 @@
 
     @media(max-width:1050px) { .card-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 
-    @media(max-width:760px) { .layout { display:block; } .sidebar { position:static; height:auto; min-height:0; padding:14px; } .sidebar-brand { padding:0 5px 12px; font-size:20px; } .sidebar-logo-image { width:34px; height:34px; } .sidebar-section-label,.sidebar-account,.sidebar-spacer { display:none; } .sidebar-nav { display:flex; overflow-x:auto; } .sidebar-nav .nav-item { width:auto; min-width:max-content; padding:8px 10px; min-height:40px; } .sidebar-help { margin:6px 0 0; width:auto; } .topbar { height:55px; } .hero { flex-direction:column; align-items:stretch; padding:24px; } .search-wrap { width:100%; } .card-grid { grid-template-columns:1fr; } .support { align-items:flex-start; flex-direction:column; } }
+    @media(max-width:800px) { .layout { grid-template-columns:220px minmax(0,1fr); } }
+    @media(max-width:700px) { .layout { display:block; } .hero { flex-direction:column; align-items:stretch; padding:24px; } .search-wrap { width:100%; } .card-grid { grid-template-columns:1fr; } .support { align-items:flex-start; flex-direction:column; } }
+
 
   </style>
 
