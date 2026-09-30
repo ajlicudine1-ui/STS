@@ -9,32 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --green:#536b35; --green-dark:#43592b; --green-soft:#f3f6ed; --ink:#172b4c; --muted:#71829e; --line:#e4eaf0; --bg:#f7f9fb; }
-    * { box-sizing:border-box; }
-    body { margin:0; color:var(--ink); background:var(--bg); font-family:Poppins,Arial,sans-serif; }
-    button,input { font:inherit; }
-    button { cursor:pointer; }
-    .layout { min-height:100vh; display:grid; grid-template-columns:280px minmax(0,1fr); visibility:hidden; }
-    body.guide-ready .layout { visibility:visible; }
-    #sidebar-container { min-width:0; }
-    .sidebar { position:sticky; top:0; height:100vh; min-height:600px; display:flex; flex-direction:column; padding:28px 20px 24px; background:#fff; border-right:1px solid var(--line); }
-    .sidebar-brand { display:flex; align-items:center; gap:12px; padding:0 14px 68px; font-size:25px; font-weight:800; letter-spacing:-.04em; }
-    .sidebar-logo-image { width:42px; height:42px; object-fit:contain; }
-    .sidebar-section-label { padding:0 14px 16px; color:#92a3bd; font-size:11px; font-weight:800; letter-spacing:.2em; }
-    .sidebar-nav { display:grid; gap:6px; }
-    .nav-item { display:flex; align-items:center; gap:14px; width:100%; min-height:51px; padding:10px 15px; border:0; border-radius:16px; color:#657895; background:transparent; text-decoration:none; font-size:14px; font-weight:700; line-height:1.35; text-align:left; }
-    .nav-item:hover, .nav-item:focus-visible { color:var(--green); background:var(--green-soft); outline:none; }
-    .nav-item.active { color:#fff; background:var(--green); box-shadow:0 9px 19px #536b3526; }
-    .nav-icon { flex:none; width:21px; height:21px; display:grid; place-items:center; }
-    .nav-icon svg,.ui-icon { display:block; width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
-    .sidebar-spacer { flex:1; min-height:36px; }
-    .sidebar-help { margin-bottom:22px; }
-    .sidebar-account { border-top:1px solid var(--line); padding:19px 15px 0; }
-    .sidebar-account-text { display:grid; gap:1px; margin-bottom:13px; }
-    .sidebar-account-text strong { font-size:14px; }
-    .sidebar-account-text span { color:#8a9bb6; font-size:12px; }
-    .sidebar-logout-btn { width:100%; padding:11px; border:1px solid #d4deea; border-radius:11px; background:white; color:#566986; font-weight:700; font-size:13px; }
-    .sidebar-logout-btn:hover { background:var(--green-soft); }
+:root { --green:#536b35; --green-dark:#43592b; --green-soft:#f3f6ed; --ink:#172b4c; --muted:#71829e; --line:#e4eaf0; --bg:#f7f9fb; }
     .content { min-width:0; }
     .topbar { height:72px; display:flex; align-items:center; justify-content:space-between; padding:0 clamp(22px,4vw,58px); background:white; border-bottom:1px solid var(--line); }
     .topbar-title { font-size:14px; font-weight:700; }
@@ -95,8 +70,481 @@
     .modal-actions button.next { background:var(--green); color:white; border-color:var(--green); }
     .modal-actions button:disabled { opacity:.4; cursor:not-allowed; }
     .step-count { color:var(--muted); font-size:12px; font-weight:700; }
-    @media(max-width:1050px) { .card-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media(max-width:760px) { .layout { display:block; } .sidebar { position:static; height:auto; min-height:0; padding:14px; } .sidebar-brand { padding:0 5px 12px; font-size:20px; } .sidebar-logo-image { width:34px; height:34px; } .sidebar-section-label,.sidebar-account,.sidebar-spacer { display:none; } .sidebar-nav { display:flex; overflow-x:auto; } .sidebar-nav .nav-item { width:auto; min-width:max-content; padding:8px 10px; min-height:40px; } .sidebar-help { margin:6px 0 0; width:auto; } .topbar { height:55px; } .hero { flex-direction:column; align-items:stretch; padding:24px; } .search-wrap { width:100%; } .card-grid { grid-template-columns:1fr; } .support { align-items:flex-start; flex-direction:column; } }
+/* ============================================================
+   GLOBAL RESET
+   ============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f7fa;
+    color: #1f2937;
+}
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 100vh;
+    background: #ffffff;
+    color: #172b4d;
+    border-right: 1px solid #e7ebf0;
+    padding: 26px 20px;
+    z-index: 9999;
+    box-shadow: 2px 0 8px rgba(23, 43, 77, 0.03);
+    /* IMPORTANT: keeps account block at bottom */
+    display: flex;
+    flex-direction: column;
+}
+/* ============================================================
+   BRAND
+   ============================================================ */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 72px;
+    margin-bottom: 48px;
+    padding: 0 10px;
+    flex-shrink: 0;
+}
+.sidebar-logo-mark {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    overflow: visible;
+}
+.sidebar-logo-image {
+    width: 44px;
+    height: 44px;
+    display: block;
+    object-fit: contain;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+}
+.sidebar-brand-text {
+    color: #172b4d;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+/* ============================================================
+   SECTION LABEL
+   ============================================================ */
+.sidebar-section-label {
+    margin-bottom: 16px;
+    padding-left: 14px;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    flex-shrink: 0;
+}
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.nav-item {
+    width: 100%;
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 18px;
+    border-radius: 16px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
+}
+.nav-icon {
+    width: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #91a4bf;
+    font-size: 22px;
+    line-height: 1;
+}
+.nav-text {
+    flex: 1;
+}
+.nav-item:hover {
+    background: #f5f7f2;
+    color: #526832;
+    transform: translateX(2px);
+}
+.nav-item:hover .nav-icon {
+    color: #526832;
+}
+.nav-item.active {
+    background: #556b35;
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(85, 107, 53, 0.22);
+}
+.nav-item.active .nav-icon {
+    color: #ffffff;
+}
+/* ============================================================
+   SIDEBAR USER / LOGOUT
+   ALWAYS PINNED TO BOTTOM
+   ============================================================ */
+/*
+   This targets whichever sidebar wrapper contains both the
+   username and Sign out button, regardless of the wrapper class.
+*/
+.sidebar > *:has(#sidebarUserName):has(#sidebarLogoutBtn) {
+    margin-top: auto !important;
+    flex-shrink: 0;
+    width: 100%;
+    padding: 16px 16px 8px;
+    border-top: 1px solid #e7ebf0;
+}
+#sidebarUserName {
+    display: block;
+    margin: 0 0 3px;
+    color: #172b4d;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#sidebarUserRole {
+    display: block;
+    margin: 0 0 12px;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.3;
+}
+#sidebarLogoutBtn {
+    width: 100%;
+    height: 39px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    border: 1px solid #d8e0e8;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #52637a;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+#sidebarLogoutBtn:hover {
+    background: #f5f7f2;
+    border-color: #b8c8a8;
+    color: #526832;
+}
+/* Fallbacks if your sidebar wrapper uses one of these classes */
+.sidebar-account,
+.sidebar-footer,
+.sidebar-user-section,
+.sidebar-profile {
+    margin-top: auto !important;
+    flex-shrink: 0;
+}
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.main {
+    margin-left: 250px;
+    min-height: 100vh;
+    padding: 30px;
+    position: relative;
+    z-index: 1;
+}
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+.header h1 {
+    font-size: 28px;
+    color: #1b5e20;
+}
+.header p {
+    color: #6b7280;
+    margin-top: 5px;
+}
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition:
+        background 0.2s ease,
+        transform 0.15s ease;
+}
+.btn:active {
+    transform: translateY(1px);
+}
+.btn-primary {
+    background: #2e7d32;
+    color: white;
+}
+.btn-primary:hover {
+    background: #1b5e20;
+}
+.btn-secondary {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+.btn-secondary:hover {
+    background: #c8e6c9;
+}
+/* ============================================================
+   COMMON MODAL
+   ============================================================ */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.modal.show {
+    display: flex;
+}
+.modal-content {
+    width: 100%;
+    max-width: 650px;
+    background: white;
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 25px;
+}
+.modal-header h2 {
+    font-size: 22px;
+    margin-bottom: 5px;
+    color: #1b5e20;
+}
+.modal-header p {
+    color: #6b7280;
+    font-size: 14px;
+}
+.modal-close {
+    border: none;
+    background: transparent;
+    font-size: 28px;
+    color: #6b7280;
+    cursor: pointer;
+}
+.modal-close:hover {
+    color: #2e7d32;
+}
+/* ============================================================
+   COMMON FORMS
+   ============================================================ */
+.form-group {
+    margin-bottom: 18px;
+}
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 7px;
+    color: #1b5e20;
+}
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #2e7d32;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+/* ============================================================
+   STATUS BADGES
+   ============================================================ */
+.status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+.status-active {
+    background: #dcfce7;
+    color: #166534;
+}
+.status-completed {
+    background: #d1fae5;
+    color: #166534;
+}
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+/* ============================================================
+   GREEN ACCENT ELEMENTS
+   ============================================================ */
+a {
+    color: #2e7d32;
+}
+a:hover {
+    color: #1b5e20;
+}
+::selection {
+    background: #c8e6c9;
+    color: #1b5e20;
+}
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 800px) {
+    .sidebar {
+        width: 220px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+    .main {
+        margin-left: 220px;
+    }
+    .nav-item {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+}
+@media (max-width: 700px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid #e7ebf0;
+        z-index: 9999;
+    }
+    .sidebar-brand {
+        margin-bottom: 22px;
+    }
+    .sidebar-nav {
+        gap: 6px;
+    }
+    /*
+       On mobile the sidebar is no longer full-height,
+       so the account section should follow the nav naturally.
+    */
+    .sidebar > *:has(#sidebarUserName):has(#sidebarLogoutBtn),
+    .sidebar-account,
+    .sidebar-footer,
+    .sidebar-user-section,
+    .sidebar-profile {
+        margin-top: 22px !important;
+    }
+    .main {
+        margin-left: 0;
+        padding: 20px;
+    }
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+/* Connect the shared stylesheet to the guide's existing markup. */
+:root { --green:#556b35; --green-dark:#526832; --green-soft:#f5f7f2; --ink:#172b4d; --muted:#64748b; --line:#e7ebf0; --bg:#f5f7fa; }
+.layout { min-height:100vh; display:grid; grid-template-columns:250px minmax(0,1fr); visibility:hidden; }
+body.guide-ready .layout { visibility:visible; }
+#sidebar-container,.content { min-width:0; }
+button,input { font:inherit; }
+button { cursor:pointer; }
+.nav-item { border:0; background:transparent; text-align:left; line-height:1.35; }
+.nav-item:focus-visible { outline:2px solid #556b35; outline-offset:2px; }
+.nav-icon svg,.ui-icon { display:block; width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+.sidebar-spacer { flex:1; min-height:36px; }
+.sidebar-help { margin-bottom:22px; }
+.sidebar-account-text { display:grid; }
+/* Keep Help above the account separator for either sidebar structure. */
+.sidebar > .sidebar-bottom:has(#sidebarUserName):has(#sidebarLogoutBtn) { margin-top:auto !important; padding:0; border:0; }
+.sidebar-bottom .sidebar-account { margin-top:0 !important; padding:16px 16px 8px; border-top:0; }
+.sidebar-divider { height:1px; margin-bottom:0; background:#e7ebf0; }
+main { max-width:1450px; margin:0 auto; padding:30px; }
+h1 { color:#1b5e20; }
+.hero p,.section-heading p { color:#6b7280; }
+.modal-panel { border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.2); }
+.modal h2 { color:#1b5e20; }
+@media(max-width:1050px) { .card-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:800px) { .layout { grid-template-columns:220px minmax(0,1fr); } }
+@media(max-width:700px) {
+ .layout { display:block; }
+ .sidebar-spacer { display:none; }
+ .sidebar > .sidebar-bottom:has(#sidebarUserName):has(#sidebarLogoutBtn) { margin-top:22px !important; }
+ .sidebar-bottom .sidebar-account { margin-top:0 !important; }
+ main { padding:20px; }
+ .hero { flex-direction:column; align-items:stretch; padding:24px; }
+ .search-wrap { width:100%; }
+ .card-grid { grid-template-columns:1fr; }
+ .support { align-items:flex-start; flex-direction:column; }
+}
   </style>
 </head>
 <body>
@@ -111,11 +559,10 @@
     <symbol id="i-maintenance" viewBox="0 0 24 24"><path d="M14 5a5 5 0 0 0-6 6L3 16a2 2 0 0 0 3 3l5-5a5 5 0 0 0 6-6l-3 3-3-3 3-3Z"/></symbol>
     <symbol id="i-start" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12h8m-3-3 3 3-3 3"/></symbol>
   </svg>
-
   <div class="layout">
     <div id="sidebar-container"></div>
-
     <div class="content">
+      <main>
         <div class="hero">
           <div class="hero-copy"><h1><svg class="ui-icon"><use href="#i-book"/></svg>Development Team User Guide</h1><p>Find step-by-step guidance for your requests, assigned projects, tasks, and maintenance work.</p></div>
           <label class="search-wrap"><svg class="ui-icon"><use href="#i-search"/></svg><input id="guideSearch" type="search" placeholder="Search tutorials..." aria-label="Search tutorials"></label>
@@ -127,7 +574,6 @@
       </main>
     </div>
   </div>
-
   <div class="modal" id="stepModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
     <div class="modal-panel">
       <div class="modal-head"><div><div class="modal-kicker" id="modalKicker"></div><h2 id="modalTitle"></h2></div><button class="icon-btn" id="closeModal" type="button" aria-label="Close guide">×</button></div>
@@ -136,7 +582,6 @@
       <div class="modal-actions"><button type="button" id="previousStep">← Previous</button><span class="step-count" id="stepCount"></span><button type="button" class="next" id="nextStep">Next →</button></div>
     </div>
   </div>
-
   <script src="/js/components.js"></script>
   <script>
     const sections = [
@@ -248,7 +693,6 @@
     const modal = document.getElementById('stepModal');
     let selected = 0;
     let lastFocus = null;
-
     function render() {
       const query = search.value.trim().toLowerCase();
       guideSections.replaceChildren();
