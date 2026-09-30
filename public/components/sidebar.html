@@ -4,9 +4,29 @@
         flex-direction: column;
     }
 
-    .sidebar-bottom {
-        margin-top: auto;
+    .sidebar > .sidebar-bottom {
+        margin-top: auto !important;
+        padding: 0;
         border: 0 !important;
+    }
+
+    .sidebar .nav-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        flex-shrink: 0;
+    }
+
+    .sidebar .nav-icon img {
+        display: block;
+        width: 26px;
+        height: 26px;
+        object-fit: contain;
+    }
+
+    .sidebar .nav-item.active .nav-icon img {
+        filter: brightness(0) invert(1);
     }
 
     .sidebar-help {
@@ -25,11 +45,6 @@
         cursor: pointer;
     }
 
-    .sidebar-help .nav-icon {
-        font-size: 22px;
-        line-height: 1;
-    }
-
     .sidebar-divider {
         height: 1px;
         margin: 0 0 20px;
@@ -41,12 +56,22 @@
         padding-top: 0 !important;
         border-top: 0 !important;
     }
+
+    @media (max-width: 700px) {
+        .sidebar > .sidebar-bottom {
+            margin-top: 22px !important;
+        }
+    }
 </style>
 
 <aside class="sidebar">
     <div class="sidebar-brand">
         <div class="sidebar-logo-mark">
-            <img src="/images/DT%20LOGO.png" alt="DevT Logo" class="sidebar-logo-image">
+            <img
+                src="/images/DT%20LOGO.png"
+                alt="DevT Logo"
+                class="sidebar-logo-image"
+            >
         </div>
         <div class="sidebar-brand-text">DevTrack</div>
     </div>
@@ -55,29 +80,43 @@
 
     <nav class="sidebar-nav">
         <a class="nav-item" id="sidebarRequestsLink" href="/requests.html">
-            <span class="nav-icon">☑</span>
+            <span class="nav-icon" aria-hidden="true">
+                <img src="/images/requests.png" alt="">
+            </span>
             <span class="nav-text">Requests</span>
         </a>
 
         <a class="nav-item" id="sidebarDashboardLink" href="/">
-            <span class="nav-icon">▦</span>
+            <span class="nav-icon" aria-hidden="true">
+                <img src="/images/projects.png" alt="">
+            </span>
             <span class="nav-text">Projects</span>
         </a>
 
         <a class="nav-item" id="sidebarTasksLink" href="/tasks.html">
-            <span class="nav-icon">☷</span>
+            <span class="nav-icon" aria-hidden="true">
+                <img src="/images/tasks.png" alt="">
+            </span>
             <span class="nav-text">Tasks</span>
         </a>
 
-        <a class="nav-item" id="sidebarDevelopmentTeamLink" href="/development-team.html">
-            <span class="nav-icon">♟</span>
+        <a
+            class="nav-item"
+            id="sidebarDevelopmentTeamLink"
+            href="/development-team.html"
+        >
+            <span class="nav-icon" aria-hidden="true">
+                <img src="/images/development_team.png" alt="">
+            </span>
             <span class="nav-text">Development Team</span>
         </a>
     </nav>
 
     <div class="sidebar-bottom">
         <a class="nav-item sidebar-help" id="sidebarHelpLink" href="/help.html">
-            <span class="nav-icon" aria-hidden="true">ⓘ</span>
+            <span class="nav-icon" aria-hidden="true">
+                <img src="/images/help.png" alt="">
+            </span>
             <span class="nav-text">Help</span>
         </a>
 
@@ -89,7 +128,11 @@
                 <span id="sidebarUserRole">Account</span>
             </div>
 
-            <button type="button" id="sidebarLogoutBtn" class="sidebar-logout-btn">
+            <button
+                type="button"
+                id="sidebarLogoutBtn"
+                class="sidebar-logout-btn"
+            >
                 Sign out
             </button>
         </div>
