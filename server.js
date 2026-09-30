@@ -91,8 +91,31 @@ if (!process.env.GOOGLE_REFRESH_TOKEN) {
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY
+    process.env.SUPABASE_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false } }
 );
+
+// Login and refresh must not share a user's auth state across server requests.
+function createRequestAuthClient() {
+    return createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_KEY,
+        { auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false } }
+    );
+}
+
+function isRejectedAuthCredential(error) {
+    if (!error) return false;
+    const status = Number(error.status);
+    if (error.name === "AuthRetryableFetchError" || status === 429 || status >= 500) {
+        return false;
+    }
+    return new Set([
+        "bad_jwt", "session_not_found", "session_expired",
+        "refresh_token_not_found", "refresh_token_already_used",
+        "user_not_found", "user_banned", "invalid_credentials"
+    ]).has(error.code) || status === 401 || status === 403;
+}
 
 // Separate privileged client used ONLY on the server for account management.
 // Add SUPABASE_SERVICE_ROLE_KEY to .env / Vercel Environment Variables.
@@ -671,8 +694,12 @@ async function loadUserContextFromToken(token) {
     const { data: authData, error: authError } =
         await supabase.auth.getUser(token);
 
-    if (authError || !authData?.user) {
-        return null;
+    if (authError) {
+        if (isRejectedAuthCredential(authError)) return null;
+        throw authError;
+    }
+    if (!authData?.user) {
+        throw new Error("Authentication service returned no user.");
     }
 
     const db = supabaseAdmin || getUserDatabaseClient(token);
@@ -684,7 +711,7 @@ async function loadUserContextFromToken(token) {
 
     if (profileError) {
         console.error("PROFILE LOOKUP ERROR:", profileError);
-        return null;
+        throw profileError;
     }
 
     if (!profile || profile.is_active === false) {
@@ -724,7 +751,7 @@ async function requireApiAuth(req, res, next) {
         next();
     } catch (error) {
         console.error("AUTH MIDDLEWARE ERROR:", error);
-        res.status(401).json({ success: false, error: "Invalid session." });
+        res.status(503).json({ success: false, error: "Session validation is temporarily unavailable. Please retry." });
     }
 }
 
@@ -912,7 +939,7 @@ app.post("/api/auth/login", async (req, res) => {
         const {
             data,
             error
-        } = await supabase.auth.signInWithPassword({
+        } = await createRequestAuthClient().auth.signInWithPassword({
             email: loginProfile.email,
             password
         });
@@ -1010,29 +1037,20 @@ app.post("/api/auth/refresh", async (req, res) => {
         const {
             data,
             error
-        } = await supabase.auth.refreshSession({
+        } = await createRequestAuthClient().auth.refreshSession({
             refresh_token:
                 refreshToken
         });
 
-        if (
-            error ||
-            !data?.session ||
-            !data?.user
-        ) {
-
-            console.warn(
-                "SESSION REFRESH FAILED:",
-                error?.message ||
-                "No refreshed session returned."
-            );
-
-            return res.status(401).json({
+        if (error || !data?.session || !data?.user) {
+            console.warn("SESSION REFRESH FAILED:", error?.code || error?.name || "Missing session");
+            const rejected = isRejectedAuthCredential(error);
+            return res.status(rejected ? 401 : 503).json({
                 success: false,
-                error:
-                    "Session expired. Please sign in again."
+                error: rejected
+                    ? "Session expired. Please sign in again."
+                    : "Session refresh is temporarily unavailable. Please retry."
             });
-
         }
 
         const profileDb =
@@ -1056,18 +1074,17 @@ app.post("/api/auth/refresh", async (req, res) => {
             .maybeSingle();
 
         if (profileError) {
-
-            console.error(
-                "REFRESH PROFILE LOOKUP ERROR:",
-                profileError
-            );
-
-            return res.status(500).json({
-                success: false,
-                error:
-                    "Unable to refresh this DevT session."
+            console.error("REFRESH PROFILE LOOKUP ERROR:", profileError);
+            // Refresh already rotated the credentials. Deliver them so the browser
+            // does not lose the new refresh token because a profile lookup failed.
+            // Protected APIs will still validate the account before granting access.
+            return res.json({
+                success: true,
+                access_token: data.session.access_token,
+                refresh_token: data.session.refresh_token,
+                expires_at: data.session.expires_at,
+                profile: null
             });
-
         }
 
         if (
