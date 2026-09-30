@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Development Team Help | DevTrack</title>
   <link rel="icon" type="image/png" href="/images/DT%20LOGO.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+
   <style>
 :root { --green:#536b35; --green-dark:#43592b; --green-soft:#f3f6ed; --ink:#172b4c; --muted:#71829e; --line:#e4eaf0; --bg:#f7f9fb; }
     .content { min-width:0; }
@@ -743,16 +743,32 @@ h1 { color:#1b5e20; }
     document.getElementById('previousStep').addEventListener('click', () => { if (selected > 0) { selected--; updateModal(); } });
     document.getElementById('nextStep').addEventListener('click', () => { if (selected < steps.length - 1) { selected++; updateModal(); } });
     document.addEventListener('keydown', event => { if (modal.hidden) return; if (event.key === 'Escape') closeStep(); if (event.key === 'ArrowLeft' && selected > 0) { selected--; updateModal(); } if (event.key === 'ArrowRight' && selected < steps.length - 1) { selected++; updateModal(); } });
-    (async () => {
-      const profile = await window.DevTAuth.ensureAuthenticated();
-      if (!profile) return;
+    async function startGuide() {
+      const auth = window.DevTAuth;
+      const cachedProfile = auth.getProfile();
+      // Prepare tutorial cards before waiting for the network.
+      render();
+      if (auth.getToken() && cachedProfile?.role && cachedProfile.role !== 'admin') {
+        document.body.classList.add('guide-ready');
+      }
+      const profile = await auth.ensureAuthenticated();
+      if (!profile) {
+        document.body.classList.remove('guide-ready');
+        return;
+      }
       if (profile.role === 'admin') {
+        document.body.classList.remove('guide-ready');
         window.location.replace('/help.html');
         return;
       }
       document.body.classList.add('guide-ready');
-      render();
-    })();
+    }
+    // Shared components restore the cached sidebar before showing the guide.
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startGuide, { once:true });
+    } else {
+      startGuide();
+    }
   </script>
 </body>
 </html>
