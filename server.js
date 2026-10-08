@@ -3,6 +3,7 @@ const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
 const { google } = require("googleapis");
 const { Readable } = require("stream");
+const { createHash } = require("node:crypto");
 
 require("dotenv").config();
 
@@ -864,30 +865,31 @@ async function authorizeApiRequest(req, res, next) {
 // Users sign in with their Full Name + Password.
 // Supabase Auth still authenticates with email internally, so the server
 // resolves the entered full name to the account email first.
-// In-memory login lockout. No additional keys or database setup.
-// IMPORTANT: counters belong to this process only; Vercel instances do not share them.
-const loginAttempts = new Map();
-const LOGIN_WINDOW_MS = 15 * 60 * 1000;
-const LOGIN_BLOCK_MS = 15 * 60 * 1000;
-const MAX_LOGIN_FAILURES = 5;
-
-function getLoginAttemptState(key) {
-    const now = Date.now();
-    let state = loginAttempts.get(key);
-    if (!state) {
-        state = { failures: [], blockedUntil: 0 };
-        loginAttempts.set(key, state);
+// Shared login lockout using the existing protected Supabase function.
+// No LOGIN_LOCKOUT_SECRET is required. The service-role key stays server-side.
+async function getLoginLockoutState(key, action) {
+    if (!supabaseAdmin) {
+        const error = new Error("Login protection requires the existing server service-role credential.");
+        error.loginProtectionUnavailable = true;
+        throw error;
     }
-    if (state.blockedUntil && state.blockedUntil <= now) {
-        state.failures = [];
-        state.blockedUntil = 0;
+    const { data, error } = await supabaseAdmin.rpc("devt_login_lockout", {
+        p_key: key,
+        p_action: action
+    });
+    if (error || typeof data?.allowed !== "boolean" ||
+        !Number.isFinite(data?.retry_after) || data.retry_after < 0 ||
+        (!data.allowed && data.retry_after < 1)) {
+        console.error("LOGIN LOCKOUT CHECK FAILED:", error?.code || "Invalid result");
+        const protectionError = new Error("Login protection is temporarily unavailable.");
+        protectionError.loginProtectionUnavailable = true;
+        throw protectionError;
     }
-    state.failures = state.failures.filter(time => time > now - LOGIN_WINDOW_MS);
-    return state;
+    return data;
 }
 
 function sendLoginBlock(res, state) {
-    const seconds = Math.max(1, Math.ceil((state.blockedUntil - Date.now()) / 1000));
+    const seconds = Math.max(1, Math.ceil(state.retry_after));
     res.setHeader("Retry-After", String(seconds));
     return res.status(429).json({
         success: false,
@@ -896,27 +898,14 @@ function sendLoginBlock(res, state) {
     });
 }
 
-function recordFailedLogin(key, res) {
-    const state = getLoginAttemptState(key);
-    if (state.blockedUntil > Date.now()) return sendLoginBlock(res, state);
-    state.failures.push(Date.now());
-    if (state.failures.length >= MAX_LOGIN_FAILURES) {
-        state.blockedUntil = Date.now() + LOGIN_BLOCK_MS;
-        return sendLoginBlock(res, state);
-    }
-    return res.status(401).json({ success: false, error: "Invalid username or password." });
+async function recordFailedLogin(key, res) {
+    const state = await getLoginLockoutState(key, "failure");
+    if (!state.allowed) return sendLoginBlock(res, state);
+    return res.status(401).json({
+        success: false,
+        error: "Invalid username or password."
+    });
 }
-
-const loginCleanupTimer = setInterval(() => {
-    const now = Date.now();
-    for (const [key, state] of loginAttempts) {
-        const lastFailure = state.failures[state.failures.length - 1] || 0;
-        if (state.blockedUntil <= now && lastFailure <= now - LOGIN_WINDOW_MS) {
-            loginAttempts.delete(key);
-        }
-    }
-}, 60 * 1000);
-loginCleanupTimer.unref();
 
 app.post("/api/auth/login", async (req, res) => {
     try {
@@ -933,12 +922,6 @@ app.post("/api/auth/login", async (req, res) => {
                 success: false,
                 error: "Username and password are required."
             });
-        }
-
-        const loginKey = fullName.toLowerCase();
-        const attemptState = getLoginAttemptState(loginKey);
-        if (attemptState.blockedUntil > Date.now()) {
-            return sendLoginBlock(res, attemptState);
         }
 
         const db = getDatabaseClient();
@@ -996,6 +979,14 @@ app.post("/api/auth/login", async (req, res) => {
             });
         }
 
+        // Stable account ID keeps the same counter across username case changes,
+        // renamed accounts, browsers, and Vercel server instances.
+        const loginKey = createHash("sha256")
+            .update("devtrack-login:" + loginProfile.user_id)
+            .digest("hex");
+        const attemptState = await getLoginLockoutState(loginKey, "check");
+        if (!attemptState.allowed) return sendLoginBlock(res, attemptState);
+
         const {
             data,
             error
@@ -1008,7 +999,7 @@ app.post("/api/auth/login", async (req, res) => {
             // Only an actual credential rejection counts as a wrong password.
             // Network failures, provider rate limits and outages do not count.
             if (error?.code === "invalid_credentials") {
-                return recordFailedLogin(loginKey, res);
+                return await recordFailedLogin(loginKey, res);
             }
             return res.status(503).json({
                 success: false,
@@ -1057,12 +1048,12 @@ app.post("/api/auth/login", async (req, res) => {
             });
         }
 
-        // A concurrent failed request may have locked the account.
-        const currentAttemptState = getLoginAttemptState(loginKey);
-        if (currentAttemptState.blockedUntil > Date.now()) {
+        // The database atomically checks for a concurrent lock before resetting
+        // this account's failures. A different account's login cannot clear it.
+        const currentAttemptState = await getLoginLockoutState(loginKey, "success");
+        if (!currentAttemptState.allowed) {
             return sendLoginBlock(res, currentAttemptState);
         }
-        loginAttempts.delete(loginKey);
 
         res.json({
             success: true,
@@ -1075,9 +1066,11 @@ app.post("/api/auth/login", async (req, res) => {
     } catch (error) {
         console.error("LOGIN ERROR:", error);
 
-        res.status(500).json({
+        res.status(error.loginProtectionUnavailable ? 503 : 500).json({
             success: false,
-            error: "Unable to sign in."
+            error: error.loginProtectionUnavailable
+                ? "Sign-in protection is temporarily unavailable. Please retry."
+                : "Unable to sign in."
         });
     }
 });
