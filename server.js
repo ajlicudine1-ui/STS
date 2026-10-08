@@ -860,153 +860,98 @@ async function authorizeApiRequest(req, res, next) {
     }
 }
 
-// Public login endpoint.
-// Users sign in with their Full Name + Password.
-// Supabase Auth still authenticates with email internally, so the server
-// resolves the entered full name to the account email first.
+// Persistent temporary lockout for this application's login endpoint.
+// Requires login-lockout.sql and a server-only LOGIN_LOCKOUT_SECRET (32+ characters).
+const { createHmac: createLoginLockoutHmac } = require("node:crypto");
+
+async function getLoginLockoutState(key, action) {
+    const { data, error } = await supabaseAdmin.rpc("devt_login_lockout", {
+        p_key: key, p_action: action
+    });
+    if (error || !data || typeof data.allowed !== "boolean") {
+        throw new Error("Login lockout storage unavailable.");
+    }
+    return data;
+}
+
+function sendLoginLockout(res, state) {
+    const seconds = Math.max(1, Math.ceil(Number(state.retry_after) || 900));
+    res.setHeader("Retry-After", String(seconds));
+    return res.status(429).json({
+        success: false,
+        error: `Too many failed login attempts. Please try again in ${Math.ceil(seconds / 60)} minute(s).`,
+        retry_after: seconds
+    });
+}
+
 app.post("/api/auth/login", async (req, res) => {
     try {
-        const fullName = String(
-            req.body.full_name ||
-            req.body.username ||
-            ""
-        ).trim();
+        const inputName = req.body?.full_name ?? req.body?.username ?? "";
+        const password = req.body?.password;
+        if (typeof inputName !== "string" || typeof password !== "string" ||
+            !inputName.trim() || !password || inputName.length > 255 || password.length > 4096) {
+            return res.status(400).json({ success: false, error: "A valid username and password are required." });
+        }
+        const fullName = inputName.trim();
+        const secret = process.env.LOGIN_LOCKOUT_SECRET || "";
+        if (!supabaseAdmin || secret.length < 32) {
+            return res.status(503).json({ success: false, error: "Sign-in protection is not configured. Please contact the administrator." });
+        }
+        const key = createLoginLockoutHmac("sha256", secret)
+            .update(fullName.toLowerCase()).digest("hex");
+        const initialState = await getLoginLockoutState(key, "check");
+        if (!initialState.allowed) return sendLoginLockout(res, initialState);
 
-        const password = String(req.body.password || "");
-
-        if (!fullName || !password) {
-            return res.status(400).json({
-                success: false,
-                error: "Username and password are required."
-            });
+        async function rejectCredentials() {
+            const state = await getLoginLockoutState(key, "failure");
+            if (!state.allowed) return sendLoginLockout(res, state);
+            return res.status(401).json({ success: false, error: "Invalid username or password." });
         }
 
-        const db = getDatabaseClient();
-
-        // Full-name login is case-insensitive.
-        // Read at most two matches so duplicate names can be detected clearly.
-        const {
-            data: matchingProfiles,
-            error: profileLookupError
-        } = await db
-            .from("profiles")
-            .select("user_id, full_name, email, role, is_active")
-            .ilike("full_name", fullName)
-            .limit(2);
-
-        if (profileLookupError) {
-            console.error(
-                "LOGIN FULL NAME LOOKUP ERROR:",
-                profileLookupError
-            );
-
-            return res.status(500).json({
-                success: false,
-                error: "Unable to verify this account."
-            });
-        }
-
-        if (!matchingProfiles || matchingProfiles.length === 0) {
-            return res.status(401).json({
-                success: false,
-                error: "Invalid username or password."
-            });
-        }
-
-        if (matchingProfiles.length > 1) {
-            return res.status(409).json({
-                success: false,
-                error: "More than one account uses this username. Please ask the administrator to make the account names unique."
-            });
-        }
-
+        // Preserve case-insensitive full-name login, but escape LIKE wildcards.
+        const namePattern = fullName.replace(/[\\%_]/g, "\\$&");
+        const { data: matchingProfiles, error: lookupError } = await supabaseAdmin
+            .from("profiles").select("user_id, full_name, email, role, is_active")
+            .ilike("full_name", namePattern).limit(2);
+        if (lookupError) throw new Error("Login profile lookup unavailable.");
+        if (!matchingProfiles || matchingProfiles.length !== 1) return await rejectCredentials();
         const loginProfile = matchingProfiles[0];
+        if (!loginProfile.email || loginProfile.is_active === false) return await rejectCredentials();
 
-        if (!loginProfile.email) {
-            return res.status(401).json({
-                success: false,
-                error: "Invalid username or password."
-            });
-        }
-
-        if (loginProfile.is_active === false) {
-            return res.status(403).json({
-                success: false,
-                error: "This account is inactive."
-            });
-        }
-
-        const {
-            data,
-            error
-        } = await createRequestAuthClient().auth.signInWithPassword({
-            email: loginProfile.email,
-            password
+        const { data, error } = await createRequestAuthClient().auth.signInWithPassword({
+            email: loginProfile.email, password
         });
-
-        if (error || !data?.session || !data?.user) {
-            return res.status(401).json({
-                success: false,
-                error: "Invalid username or password."
-            });
+        if (error) {
+            // Outages and upstream throttling are not failed-password attempts.
+            if (error.code === "invalid_credentials") return await rejectCredentials();
+            if (Number(error.status) === 429) {
+                res.setHeader("Retry-After", "60");
+                return res.status(429).json({ success: false, error: "Sign-in is temporarily limited. Please try again shortly.", retry_after: 60 });
+            }
+            return res.status(503).json({ success: false, error: "Unable to sign in right now. Please retry." });
         }
+        if (!data?.session || !data?.user) throw new Error("Incomplete authentication response.");
+        const { data: profile, error: profileError } = await supabaseAdmin
+            .from("profiles").select("user_id, full_name, email, role, is_active")
+            .eq("user_id", data.user.id).maybeSingle();
+        if (profileError) throw new Error("Login profile lookup unavailable.");
+        if (!profile || profile.is_active === false) return await rejectCredentials();
 
-        // Profile lookup must run as either the privileged server client
-        // or the newly authenticated user. Using the plain anonymous client
-        // can be blocked by RLS and incorrectly look like the profile is missing.
-        const profileDb = supabaseAdmin ||
-            getUserDatabaseClient(data.session.access_token);
-
-        const {
-            data: profile,
-            error: profileError
-        } = await profileDb
-            .from("profiles")
-            .select("user_id, full_name, email, role, is_active")
-            .eq("user_id", data.user.id)
-            .maybeSingle();
-
-        if (profileError) {
-            console.error(
-                "LOGIN PROFILE LOOKUP ERROR:",
-                profileError
-            );
-
-            return res.status(500).json({
-                success: false,
-                error: "Unable to load this account's DevT profile."
-            });
+        // Recheck after verification: a concurrent fifth failure must block login.
+        const finalState = await getLoginLockoutState(key, "success");
+        if (!finalState.allowed) {
+            try { await supabaseAdmin.auth.admin.signOut(data.session.access_token, "local"); } catch (_) {}
+            return sendLoginLockout(res, finalState);
         }
-
-        if (!profile) {
-            return res.status(403).json({
-                success: false,
-                error: "This account has no DevT profile."
-            });
-        }
-
-        if (profile.is_active === false) {
-            return res.status(403).json({
-                success: false,
-                error: "This account is inactive."
-            });
-        }
-
-        res.json({
-            success: true,
-            access_token: data.session.access_token,
+        return res.json({
+            success: true, access_token: data.session.access_token,
             refresh_token: data.session.refresh_token,
-            expires_at: data.session.expires_at,
-            profile
+            expires_at: data.session.expires_at, profile
         });
-
     } catch (error) {
-        console.error("LOGIN ERROR:", error);
-
-        res.status(500).json({
-            success: false,
-            error: "Unable to sign in."
-        });
+        // Never log the submitted password, tokens, or raw request body.
+        console.error("LOGIN PROTECTION ERROR:", error.message);
+        return res.status(503).json({ success: false, error: "Sign-in protection is temporarily unavailable. Please retry." });
     }
 });
 
