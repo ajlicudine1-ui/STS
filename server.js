@@ -864,6 +864,60 @@ async function authorizeApiRequest(req, res, next) {
 // Users sign in with their Full Name + Password.
 // Supabase Auth still authenticates with email internally, so the server
 // resolves the entered full name to the account email first.
+// In-memory login lockout. No additional keys or database setup.
+// IMPORTANT: counters belong to this process only; Vercel instances do not share them.
+const loginAttempts = new Map();
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_BLOCK_MS = 15 * 60 * 1000;
+const MAX_LOGIN_FAILURES = 5;
+
+function getLoginAttemptState(key) {
+    const now = Date.now();
+    let state = loginAttempts.get(key);
+    if (!state) {
+        state = { failures: [], blockedUntil: 0 };
+        loginAttempts.set(key, state);
+    }
+    if (state.blockedUntil && state.blockedUntil <= now) {
+        state.failures = [];
+        state.blockedUntil = 0;
+    }
+    state.failures = state.failures.filter(time => time > now - LOGIN_WINDOW_MS);
+    return state;
+}
+
+function sendLoginBlock(res, state) {
+    const seconds = Math.max(1, Math.ceil((state.blockedUntil - Date.now()) / 1000));
+    res.setHeader("Retry-After", String(seconds));
+    return res.status(429).json({
+        success: false,
+        retry_after_seconds: seconds,
+        error: `Too many failed login attempts. Please try again in ${Math.ceil(seconds / 60)} minute(s).`
+    });
+}
+
+function recordFailedLogin(key, res) {
+    const state = getLoginAttemptState(key);
+    if (state.blockedUntil > Date.now()) return sendLoginBlock(res, state);
+    state.failures.push(Date.now());
+    if (state.failures.length >= MAX_LOGIN_FAILURES) {
+        state.blockedUntil = Date.now() + LOGIN_BLOCK_MS;
+        return sendLoginBlock(res, state);
+    }
+    return res.status(401).json({ success: false, error: "Invalid username or password." });
+}
+
+const loginCleanupTimer = setInterval(() => {
+    const now = Date.now();
+    for (const [key, state] of loginAttempts) {
+        const lastFailure = state.failures[state.failures.length - 1] || 0;
+        if (state.blockedUntil <= now && lastFailure <= now - LOGIN_WINDOW_MS) {
+            loginAttempts.delete(key);
+        }
+    }
+}, 60 * 1000);
+loginCleanupTimer.unref();
+
 app.post("/api/auth/login", async (req, res) => {
     try {
         const fullName = String(
@@ -881,6 +935,12 @@ app.post("/api/auth/login", async (req, res) => {
             });
         }
 
+        const loginKey = fullName.toLowerCase();
+        const attemptState = getLoginAttemptState(loginKey);
+        if (attemptState.blockedUntil > Date.now()) {
+            return sendLoginBlock(res, attemptState);
+        }
+
         const db = getDatabaseClient();
 
         // Full-name login is case-insensitive.
@@ -891,7 +951,7 @@ app.post("/api/auth/login", async (req, res) => {
         } = await db
             .from("profiles")
             .select("user_id, full_name, email, role, is_active")
-            .ilike("full_name", fullName)
+            .ilike("full_name", fullName.replace(/[\\%_]/g, "\\$&"))
             .limit(2);
 
         if (profileLookupError) {
@@ -945,9 +1005,14 @@ app.post("/api/auth/login", async (req, res) => {
         });
 
         if (error || !data?.session || !data?.user) {
-            return res.status(401).json({
+            // Only an actual credential rejection counts as a wrong password.
+            // Network failures, provider rate limits and outages do not count.
+            if (error?.code === "invalid_credentials") {
+                return recordFailedLogin(loginKey, res);
+            }
+            return res.status(503).json({
                 success: false,
-                error: "Invalid username or password."
+                error: "Sign-in is temporarily unavailable. Please retry."
             });
         }
 
@@ -991,6 +1056,13 @@ app.post("/api/auth/login", async (req, res) => {
                 error: "This account is inactive."
             });
         }
+
+        // A concurrent failed request may have locked the account.
+        const currentAttemptState = getLoginAttemptState(loginKey);
+        if (currentAttemptState.blockedUntil > Date.now()) {
+            return sendLoginBlock(res, currentAttemptState);
+        }
+        loginAttempts.delete(loginKey);
 
         res.json({
             success: true,
