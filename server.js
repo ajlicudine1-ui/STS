@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 
 console.log("==============================================");
 console.log("PTS SERVER STARTING");
+console.log("Node.js version:", process.version);
 console.log("==============================================");
 
 console.log(
